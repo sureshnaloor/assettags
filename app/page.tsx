@@ -17,14 +17,14 @@ export default function Home() {
         {/* Header */}
         <header className="w-full">
           <div className="container mx-auto max-w-4xl flex items-center justify-between p-2">
-            {/* Logo with 3D effect - reduced size by 75% */}
-            <div className="w-32 sm:w-40 md:w-48 h-12 sm:h-16 md:h-20 
-                          drop-shadow-[0_8px_8px_rgba(0,0,0,0.5)]">
+            {/* Logo - fixed dimensions and removed fill property */}
+            <div className="relative w-32 sm:w-40 md:w-48">
               <Image
                 src="/images/logo.jpg"
                 alt="JAL Logo"
-                fill
-                className="object-contain"
+                width={192}  // 48px * 4 for high resolution
+                height={80}  // Adjust based on your logo's aspect ratio
+                className="object-contain w-full h-auto drop-shadow-[0_8px_8px_rgba(0,0,0,0.5)]"
                 priority
               />
             </div>
