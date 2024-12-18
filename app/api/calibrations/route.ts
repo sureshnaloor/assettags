@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import type { Calibration } from '@/types/asset';
-import { WithId, Document } from 'mongodb';
+import { WithId, Document, ObjectId } from 'mongodb';
 
 // GET all calibrations
 export async function GET() {
@@ -21,11 +21,11 @@ export async function GET() {
 // POST new calibration
 export async function POST(request: Request) {
   try {
-    const body: Calibration = await request.json();
+    const body: Omit<Calibration, '_id'> = await request.json();
     const { db } = await connectToDatabase();
     
-    // Add creation timestamp
-    const calibrationData: WithId<Document> & Calibration = {
+    // Create new document without _id (MongoDB will generate it)
+    const calibrationData = {
       ...body,
       createdat: new Date(),
     };
