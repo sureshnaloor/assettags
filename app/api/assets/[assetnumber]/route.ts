@@ -6,43 +6,23 @@ export async function GET(
   { params }: { params: { assetnumber: string } }
 ) {
   try {
-    // Log the incoming request
-    console.log('API Route: Fetching asset/equipment number:', params.assetnumber);
-
-    // Test MongoDB connection
     const { db } = await connectToDatabase();
-    console.log('MongoDB connection successful');
+    const asset = await db
+      .collection('equipment')
+      .findOne({ assetnumber: params.assetnumber });
 
-    // Attempt to find the asset
-    const equipment = await db.collection('equipmentandtools').findOne({ 
-      assetnumber: params.assetnumber 
-    });
-    
-    console.log('Query result:', equipment);
-
-    if (!equipment) {
-      console.log('equipment not found');
+    if (!asset) {
       return NextResponse.json(
-        { error: 'Equipment not found' }, 
+        { error: 'Asset not found' },
         { status: 404 }
       );
     }
-    
-    return NextResponse.json(equipment);
 
-  } catch (error) {
-    // Log the full error
-    console.error('Detailed error:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      cause: error instanceof Error ? error.cause : undefined
-    });
-
+    return NextResponse.json(asset);
+  } catch (err) {
+    console.error('Failed to fetch asset:', err);
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch equipment',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }, 
+      { error: 'Failed to fetch asset' },
       { status: 500 }
     );
   }

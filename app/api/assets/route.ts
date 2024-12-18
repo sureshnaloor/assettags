@@ -1,25 +1,31 @@
 import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
+import { connectToDatabase } from '@/lib/mongodb';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const client = await MongoClient.connect(process.env.MONGODB_URI as string);
-    const db = client.db(process.env.MONGODB_DB);
-    const equipment = await db.collection('equipmentandtools').find({}).toArray();
-    return NextResponse.json(equipment);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch equipment and tools' }, { status: 500 });
+    const { db } = await connectToDatabase();
+    const assets = await db.collection('equipment').find({}).toArray();
+    return NextResponse.json(assets);
+  } catch (err) {
+    console.error('Failed to fetch assets:', err);
+    return NextResponse.json(
+      { error: 'Failed to fetch assets' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const client = await MongoClient.connect(process.env.MONGODB_URI as string);
-    const db = client.db(process.env.MONGODB_DB);
-    const result = await db.collection('equipmentandtools').insertOne(body);
-    return NextResponse.json(result);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create equipment' }, { status: 500 });
+    const { db } = await connectToDatabase();
+    const result = await db.collection('equipment').insertOne(body);
+    return NextResponse.json(result, { status: 201 });
+  } catch (err) {
+    console.error('Failed to create asset:', err);
+    return NextResponse.json(
+      { error: 'Failed to create asset' },
+      { status: 500 }
+    );
   }
 }
