@@ -8,8 +8,8 @@ export async function GET() {
     const { db } = await connectToDatabase();
     const custodyRecords = await db.collection('equipmentcustody').find({}).toArray();
     return NextResponse.json(custodyRecords);
-  } catch (error) {
-    console.error('Failed to fetch custody records:', error);
+  } catch (err) {
+    console.error('Failed to fetch custody records:', err);
     return NextResponse.json(
       { error: 'Failed to fetch custody records' },
       { status: 500 }
@@ -20,19 +20,20 @@ export async function GET() {
 // POST new custody record
 export async function POST(request: Request) {
   try {
-    const body: Custody = await request.json();
+    const body: Omit<Custody, '_id'> = await request.json();
     const { db } = await connectToDatabase();
     
-    // Add creation timestamp
+    // Create new document without _id (MongoDB will generate it)
     const custodyData = {
       ...body,
       createdate: new Date(),
+      custodyfrom: new Date(body.custodyfrom) // Ensure date is properly formatted
     };
     
     const result = await db.collection('equipmentcustody').insertOne(custodyData);
     return NextResponse.json(result, { status: 201 });
-  } catch (error) {
-    console.error('Failed to create custody record:', error);
+  } catch (err) {
+    console.error('Failed to create custody record:', err);
     return NextResponse.json(
       { error: 'Failed to create custody record' },
       { status: 500 }
