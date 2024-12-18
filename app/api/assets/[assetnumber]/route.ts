@@ -35,13 +35,25 @@ export async function PUT(
   try {
     const body = await request.json();
     const { db } = await connectToDatabase();
-    const result = await db.collection('equipmentandtools').updateOne(
+    const result = await db.collection('equipment').updateOne(
       { assetnumber: params.assetnumber },
       { $set: body }
     );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { error: 'Asset not found' },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(result);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update equipment' }, { status: 500 });
+  } catch (err) {
+    console.error('Failed to update asset:', err);
+    return NextResponse.json(
+      { error: 'Failed to update asset' },
+      { status: 500 }
+    );
   }
 }
 
@@ -51,9 +63,23 @@ export async function DELETE(
 ) {
   try {
     const { db } = await connectToDatabase();
-    const result = await db.collection('equipmentandtools').deleteOne({ assetnumber: params.assetnumber });
+    const result = await db.collection('equipment').deleteOne({
+      assetnumber: params.assetnumber
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: 'Asset not found' },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(result);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete equipment' }, { status: 500 });
+  } catch (err) {
+    console.error('Failed to delete asset:', err);
+    return NextResponse.json(
+      { error: 'Failed to delete asset' },
+      { status: 500 }
+    );
   }
 }
