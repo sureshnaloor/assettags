@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import type { Calibration } from '@/types/asset';
-import { WithId, Document, ObjectId } from 'mongodb';
 
 // GET all calibrations
 export async function GET() {
