@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { db } = await connectToDatabase();
     const asset = await db
-      .collection('equipment')
+      .collection('equipmentandtools')
       .findOne({ assetnumber: params.assetnumber });
 
     if (!asset) {
@@ -35,7 +35,7 @@ export async function PUT(
   try {
     const body = await request.json();
     const { db } = await connectToDatabase();
-    const result = await db.collection('equipment').updateOne(
+    const result = await db.collection('equipmentandtools').updateOne(
       { assetnumber: params.assetnumber },
       { $set: body }
     );

@@ -4,7 +4,7 @@ import { connectToDatabase } from '@/lib/mongodb';
 export async function GET() {
   try {
     const { db } = await connectToDatabase();
-    const assets = await db.collection('equipment').find({}).toArray();
+    const assets = await db.collection('equipmentandtools').find({}).toArray();
     return NextResponse.json(assets);
   } catch (err) {
     console.error('Failed to fetch assets:', err);
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { db } = await connectToDatabase();
-    const result = await db.collection('equipment').insertOne(body);
+    const result = await db.collection('equipmentandtools').insertOne(body);
     return NextResponse.json(result, { status: 201 });
   } catch (err) {
     console.error('Failed to create asset:', err);
