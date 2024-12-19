@@ -11,16 +11,6 @@ function getBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 }
 
-// Common fetch options
-const fetchOptions = {
-  cache: 'no-store',
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  },
-  next: { revalidate: 0 }
-};
-
 async function getAsset(assetnumber: string) {
   const baseUrl = getBaseUrl();
   console.log('Fetching asset from:', `${baseUrl}/api/assets/${assetnumber}`);
@@ -31,7 +21,8 @@ async function getAsset(assetnumber: string) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-      }
+      },
+      next: { revalidate: 0 }
     });
     
     if (!res.ok) {
