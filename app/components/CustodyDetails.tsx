@@ -12,7 +12,7 @@ export default function CustodyDetails({ custodyRecords }: CustodyDetailsProps) 
   const toggleHistory = () => setShowHistory(!showHistory);
 
   return (
-    <div className="bg-emerald-950/20 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl">
+    <div className="bg-emerald-800/80 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl">
       <h2 className="text-sm font-semibold mb-2 text-emerald-200">Custody Details</h2>
       
       {custodyRecords.length > 0 ? (
@@ -72,12 +72,12 @@ export default function CustodyDetails({ custodyRecords }: CustodyDetailsProps) 
           {showHistory && custodyRecords.length > 1 && (
             <div className="space-y-2">
               <h3 className="text-xs font-medium text-emerald-200 mt-2">Previous Records</h3>
-              {custodyRecords.slice(1).map((record, index) => (
+              {custodyRecords.slice(1).map((record) => (
                 <div 
                   key={record._id}
                   className="bg-gradient-to-br from-slate-800/30 to-slate-900/30 rounded-md p-2 shadow-md ring-1 ring-slate-700/30"
                 >
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 bg-gradient-to-br from-teal-800/30 to-teal-900/30 rounded-md p-2 shadow-md ring-1 ring-slate-700/30">
                     <div>
                       <label className="block text-xs font-medium text-teal-100">Custodian</label>
                       <div className="text-sm font-bold text-zinc-100">
