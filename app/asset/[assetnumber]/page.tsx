@@ -3,33 +3,32 @@ import AssetDetails from '@/app/components/AssetDetails';
 import CalibrationDetails from '@/app/components/CalibrationDetails';
 import CustodyDetails from '@/app/components/CustodyDetails';
 import Footer from '@/app/components/Footer';
+import { headers } from 'next/headers';
 
-// Helper function to get base URL
-function getBaseUrl() {
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  if (process.env.NEXT_PUBLIC_VERCEL_URL) return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// Helper function to get API URL
+function getApiUrl(path: string) {
+  const headersList = headers();
+  const protocol = headersList.get('x-forwarded-proto') || 'http';
+  const host = headersList.get('host') || 'localhost:3000';
+  return `${protocol}://${host}${path}`;
 }
 
 async function getAsset(assetnumber: string) {
-  const baseUrl = getBaseUrl();
-  console.log('Fetching asset from:', `${baseUrl}/api/assets/${assetnumber}`);
+  console.log('Fetching asset:', assetnumber);
   
   try {
-    const res = await fetch(`${baseUrl}/api/assets/${assetnumber}`, {
+    const res = await fetch(getApiUrl(`/api/assets/${assetnumber}`), {
       cache: 'no-store',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-      },
-      next: { revalidate: 0 }
+      }
     });
     
     if (!res.ok) {
       console.error('Asset fetch error:', {
         status: res.status,
-        statusText: res.statusText,
-        url: res.url
+        statusText: res.statusText
       });
       throw new Error(`Failed to fetch asset: ${res.status}`);
     }
@@ -42,15 +41,13 @@ async function getAsset(assetnumber: string) {
 }
 
 async function getCalibrations(assetnumber: string) {
-  const baseUrl = getBaseUrl();
   try {
-    const res = await fetch(`${baseUrl}/api/calibrations/${assetnumber}`, {
+    const res = await fetch(getApiUrl(`/api/calibrations/${assetnumber}`), {
       cache: 'no-store',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-      },
-      next: { revalidate: 0 }
+      }
     });
     
     if (!res.ok && res.status !== 404) {
@@ -65,15 +62,13 @@ async function getCalibrations(assetnumber: string) {
 }
 
 async function getCustody(assetnumber: string) {
-  const baseUrl = getBaseUrl();
   try {
-    const res = await fetch(`${baseUrl}/api/custody/${assetnumber}`, {
+    const res = await fetch(getApiUrl(`/api/custody/${assetnumber}`), {
       cache: 'no-store',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-      },
-      next: { revalidate: 0 }
+      }
     });
     
     if (!res.ok && res.status !== 404) {
