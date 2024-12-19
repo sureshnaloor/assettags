@@ -11,50 +11,100 @@ function getBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 }
 
+// Common fetch options
+const fetchOptions = {
+  cache: 'no-store',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+  next: { revalidate: 0 }
+};
+
 async function getAsset(assetnumber: string) {
   const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/assets/${assetnumber}`, {
-    cache: 'no-store',
-  });
+  console.log('Fetching asset from:', `${baseUrl}/api/assets/${assetnumber}`);
   
-  if (!res.ok) {
-    throw new Error(`Failed to fetch asset: ${res.status}`);
+  try {
+    const res = await fetch(`${baseUrl}/api/assets/${assetnumber}`, {
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!res.ok) {
+      console.error('Asset fetch error:', {
+        status: res.status,
+        statusText: res.statusText,
+        url: res.url
+      });
+      throw new Error(`Failed to fetch asset: ${res.status}`);
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('Asset fetch error:', error);
+    throw error;
   }
-  
-  return res.json();
 }
 
 async function getCalibrations(assetnumber: string) {
   const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/calibrations/${assetnumber}`, {
-    cache: 'no-store',
-  });
-  
-  if (!res.ok) {
-    return []; // Return empty array if no calibrations
+  try {
+    const res = await fetch(`${baseUrl}/api/calibrations/${assetnumber}`, {
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      next: { revalidate: 0 }
+    });
+    
+    if (!res.ok && res.status !== 404) {
+      console.error('Calibrations fetch error:', res.statusText);
+    }
+    
+    return res.ok ? res.json() : [];
+  } catch (error) {
+    console.error('Calibrations fetch error:', error);
+    return [];
   }
-  
-  return res.json();
 }
 
 async function getCustody(assetnumber: string) {
   const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/custody/${assetnumber}`, {
-    cache: 'no-store',
-  });
-  
-  if (!res.ok) {
-    return []; // Return empty array if no custody records
+  try {
+    const res = await fetch(`${baseUrl}/api/custody/${assetnumber}`, {
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      next: { revalidate: 0 }
+    });
+    
+    if (!res.ok && res.status !== 404) {
+      console.error('Custody fetch error:', res.statusText);
+    }
+    
+    return res.ok ? res.json() : [];
+  } catch (error) {
+    console.error('Custody fetch error:', error);
+    return [];
   }
-  
-  return res.json();
 }
 
 export default async function AssetPage({ params }: { params: { assetnumber: string } }) {
   try {
-    const asset = await getAsset(params.assetnumber);
-    const calibrations = await getCalibrations(params.assetnumber);
-    const custodyRecords = await getCustody(params.assetnumber);
+    console.log('Fetching data for asset:', params.assetnumber);
+    
+    const [asset, calibrations, custodyRecords] = await Promise.all([
+      getAsset(params.assetnumber),
+      getCalibrations(params.assetnumber),
+      getCustody(params.assetnumber)
+    ]);
 
     return (
       <div className="relative flex flex-col min-h-screen text-zinc-100">
