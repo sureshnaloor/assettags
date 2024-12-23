@@ -6,7 +6,7 @@ import AssetDetails from '@/app/components/AssetDetails';
 import CalibrationDetails from '@/app/components/CalibrationDetails';
 import CustodyDetails from '@/app/components/CustodyDetails';
 import Footer from '@/app/components/Footer';
-import { AssetData, CalibrationCertificate } from '@/types/asset';
+import { AssetData, CalibrationCertificate, Calibration } from '@/types/asset';
 
 export default function AssetPage({ params }: { params: { assetnumber: string } }) {
   const router = useRouter();
@@ -96,6 +96,39 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
     }
   };
 
+  const handleCalibrationUpdate = async (calibration: Calibration) => {
+    try {
+      const response = await fetch(`/api/calibrations/${params.assetnumber}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...calibration,
+          createdby: 'current-user', // Replace with actual user
+          createdat: new Date(),
+          calibrationfromdate: calibration.calibrationdate
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update calibration');
+      }
+      // Update local state with new calibration data
+      const updatedCalibration = await response.json();
+      setCalibrations(prevCalibrations => 
+        prevCalibrations.map(cal => 
+          cal._id === updatedCalibration._id ? updatedCalibration : cal
+        )
+      );
+
+      console.log('Calibration updated successfully');
+    } catch (error) {
+      console.error('Failed to update calibration:', error);
+      throw error; 
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -125,9 +158,16 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
             onUpdate={handleAssetUpdate}
           />
           <CalibrationDetails 
-            calibration={calibrations[0]}
+            calibration={{
+              ...calibrations[0],
+              calibrationdate: calibrations[0]?.calibrationdate || new Date(),
+              calibratedby: calibrations[0]?.calibratedby || '',
+              calibrationfromdate: calibrations[0]?.calibrationdate || new Date(),
+              createdby: calibrations[0]?.createdby || '',
+              createdat: calibrations[0]?.createdat || new Date()
+            }}
             onUpdate={(updatedCalibration) => {
-              setCalibrations(currentCalibrations => 
+              setCalibrations(currentCalibrations =>
                 currentCalibrations.map(cal => 
                   cal._id === updatedCalibration._id ? updatedCalibration : cal
                 )

@@ -18,11 +18,14 @@ export interface CalibrationCertificate {
   _id: string;
   assetnumber: string;
   calibratedby: string;
-  calibrationdate: string;
-  calibrationtodate: string;
+  calibrationdate: Date;
+  calibrationtodate: Date;
   calibrationpo?: string;
   calibfile?: string;
   calibcertificate?: string;
+  calibrationfromdate: Date;
+  createdby: string;
+  createdat: Date;
 }
 
 export interface Custodian {
