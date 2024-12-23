@@ -1,4 +1,4 @@
-export interface Asset {
+export interface AssetData {
   _id: string;
   assetnumber: string;
   acquireddate: string;
@@ -8,14 +8,21 @@ export interface Asset {
   assetsubcategory: string;
   assetstatus: string;
   assetnotes: string;
+  assetmodel?: string;
+  assetmanufacturer?: string;
+  assetserialnumber?: string;
+  accessories?: string;
 }
 
 export interface CalibrationCertificate {
-  certificateNumber: string;
-  calibrationDate: string;
-  nextDueDate: string;
-  status: string;
-  // Add more fields as needed
+  _id: string;
+  assetnumber: string;
+  calibratedby: string;
+  calibrationdate: string;
+  calibrationtodate: string;
+  calibrationpo?: string;
+  calibfile?: string;
+  calibcertificate?: string;
 }
 
 export interface Custodian {

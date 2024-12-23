@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 // GET calibrations for specific asset
 export async function GET(
@@ -39,9 +40,23 @@ export async function PUT(
     const body = await request.json();
     const { db } = await connectToDatabase();
     
+    // Ensure we have an _id to update the specific calibration
+    if (!body._id) {
+      return NextResponse.json(
+        { error: 'Calibration ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Remove _id from the update body since MongoDB doesn't allow modifying _id
+    const { _id, ...updateData } = body;
+    
     const result = await db.collection('equipmentcalibcertificates').updateOne(
-      { assetnumber: params.assetnumber },
-      { $set: body }
+      { 
+        _id: new ObjectId(_id),
+        assetnumber: params.assetnumber // Keep this as additional validation
+      },
+      { $set: updateData }
     );
 
     if (result.matchedCount === 0) {
@@ -51,7 +66,12 @@ export async function PUT(
       );
     }
 
-    return NextResponse.json(result);
+    // Fetch and return the updated document
+    const updatedCalibration = await db
+      .collection('equipmentcalibcertificates')
+      .findOne({ _id: new ObjectId(_id) });
+
+    return NextResponse.json(updatedCalibration);
   } catch (error) {
     console.error('Failed to update calibration:', error);
     return NextResponse.json(
