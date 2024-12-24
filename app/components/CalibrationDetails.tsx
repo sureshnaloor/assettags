@@ -177,6 +177,7 @@ export default function CalibrationDetails({ calibration, onUpdate }: Calibratio
     validUntil.setMonth(validUntil.getMonth() + months);
     return validUntil;
   };
+  
   const handleCalibrationDateChange = (date: Date | null) => {
     setEditedCalibration(prev => {
       const updates: Partial<Calibration> = {
@@ -446,33 +447,78 @@ export default function CalibrationDetails({ calibration, onUpdate }: Calibratio
         {/* Valid Until */}
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
           <label className="block text-xs font-medium text-teal-100">Valid Until</label>
-          <div className="text-sm text-zinc-100">
-            {formatDate(editedCalibration.calibrationtodate || calibration?.calibrationtodate)}
-          </div>
+          {isEditing ? (  
+            <DatePicker
+              selected={editedCalibration.calibrationtodate}
+              onChange={handleCalibrationDateChange}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              dateFormat="yyyy-MM-dd"
+            />
+          ) : (
+            <div className="text-sm text-zinc-100">
+              {formatDate(editedCalibration.calibrationtodate || calibration?.calibrationtodate)}
+            </div>
+          )}
         </div>
 
         {/* Calibration PO */}
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
           <label className="block text-xs font-medium text-teal-100">Calibration PO</label>
-          <div className="text-sm text-zinc-100">
-            {calibration?.calibrationpo || 'Not specified'}
-          </div>
+          {isEditing ? (  
+            <input
+              type="text"
+              value={editedCalibration.calibrationpo || ''}
+              onChange={(e) => setEditedCalibration(prev => ({
+                ...prev,
+                calibrationpo: e.target.value
+              }))}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+            />
+          ) : (
+            <div className="text-sm text-zinc-100">
+              {calibration?.calibrationpo || 'Not specified'}
+            </div>
+          )}
         </div>
 
         {/* Calibration File */}
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
           <label className="block text-xs font-medium text-teal-100">Calibration File</label>
-          <div className="text-sm text-zinc-100">
-            {calibration?.calibfile || 'Not specified'}
-          </div>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editedCalibration.calibfile || ''}
+              onChange={(e) => setEditedCalibration(prev => ({
+                ...prev,
+                calibfile: e.target.value
+              }))}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+            />
+          ) : (
+            <div className="text-sm text-zinc-100">
+              {calibration?.calibfile || 'Not specified'}
+            </div>
+          )}
         </div>
 
         {/* Calibration certificate */}
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
           <label className="block text-xs font-medium text-teal-100">Calibration Certificate</label>
-          <div className="text-sm text-zinc-100">
-            {calibration?.calibcertificate || 'Not specified'}
-          </div>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editedCalibration.calibcertificate || ''}
+              onChange={(e) => setEditedCalibration(prev => ({
+                ...prev,
+                calibcertificate: e.target.value
+              }))}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+            />
+          ) : (
+            <div className="text-sm text-zinc-100">
+              {calibration?.calibcertificate || 'Not specified'}
+            </div>
+          )}
         </div>
       </div>
 

@@ -2,16 +2,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/app/components/Header';
+import Footer from '@/app/components/Footer';
+
 import AssetDetails from '@/app/components/AssetDetails';
 import CalibrationDetails from '@/app/components/CalibrationDetails';
 import CustodyDetails from '@/app/components/CustodyDetails';
-import Footer from '@/app/components/Footer';
-import { AssetData, CalibrationCertificate, Calibration } from '@/types/asset';
+
+
+import { AssetData, Calibration } from '@/types/asset';
 
 export default function AssetPage({ params }: { params: { assetnumber: string } }) {
   const router = useRouter();
   const [asset, setAsset] = useState<AssetData | null>(null);
-  const [calibrations, setCalibrations] = useState<CalibrationCertificate[]>([]);
+  const [calibrations, setCalibrations] = useState<Calibration[]>([]);
   const [custodyRecords, setCustodyRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +37,12 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
       setAsset(assetData);
       setCalibrations(calibrationData);
       setCustodyRecords(custodyData);
+
+        // for testing only, will be removed later in production
+      console.log('Calibrations:', calibrations);
+      console.log('Custody Records:', custodyRecords);
+      console.log('Asset:', asset);
+
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Failed to load asset data');
@@ -52,7 +61,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
         assetsubcategory: updatedAsset.assetsubcategory,
         assetstatus: updatedAsset.assetstatus,
         assetnotes: updatedAsset.assetnotes,
-        // Add new fields
+        
         assetmodel: updatedAsset.assetmodel,
         assetmanufacturer: updatedAsset.assetmanufacturer,
         assetserialnumber: updatedAsset.assetserialnumber,
@@ -89,6 +98,8 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
       });
 
       console.log('Asset updated successfully');
+      // for testing only, will be removed later in production
+      console.log('Updated Asset:', asset);
 
     } catch (error) {
       console.error('Error updating asset:', error);
@@ -162,7 +173,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
               ...calibrations[0],
               calibrationdate: calibrations[0]?.calibrationdate || new Date(),
               calibratedby: calibrations[0]?.calibratedby || '',
-              calibrationfromdate: calibrations[0]?.calibrationdate || new Date(),
+              
               createdby: calibrations[0]?.createdby || '',
               createdat: calibrations[0]?.createdat || new Date()
             }}

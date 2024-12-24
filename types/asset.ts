@@ -1,31 +1,18 @@
 export interface AssetData {
-  _id: string;
+  _id?: string;
   assetnumber: string;
-  acquireddate: string;
-  assetdescription: string;
-  acquiredvalue: number;
-  assetcategory: string;
-  assetsubcategory: string;
-  assetstatus: string;
-  assetnotes: string;
+  assetcategory?: string;
+  assetsubcategory?: string;
+  assetstatus?: string;
+  assetdescription?: string;
+  acquireddate?: Date;
+  acquiredvalue?: number;
+  assetnotes?: string;
   assetmodel?: string;
   assetmanufacturer?: string;
   assetserialnumber?: string;
   accessories?: string;
-}
-
-export interface CalibrationCertificate {
-  _id: string;
-  assetnumber: string;
-  calibratedby: string;
-  calibrationdate: Date;
-  calibrationtodate: Date;
-  calibrationpo?: string;
-  calibfile?: string;
-  calibcertificate?: string;
-  calibrationfromdate: Date;
-  createdby: string;
-  createdat: Date;
+  
 }
 
 export interface Custodian {
@@ -44,18 +31,48 @@ export interface AssetCategory {
   subcategories: string[];
 }
 
+export interface AssetStatus {
+  status: string;
+  description: string;
+}
+
+export interface AssetLocation {
+  location: string;
+  description: string;
+}
+
+export interface AssetCategory {
+  category: string;
+  subcategories: string[];
+}
+
+export interface AssetModel {
+  model: string;
+  manufacturer: string;
+}
+
+export interface AssetAccessory {
+  accessory: string;
+  description: string;
+}
+
 export interface Calibration {
   _id?: string;
   assetnumber: string;
-  calibcertificate: string;
-  calibfile: string;
   calibratedby: string;
   calibrationdate: Date;
-  calibrationfromdate: Date;
   calibrationtodate: Date;
-  calibrationpo: string;
+  calibrationpo?: string;
+  calibfile?: string;
+  calibcertificate?: string;
   createdby: string;
   createdat: Date;
 }
+
+
+
+
+
+
 
 
