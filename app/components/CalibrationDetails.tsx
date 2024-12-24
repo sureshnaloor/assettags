@@ -12,7 +12,7 @@ interface CalibrationCompany {
 
 interface CalibrationDetailsProps {
   calibration: Calibration;
-  onUpdate: (updatedCalibration: Calibration) => void;
+  onUpdate: (updatedCalibration: Calibration | null) => void;
 }
 
 const VALIDITY_PERIODS = [
@@ -131,7 +131,7 @@ export default function CalibrationDetails({ calibration, onUpdate }: Calibratio
   const [showNewForm, setShowNewForm] = useState(false);
   const [archiveReason, setArchiveReason] = useState('');
   
-  const [editedCalibration, setEditedCalibration] = useState<Partial<Calibration>>(() => {
+  const [editedCalibration, setEditedCalibration] = useState(() => {
     const currentCalibration = calibration || {};
     return {
       ...currentCalibration,
@@ -177,13 +177,12 @@ export default function CalibrationDetails({ calibration, onUpdate }: Calibratio
     validUntil.setMonth(validUntil.getMonth() + months);
     return validUntil;
   };
-  
   const handleCalibrationDateChange = (date: Date | null) => {
     setEditedCalibration(prev => {
-      const updates: Partial<Calibration> = {
+      const updates = {
         ...prev,
-        calibrationdate: date || undefined,
-        calibrationtodate: date ? calculateValidUntil(date, selectedValidityPeriod) : undefined
+        calibrationdate: date,
+        calibrationtodate: date ? calculateValidUntil(date, selectedValidityPeriod) : null
       };
       return updates;
     });
@@ -194,7 +193,7 @@ export default function CalibrationDetails({ calibration, onUpdate }: Calibratio
     if (editedCalibration.calibrationdate) {
       setEditedCalibration(prev => ({
         ...prev,
-        calibrationtodate: editedCalibration.calibrationdate ? calculateValidUntil(editedCalibration.calibrationdate, months) : undefined
+        calibrationtodate: editedCalibration.calibrationdate ? calculateValidUntil(editedCalibration.calibrationdate, months) : null
       }));
     }
   };
@@ -233,9 +232,12 @@ export default function CalibrationDetails({ calibration, onUpdate }: Calibratio
           ? editedCalibration.calibcertificate 
           : undefined,
       };
-
       // Store the changes and show confirmation
-      setPendingChanges(editedCalibration);
+      setPendingChanges({
+        ...editedCalibration,
+        calibrationdate: editedCalibration.calibrationdate || undefined,
+        calibrationtodate: editedCalibration.calibrationtodate || undefined
+      });
       setShowConfirmation(true);
 
     } catch (error) {
@@ -277,11 +279,14 @@ export default function CalibrationDetails({ calibration, onUpdate }: Calibratio
   const handleNew = () => {
     setEditedCalibration({
       calibratedby: '',
-      calibrationdate: undefined,
-      calibrationtodate: undefined,
+      calibrationdate: null,
+      calibrationtodate: null,
       calibrationpo: '',
       calibfile: '',
       calibcertificate: '',
+      assetnumber: calibration.assetnumber,
+      createdby: 'current-user',
+      createdat: new Date(),
     });
     setShowNewForm(true);
     setIsEditing(true);
