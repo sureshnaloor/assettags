@@ -169,10 +169,11 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
             onUpdate={handleAssetUpdate}
           />
           <CalibrationDetails 
-            calibration={calibrations[0]}
+            currentCalibration={calibrations[0]}
+            calibrationHistory={calibrations.slice(1)}
             onUpdate={(updatedCalibration) => {
               if (updatedCalibration === null) {
-                setCalibrations([]); // Clear calibrations if null
+                setCalibrations([]); 
               } else {
                 setCalibrations(currentCalibrations =>
                   currentCalibrations.map(cal => 
