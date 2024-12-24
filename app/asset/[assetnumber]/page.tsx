@@ -169,20 +169,17 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
             onUpdate={handleAssetUpdate}
           />
           <CalibrationDetails 
-            calibration={{
-              ...calibrations[0],
-              calibrationdate: calibrations[0]?.calibrationdate || new Date(),
-              calibratedby: calibrations[0]?.calibratedby || '',
-              
-              createdby: calibrations[0]?.createdby || '',
-              createdat: calibrations[0]?.createdat || new Date()
-            }}
+            calibration={calibrations[0]}
             onUpdate={(updatedCalibration) => {
-              setCalibrations(currentCalibrations =>
-                currentCalibrations.map(cal => 
-                  cal._id === updatedCalibration._id ? updatedCalibration : cal
-                )
-              );
+              if (updatedCalibration === null) {
+                setCalibrations([]); // Clear calibrations if null
+              } else {
+                setCalibrations(currentCalibrations =>
+                  currentCalibrations.map(cal => 
+                    cal._id === updatedCalibration._id ? updatedCalibration : cal
+                  )
+                );
+              }
             }}
           />
           <CustodyDetails custodyRecords={custodyRecords} />
