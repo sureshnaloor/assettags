@@ -166,7 +166,7 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
   // Update editor content when asset changes
   useEffect(() => {
     if (editor && !isEditing) {
-      editor.commands.setContent(asset.assetnotes);
+      editor.commands.setContent(asset.assetnotes || '');
     }
   }, [asset.assetnotes, editor, isEditing]);
 
