@@ -190,8 +190,8 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
   const handleCancel = () => {
     setIsEditing(false);
     setEditedAsset(asset);
-    setEditorContent(asset.assetnotes);
-    editor?.commands.setContent(asset.assetnotes);
+    setEditorContent(asset.assetnotes || '');
+    editor?.commands.setContent(asset.assetnotes || '');
   };
 
   const handleSave = async () => {
@@ -342,7 +342,7 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
           <label className="block text-xs font-medium text-teal-100">Acquisition Date</label>
           <div className="text-[12px] text-zinc-100">
-            {new Date(asset.acquireddate).toLocaleDateString()}
+            {asset.acquireddate ? new Date(asset.acquireddate).toLocaleDateString() : '-'}
           </div>
         </div>
 
@@ -352,7 +352,7 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
             {new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'USD'
-            }).format(asset.acquiredvalue)}
+            }).format(asset.acquiredvalue ?? 0)}
           </div>
         </div>
 
