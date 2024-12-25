@@ -928,14 +928,16 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
             </label>
             <DatePicker
               selected={newCalibration.calibrationdate}
-              onChange={(date: Date) => {
-                const validUntil = new Date(date);
-                validUntil.setMonth(validUntil.getMonth() + selectedValidityPeriod);
-                setNewCalibration(prev => ({
-                  ...prev,
-                  calibrationdate: date,
-                  calibrationtodate: validUntil
-                }));
+              onChange={(date: Date | null) => {
+                if (date) {
+                  const validUntil = new Date(date);
+                  validUntil.setMonth(validUntil.getMonth() + selectedValidityPeriod);
+                  setNewCalibration(prev => ({
+                    ...prev,
+                    calibrationdate: date,
+                    calibrationtodate: validUntil
+                  }));
+                }
               }}
               className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
               dateFormat="yyyy-MM-dd"
