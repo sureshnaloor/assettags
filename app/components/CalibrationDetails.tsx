@@ -132,19 +132,37 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   const [showNewForm, setShowNewForm] = useState(false);
   const [archiveReason, setArchiveReason] = useState('');
   const [showHistory, setShowHistory] = useState(false);
+  const [showNewConfirmation, setShowNewConfirmation] = useState(false);
+  const [pendingNewCalibration, setPendingNewCalibration] = useState<Partial<Calibration> | null>(null);
+  const [isNewMode, setIsNewMode] = useState(false);
   
-  const [editedCalibration, setEditedCalibration] = useState(() => {
-    const calibration = currentCalibration || {} as Calibration;
+  const [editedCalibration, setEditedCalibration] = useState<Calibration>(() => {
     return {
-      ...calibration,
-      calibrationdate: calibration.calibrationdate 
-        ? new Date(calibration.calibrationdate)
-        : null,
-      calibrationtodate: calibration.calibrationtodate
-        ? new Date(calibration.calibrationtodate)
-        : null
-    };
+      calibratedby: '',
+      calibrationdate: null as Date | null,
+      calibrationtodate: null as Date | null,
+      calibrationpo: '',
+      calibfile: '',
+      calibcertificate: '',
+      assetnumber: currentCalibration?.assetnumber ?? '',
+      createdby: 'current-user',
+      createdat: new Date(),
+    } as Calibration;
   });
+
+  useEffect(() => {
+    if (isEditing && currentCalibration) {
+      setEditedCalibration({
+        ...currentCalibration,
+        calibrationdate: currentCalibration.calibrationdate 
+          ? new Date(currentCalibration.calibrationdate)
+          : null,
+        calibrationtodate: currentCalibration.calibrationtodate
+          ? new Date(currentCalibration.calibrationtodate)
+          : null
+      });
+    }
+  }, [isEditing, currentCalibration]);
 
   const [selectedValidityPeriod, setSelectedValidityPeriod] = useState(12);
 
@@ -281,17 +299,47 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   const handleNew = () => {
     setEditedCalibration({
       calibratedby: '',
-      calibrationdate: null,
-      calibrationtodate: null,
+      calibrationdate: null as Date | null,
+      calibrationtodate: null as Date | null,
       calibrationpo: '',
       calibfile: '',
       calibcertificate: '',
       assetnumber: currentCalibration?.assetnumber ?? '',
       createdby: 'current-user',
       createdat: new Date(),
-    });
-    setShowNewForm(true);
-    setIsEditing(true);
+    } as Calibration);
+    setIsNewMode(true);
+    setIsEditing(false);
+  };
+
+  const handleConfirmedNew = async () => {
+    try {
+      setIsSaving(true);
+      setError(null);
+      
+      const response = await fetch(`/api/calibrations/${currentCalibration?.assetnumber}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedCalibration),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create calibration');
+      }
+
+      const newCalibration = await response.json();
+      onUpdate(newCalibration);
+      setIsEditing(false);
+      setShowNewConfirmation(false);
+      setShowNewForm(false);
+    } catch (error) {
+      console.error('Failed to create calibration:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create calibration');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -299,7 +347,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       setIsSaving(true);
       setError(null);
 
-      const response = await fetch(`/api/calibrations/${currentCalibration?.assetnumber}/archive`, {
+      const responsearchive = await fetch(`/api/calibrations/${currentCalibration?.assetnumber}/archive`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -309,10 +357,25 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
           reason: archiveReason,
           archivedBy: 'current-user', // Replace with actual user
         }),
-      });
+      });      
 
-      if (!response.ok) {
+      const responsedelete = await fetch(`/api/calibrations/${currentCalibration?.assetnumber}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          calibration: currentCalibration,
+          // Replace with actual user
+        }),
+      }); 
+
+      if (!responsearchive.ok) {
         throw new Error('Failed to archive calibration');
+      }
+
+      if (!responsedelete.ok) {
+        throw new Error('Failed to delete calibration');
       }
 
       onUpdate(null); // Clear the calibration from parent
@@ -325,13 +388,29 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
     }
   };
 
+  const resetForm = () => {
+    setEditedCalibration({
+      calibratedby: '',
+      calibrationdate: null as Date | null,
+      calibrationtodate: null as Date | null,
+      calibrationpo: '',
+      calibfile: '',
+      calibcertificate: '',
+      assetnumber: currentCalibration?.assetnumber ?? '',
+      createdby: 'current-user',
+      createdat: new Date(),
+    } as Calibration);
+  };
+
   return (
     <div className="bg-teal-800/80 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-semibold text-emerald-200">Current Calibration</h2>
+        <h2 className="text-sm font-semibold text-emerald-200">
+          {isNewMode ? 'New Calibration' : 'Current Calibration'}
+        </h2>
         
         <div className="flex gap-2">
-          {!isEditing && !showNewForm && (
+          {!isEditing && !isNewMode && (
             <>
               <button
                 onClick={handleNew}
@@ -342,33 +421,44 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
               </button>
               {currentCalibration && (
                 <button
-                  onClick={() => setShowDeleteConfirmation(true)}
-                  className="p-1 text-red-300 hover:text-red-200 transition-colors"
-                  title="Delete Calibration"
+                  onClick={() => setIsEditing(true)}
+                  className="p-1 text-emerald-300 hover:text-emerald-200 transition-colors"
                 >
-                  <TrashIcon className="h-5 w-5" />
+                  <PencilIcon className="h-5 w-5" />
                 </button>
               )}
             </>
           )}
-          {!isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="p-1 text-emerald-300 hover:text-emerald-200 transition-colors"
-            >
-              <PencilIcon className="h-5 w-5" />
-            </button>
-          ) : (
+          
+          {(isEditing || isNewMode) && (
             <>
               <button
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  if (isNewMode) {
+                    setIsNewMode(false);
+                  } else {
+                    setIsEditing(false);
+                  }
+                  resetForm();
+                }}
                 className="p-1 text-red-300 hover:text-red-200 transition-colors"
                 disabled={isSaving}
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
               <button
-                onClick={handleSave}
+                onClick={() => {
+                  if (isNewMode) {
+                    setPendingNewCalibration({
+                      ...editedCalibration,
+                      calibrationdate: editedCalibration.calibrationdate || undefined,
+                      calibrationtodate: editedCalibration.calibrationtodate || undefined
+                    });
+                    setShowNewConfirmation(true);
+                  } else {
+                    handleSave();
+                  }
+                }}
                 className="p-1 text-green-300 hover:text-green-200 transition-colors"
                 disabled={isSaving}
               >
@@ -396,7 +486,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibratedby: e.target.value
               }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600"
+              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600"
             >
               <option value="">Select Company</option>
               {calibrationCompanies.map(company => (
@@ -406,7 +496,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
               ))}
             </select>
           ) : (
-            <div className="text-sm text-zinc-100">
+            <div className="text-xs text-zinc-100">
               {currentCalibration?.calibratedby || 'Not specified'}
             </div>
           )}
@@ -419,11 +509,11 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
             <DatePicker
               selected={editedCalibration.calibrationdate}
               onChange={handleCalibrationDateChange}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
               dateFormat="yyyy-MM-dd"
             />
           ) : (
-            <div className="text-sm text-zinc-100">
+            <div className="text-xs text-zinc-100">
               {formatDate(currentCalibration?.calibrationdate ?? null)}
             </div>
           )}
@@ -436,7 +526,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
             <select
               value={selectedValidityPeriod}
               onChange={(e) => handleValidityPeriodChange(Number(e.target.value))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600"
+              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600"
             >
               {VALIDITY_PERIODS.map(period => (
                 <option key={period.months} value={period.months}>
@@ -445,7 +535,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
               ))}
             </select>
           ) : (
-            <div className="text-sm text-zinc-100">
+            <div className="text-xs text-zinc-100">
               {`${selectedValidityPeriod} Months`}
             </div>
           )}
@@ -458,11 +548,11 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
             <DatePicker
               selected={editedCalibration.calibrationtodate}
               onChange={handleCalibrationDateChange}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
               dateFormat="yyyy-MM-dd"
             />
           ) : (
-            <div className="text-sm text-zinc-100">
+            <div className="text-xs text-zinc-100">
               {formatDate((editedCalibration.calibrationtodate || currentCalibration?.calibrationtodate) ?? null)}
             </div>
           )}
@@ -479,10 +569,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibrationpo: e.target.value
               }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
             />
           ) : (
-            <div className="text-sm text-zinc-100">
+            <div className="text-xs text-zinc-100">
               {currentCalibration?.calibrationpo || 'Not specified'}
             </div>
           )}
@@ -499,10 +589,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibfile: e.target.value
               }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
             />
           ) : (
-            <div className="text-sm text-zinc-100">
+            <div className="text-xs text-zinc-100">
               {currentCalibration?.calibfile || 'Not specified'}
             </div>
           )}
@@ -519,10 +609,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibcertificate: e.target.value
               }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
             />
           ) : (
-            <div className="text-sm text-zinc-100">
+            <div className="text-xs text-zinc-100">
               {currentCalibration?.calibcertificate || 'Not specified'}
             </div>
           )}
@@ -531,14 +621,14 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
 
       {/* History Section */}
       {calibrationHistory.length > 0 && (
-        <div className="mt-6 border-t border-teal-700/50 pt-4">
+        <div className="mt-6 border-t border-teal-500/80 pt-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-emerald-200">Calibration History</h3>
+            <h3 className="text-xs font-semibold text-emerald-400">View Calibration History</h3>
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="text-sm text-emerald-300 hover:text-emerald-200 transition-colors"
+              className="text-xs text-emerald-300 hover:text-emerald-200 transition-colors"
             >
-              {showHistory ? 'Hide History' : `Show History (${calibrationHistory.length})`}
+              {showHistory ? 'Hide History' : `Show History (${calibrationHistory.length} previous records)`}
             </button>
           </div>
 
@@ -549,7 +639,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                   key={historyItem._id || index}
                   className="bg-slate-800/50 rounded-md p-3"
                 >
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
                       <span className="text-emerald-300">Calibrated By:</span>
                       <span className="ml-2 text-zinc-100">{historyItem.calibratedby}</span>
@@ -635,6 +725,69 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
           </div>
         </div>
       )}
+
+      {/* Add New Confirmation Modal */}
+      <NewCalibrationModal
+        isOpen={showNewConfirmation}
+        onConfirm={handleConfirmedNew}
+        onCancel={() => setShowNewConfirmation(false)}
+        isSaving={isSaving}
+        calibration={pendingNewCalibration}
+      />
+    </div>
+  );
+}
+
+function NewCalibrationModal({ isOpen, onConfirm, onCancel, isSaving, calibration }: {
+  isOpen: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isSaving: boolean;
+  calibration: Partial<Calibration> | null;
+}) {
+  if (!isOpen || !calibration) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <div className="flex items-start gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-zinc-100 mb-2">Add New Calibration</h3>
+            <div className="text-sm text-zinc-300 space-y-2">
+              <p>Are you sure you want to add this calibration?</p>
+              <ul className="list-disc list-inside space-y-1 text-zinc-400">
+                <li>Calibrated By: {calibration.calibratedby}</li>
+                <li>Date: {calibration.calibrationdate?.toLocaleDateString()}</li>
+                <li>Valid Until: {calibration.calibrationtodate?.toLocaleDateString()}</li>
+                {calibration.calibrationpo && <li>PO: {calibration.calibrationpo}</li>}
+              </ul>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={onConfirm}
+                disabled={isSaving}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                {isSaving ? (
+                  <>
+                    <LoadingSpinner />
+                    <span>Adding...</span>
+                  </>
+                ) : (
+                  'Add Calibration'
+                )}
+              </button>
+              <button
+                onClick={onCancel}
+                disabled={isSaving}
+                className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 } 

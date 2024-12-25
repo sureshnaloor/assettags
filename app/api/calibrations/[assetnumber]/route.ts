@@ -12,6 +12,7 @@ export async function GET(
     const calibrations = await db
       .collection('equipmentcalibcertificates')
       .find({ assetnumber: params.assetnumber })
+      .sort({ calibrationtodate: -1 })
       .toArray();
 
     if (!calibrations.length) {
@@ -104,6 +105,44 @@ export async function DELETE(
     console.error('Failed to delete calibration:', error);
     return NextResponse.json(
       { error: 'Failed to delete calibration' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST new calibration
+export async function POST(
+  request: Request,
+  { params }: { params: { assetnumber: string } }
+) {
+  try {
+    const body = await request.json();
+    const { db } = await connectToDatabase();
+    
+    const newCalibration = {
+      ...body,
+      assetnumber: params.assetnumber,
+      createdat: new Date(),
+    };
+
+    const result = await db
+      .collection('equipmentcalibcertificates')
+      .insertOne(newCalibration);
+
+    if (!result.insertedId) {
+      throw new Error('Failed to insert calibration');
+    }
+
+    // Fetch and return the newly created document
+    const createdCalibration = await db
+      .collection('equipmentcalibcertificates')
+      .findOne({ _id: result.insertedId });
+
+    return NextResponse.json(createdCalibration);
+  } catch (error) {
+    console.error('Failed to create calibration:', error);
+    return NextResponse.json(
+      { error: 'Failed to create calibration' },
       { status: 500 }
     );
   }
