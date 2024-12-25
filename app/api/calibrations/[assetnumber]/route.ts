@@ -18,10 +18,7 @@ export async function GET(
     console.log('Fetched calibrations:', JSON.stringify(calibrations, null, 2));
 
     if (!calibrations.length) {
-      return NextResponse.json(
-        { error: 'No calibrations found' },
-        { status: 404 }
-      );
+      return NextResponse.json([]);
     }
 
     return NextResponse.json(calibrations);
@@ -119,6 +116,9 @@ export async function POST(
 ) {
   try {
     const body = await request.json();
+    console.log('Received POST body:', body);
+    console.log('Asset number from params:', params.assetnumber);
+
     const { db } = await connectToDatabase();
     
     const newCalibration = {
@@ -126,10 +126,13 @@ export async function POST(
       assetnumber: params.assetnumber,
       createdat: new Date(),
     };
+    console.log('Attempting to insert:', newCalibration);
 
     const result = await db
       .collection('equipmentcalibcertificates')
       .insertOne(newCalibration);
+
+    console.log('Insert result:', result);
 
     if (!result.insertedId) {
       throw new Error('Failed to insert calibration');

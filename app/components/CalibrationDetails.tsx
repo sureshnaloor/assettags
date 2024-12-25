@@ -14,6 +14,7 @@ interface CalibrationDetailsProps {
   currentCalibration: Calibration | null;
   calibrationHistory: Calibration[];
   onUpdate: (updatedCalibration: Calibration | null) => void;
+  assetnumber: string;
 }
 
 const VALIDITY_PERIODS = [
@@ -121,7 +122,7 @@ interface ArchivedCalibration extends Calibration {
   reason: string;
 }
 
-export default function CalibrationDetails({ currentCalibration, calibrationHistory, onUpdate }: CalibrationDetailsProps) {
+export default function CalibrationDetails({ currentCalibration, calibrationHistory, onUpdate, assetnumber }: CalibrationDetailsProps) {
   const [showNewCalibrationModal, setShowNewCalibrationModal] = useState(false);
   
   const [isEditing, setIsEditing] = useState(false);
@@ -409,6 +410,11 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       createdat: new Date(),
     } as Calibration);
   };
+
+  console.log('Main component currentCalibration:', currentCalibration);
+
+  // Add this to get asset number from either current calibration or history
+  const assetNumber = currentCalibration?.assetnumber || calibrationHistory[0]?.assetnumber || '';
 
   return (
     <div className="bg-teal-800/80 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative">
@@ -773,10 +779,11 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
         isOpen={showNewCalibrationModal}
         onClose={() => setShowNewCalibrationModal(false)}
         onSave={(newCalibration) => {
+          console.log('Opening modal with asset number:', assetnumber);
           onUpdate(newCalibration);
           setShowNewCalibrationModal(false);
         }}
-        assetnumber={currentCalibration?.assetnumber ?? ''}
+        assetnumber={assetnumber}
       />
     </div>
   );
@@ -844,6 +851,8 @@ interface NewCalibrationFormModalProps {
 }
 
 function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCalibrationFormModalProps) {
+  console.log('Modal received assetnumber:', assetnumber);
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [calibrationCompanies, setCalibrationCompanies] = useState<CalibrationCompany[]>([]);
@@ -859,6 +868,14 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
     createdby: 'current-user',
     createdat: new Date(),
   } as Calibration));
+
+  useEffect(() => {
+    console.log('Asset number changed in modal:', assetnumber);
+    setNewCalibration(prev => ({
+      ...prev,
+      assetnumber: assetnumber
+    }));
+  }, [assetnumber]);
 
   useEffect(() => {
     if (isOpen) {
@@ -880,6 +897,8 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
 
   const handleSave = async () => {
     try {
+      console.log('Saving calibration with assetnumber:', newCalibration.assetnumber);
+      
       if (!newCalibration.calibratedby) {
         setError('Please select a calibration company');
         return;
@@ -889,13 +908,20 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
         return;
       }
 
+      const calibrationWithAssetNumber = {
+        ...newCalibration,
+        assetnumber: newCalibration.assetnumber
+      };
+
+      console.log('Final payload:', calibrationWithAssetNumber);
+
       setIsSaving(true);
-      const response = await fetch(`/api/calibrations/${assetnumber}`, {
+      const response = await fetch(`/api/calibrations/${newCalibration.assetnumber}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newCalibration),
+        body: JSON.stringify(calibrationWithAssetNumber),
       });
 
       if (!response.ok) {
@@ -904,9 +930,6 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
 
       const savedCalibration = await response.json();
       onSave(savedCalibration);
-      
-      // Reload the page to refresh the data
-      // window.location.reload();
     } catch (error) {
       console.error('Failed to create calibration:', error);
       setError(error instanceof Error ? error.message : 'Failed to create calibration');

@@ -151,6 +151,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
             currentCalibration={Array.isArray(calibrations) && calibrations.length > 0 ? calibrations[0] : null}
             calibrationHistory={Array.isArray(calibrations) && calibrations.length > 1 ? calibrations.slice(1) : []}
             onUpdate={handleCalibrationUpdate}
+            assetnumber={params.assetnumber} 
           />
           <CustodyDetails custodyRecords={custodyRecords} />
         </main>
