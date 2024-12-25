@@ -906,7 +906,7 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
       onSave(savedCalibration);
       
       // Reload the page to refresh the data
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error('Failed to create calibration:', error);
       setError(error instanceof Error ? error.message : 'Failed to create calibration');

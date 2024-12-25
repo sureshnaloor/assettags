@@ -107,36 +107,15 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
     }
   };
 
-  const handleCalibrationUpdate = async (calibration: Calibration) => {
+  const handleCalibrationUpdate = async (calibration: Calibration | null) => {
     try {
-      const response = await fetch(`/api/calibrations/${params.assetnumber}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...calibration,
-          createdby: 'current-user', // Replace with actual user
-          createdat: new Date(),
-          calibrationfromdate: calibration.calibrationdate
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update calibration');
-      }
-      // Update local state with new calibration data
-      const updatedCalibration = await response.json();
-      setCalibrations(prevCalibrations => 
-        prevCalibrations.map(cal => 
-          cal._id === updatedCalibration._id ? updatedCalibration : cal
-        )
-      );
-
-      console.log('Calibration updated successfully');
+      if (!calibration) return;
+      const response = await fetch(`/api/calibrations/${params.assetnumber}`);
+      if (!response.ok) throw new Error('Failed to fetch updated calibrations');
+      const newCalibrationData = await response.json();
+      setCalibrations(newCalibrationData);
     } catch (error) {
-      console.error('Failed to update calibration:', error);
-      throw error; 
+      console.error('Error updating calibrations:', error);
     }
   };
 
@@ -169,19 +148,9 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
             onUpdate={handleAssetUpdate}
           />
           <CalibrationDetails 
-            currentCalibration={calibrations[0]}
-            calibrationHistory={calibrations.slice(1)}
-            onUpdate={(updatedCalibration) => {
-              if (updatedCalibration === null) {
-                setCalibrations([]); 
-              } else {
-                setCalibrations(currentCalibrations =>
-                  currentCalibrations.map(cal => 
-                    cal._id === updatedCalibration._id ? updatedCalibration : cal
-                  )
-                );
-              }
-            }}
+            currentCalibration={Array.isArray(calibrations) && calibrations.length > 0 ? calibrations[0] : null}
+            calibrationHistory={Array.isArray(calibrations) && calibrations.length > 1 ? calibrations.slice(1) : []}
+            onUpdate={handleCalibrationUpdate}
           />
           <CustodyDetails custodyRecords={custodyRecords} />
         </main>

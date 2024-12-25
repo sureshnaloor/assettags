@@ -15,6 +15,8 @@ export async function GET(
       .sort({ calibrationtodate: -1 })
       .toArray();
 
+    console.log('Fetched calibrations:', JSON.stringify(calibrations, null, 2));
+
     if (!calibrations.length) {
       return NextResponse.json(
         { error: 'No calibrations found' },
