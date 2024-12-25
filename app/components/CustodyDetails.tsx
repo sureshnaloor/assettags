@@ -12,7 +12,7 @@ export default function CustodyDetails({ custodyRecords }: CustodyDetailsProps) 
   const toggleHistory = () => setShowHistory(!showHistory);
 
   return (
-    <div className="bg-emerald-800/80 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl">
+    <div className="bg-emerald-800/80 backdrop-blur-sm rounded-lg shadow-lg z-[-50] p-3 w-full max-w-4xl">
       <h2 className="text-sm font-semibold mb-2 text-emerald-200">Custody Details</h2>
       
       {custodyRecords.length > 0 ? (

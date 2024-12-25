@@ -561,7 +561,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
             />
           ) : (
             <div className="text-xs text-zinc-100">
-              {formatDate((editedCalibration.calibrationtodate || currentCalibration?.calibrationtodate) ?? null)}
+              {currentCalibration?.calibrationtodate ? new Date(currentCalibration.calibrationtodate).toLocaleDateString() : '-'}
             </div>
           )}
         </div>
@@ -628,49 +628,74 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       </div>
 
       {/* History Section */}
-      {calibrationHistory.length > 0 && (
-        <div className="mt-6 border-t border-teal-500/80 pt-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-semibold text-emerald-400">View Calibration History</h3>
-            <button
-              onClick={() => setShowHistory(!showHistory)}
-              className="text-xs text-emerald-300 hover:text-emerald-200 transition-colors"
-            >
-              {showHistory ? 'Hide History' : `Show History (${calibrationHistory.length} previous records)`}
-            </button>
-          </div>
+      <div className="mt-6 border-t border-teal-500/80 pt-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xs font-semibold text-emerald-400">Calibration History</h3>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="text-xs text-emerald-300 hover:text-emerald-200 transition-colors"
+          >
+            {showHistory ? 'Hide History' : `Show History (${calibrationHistory.length} previous records)`}
+          </button>
+        </div>
 
-          {showHistory && (
-            <div className="space-y-4">
-              {calibrationHistory.map((historyItem, index) => (
-                <div 
-                  key={historyItem._id || index}
-                  className="bg-slate-800/50 rounded-md p-3"
-                >
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <span className="text-emerald-300">Calibrated By:</span>
-                      <span className="ml-2 text-zinc-100">{historyItem.calibratedby}</span>
+        {showHistory && calibrationHistory.length > 0 && (
+          <div className="space-y-2">
+            {calibrationHistory.map((record) => (
+              <div 
+                key={record._id}
+                className="bg-gradient-to-br from-slate-800/30 to-slate-900/30 rounded-md p-2 shadow-md ring-1 ring-slate-700/30"
+              >
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-teal-100">Calibrated By</label>
+                    <div className="text-sm text-zinc-100">{record.calibratedby}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-teal-100">Calibration Date</label>
+                    <div className="text-sm text-zinc-100">
+                      {record.calibrationdate ? new Date(record.calibrationdate).toLocaleDateString() : '-'}
                     </div>
-                    <div>
-                      <span className="text-emerald-300">Date:</span>
-                      <span className="ml-2 text-zinc-100">{formatDate(historyItem.calibrationdate)}</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-teal-100">Valid Until</label>
+                    <div className="text-sm text-zinc-100">
+                      {record.calibrationtodate ? new Date(record.calibrationtodate).toLocaleDateString() : '-'}
                     </div>
-                    <div>
-                      <span className="text-emerald-300">Valid Until:</span>
-                      <span className="ml-2 text-zinc-100">{formatDate(historyItem.calibrationtodate)}</span>
-                    </div>
-                    <div>
-                      <span className="text-emerald-300">PO:</span>
-                      <span className="ml-2 text-zinc-100">{historyItem.calibrationpo || 'N/A'}</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-teal-100">PO Number</label>
+                    <div className="text-sm text-zinc-100">{record.calibrationpo || '-'}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-teal-100">Certificate</label>
+                    <div className="text-sm text-zinc-100">{record.calibcertificate || '-'}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-teal-100">File Reference</label>
+                    <div className="text-sm text-zinc-100">{record.calibfile || '-'}</div>
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-teal-100">Created By</label>
+                    <div className="text-sm text-zinc-100">
+                      {record.createdby}
+                      <span className="text-xs text-zinc-400 ml-2">
+                        on {new Date(record.createdat).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <ConfirmationModal
         isOpen={showConfirmation}
@@ -879,6 +904,9 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
 
       const savedCalibration = await response.json();
       onSave(savedCalibration);
+      
+      // Reload the page to refresh the data
+      window.location.reload();
     } catch (error) {
       console.error('Failed to create calibration:', error);
       setError(error instanceof Error ? error.message : 'Failed to create calibration');
@@ -890,7 +918,7 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center">
       <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
         <h3 className="text-lg font-semibold text-zinc-100 mb-4">New Calibration</h3>
         
@@ -974,6 +1002,26 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
 
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Valid Until
+            </label>
+            <DatePicker
+              selected={newCalibration.calibrationtodate}
+              onChange={(date: Date | null) => {
+                if (date) {
+                  setNewCalibration(prev => ({
+                    ...prev,
+                    calibrationtodate: date
+                  }));
+                }
+              }}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              dateFormat="yyyy-MM-dd"
+              minDate={newCalibration.calibrationdate || undefined}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
               Calibration PO
             </label>
             <input
@@ -984,6 +1032,38 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
                 calibrationpo: e.target.value
               }))}
               className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Calibration Certificate
+            </label>
+            <input
+              type="text"
+              value={newCalibration.calibcertificate}
+              onChange={(e) => setNewCalibration(prev => ({
+                ...prev,
+                calibcertificate: e.target.value
+              }))}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              placeholder="Enter certificate number"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Calibration File
+            </label>
+            <input
+              type="text"
+              value={newCalibration.calibfile}
+              onChange={(e) => setNewCalibration(prev => ({
+                ...prev,
+                calibfile: e.target.value
+              }))}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              placeholder="Enter file reference"
             />
           </div>
         </div>
