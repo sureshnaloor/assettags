@@ -60,8 +60,8 @@ export interface Calibration {
   _id?: string;
   assetnumber: string;
   calibratedby: string;
-  calibrationdate: Date;
-  calibrationtodate: Date;
+  calibrationdate: Date | null;
+  calibrationtodate: Date | null;
   calibrationpo?: string;
   calibfile?: string;
   calibcertificate?: string;

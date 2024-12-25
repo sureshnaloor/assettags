@@ -122,6 +122,8 @@ interface ArchivedCalibration extends Calibration {
 }
 
 export default function CalibrationDetails({ currentCalibration, calibrationHistory, onUpdate }: CalibrationDetailsProps) {
+  const [showNewCalibrationModal, setShowNewCalibrationModal] = useState(false);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -163,6 +165,23 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       });
     }
   }, [isEditing, currentCalibration]);
+
+  useEffect(() => {
+    if (isNewMode) {
+      setEditedCalibration({
+        calibratedby: '',
+        calibrationdate: null as Date | null,
+        calibrationtodate: null as Date | null,
+        calibrationpo: '',
+        calibfile: '',
+        calibcertificate: '',
+        assetnumber: currentCalibration?.assetnumber ?? '',
+        createdby: 'current-user',
+        createdat: new Date(),
+      } as Calibration);
+      setSelectedValidityPeriod(12);
+    }
+  }, [isNewMode, currentCalibration?.assetnumber]);
 
   const [selectedValidityPeriod, setSelectedValidityPeriod] = useState(12);
 
@@ -297,19 +316,8 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   };
 
   const handleNew = () => {
-    setEditedCalibration({
-      calibratedby: '',
-      calibrationdate: null as Date | null,
-      calibrationtodate: null as Date | null,
-      calibrationpo: '',
-      calibfile: '',
-      calibcertificate: '',
-      assetnumber: currentCalibration?.assetnumber ?? '',
-      createdby: 'current-user',
-      createdat: new Date(),
-    } as Calibration);
-    setIsNewMode(true);
     setIsEditing(false);
+    setIsNewMode(true);
   };
 
   const handleConfirmedNew = async () => {
@@ -413,7 +421,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
           {!isEditing && !isNewMode && (
             <>
               <button
-                onClick={handleNew}
+                onClick={() => setShowNewCalibrationModal(true)}
                 className="p-1 text-emerald-300 hover:text-emerald-200 transition-colors"
                 title="New Calibration"
               >
@@ -734,6 +742,17 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
         isSaving={isSaving}
         calibration={pendingNewCalibration}
       />
+
+      {/* New Calibration Modal */}
+      <NewCalibrationFormModal
+        isOpen={showNewCalibrationModal}
+        onClose={() => setShowNewCalibrationModal(false)}
+        onSave={(newCalibration) => {
+          onUpdate(newCalibration);
+          setShowNewCalibrationModal(false);
+        }}
+        assetnumber={currentCalibration?.assetnumber ?? ''}
+      />
     </div>
   );
 }
@@ -786,6 +805,209 @@ function NewCalibrationModal({ isOpen, onConfirm, onCancel, isSaving, calibratio
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface NewCalibrationFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (calibration: Calibration) => void;
+  assetnumber: string;
+}
+
+function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCalibrationFormModalProps) {
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [calibrationCompanies, setCalibrationCompanies] = useState<CalibrationCompany[]>([]);
+  const [selectedValidityPeriod, setSelectedValidityPeriod] = useState(12);
+  const [newCalibration, setNewCalibration] = useState<Calibration>(() => ({
+    calibratedby: '',
+    calibrationdate: null,
+    calibrationtodate: null,
+    calibrationpo: '',
+    calibfile: '',
+    calibcertificate: '',
+    assetnumber: assetnumber,
+    createdby: 'current-user',
+    createdat: new Date(),
+  } as Calibration));
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchCalibrationCompanies();
+    }
+  }, [isOpen]);
+
+  const fetchCalibrationCompanies = async () => {
+    try {
+      const response = await fetch('/api/calibration-companies');
+      if (!response.ok) throw new Error('Failed to fetch companies');
+      const companies = await response.json();
+      setCalibrationCompanies(companies);
+    } catch (error) {
+      console.error('Error fetching calibration companies:', error);
+      setError('Failed to load calibration companies');
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      if (!newCalibration.calibratedby) {
+        setError('Please select a calibration company');
+        return;
+      }
+      if (!newCalibration.calibrationdate) {
+        setError('Please select a calibration date');
+        return;
+      }
+
+      setIsSaving(true);
+      const response = await fetch(`/api/calibrations/${assetnumber}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newCalibration),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create calibration');
+      }
+
+      const savedCalibration = await response.json();
+      onSave(savedCalibration);
+    } catch (error) {
+      console.error('Failed to create calibration:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create calibration');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <h3 className="text-lg font-semibold text-zinc-100 mb-4">New Calibration</h3>
+        
+        {error && (
+          <div className="bg-red-500/20 text-red-100 px-4 py-2 rounded-lg text-sm mb-4">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Calibrated By
+            </label>
+            <select
+              value={newCalibration.calibratedby}
+              onChange={(e) => setNewCalibration(prev => ({
+                ...prev,
+                calibratedby: e.target.value
+              }))}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+            >
+              <option value="">Select Company</option>
+              {calibrationCompanies.map(company => (
+                <option key={company._id} value={company.name}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Calibration Date
+            </label>
+            <DatePicker
+              selected={newCalibration.calibrationdate}
+              onChange={(date: Date) => {
+                const validUntil = new Date(date);
+                validUntil.setMonth(validUntil.getMonth() + selectedValidityPeriod);
+                setNewCalibration(prev => ({
+                  ...prev,
+                  calibrationdate: date,
+                  calibrationtodate: validUntil
+                }));
+              }}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+              dateFormat="yyyy-MM-dd"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Validity Period
+            </label>
+            <select
+              value={selectedValidityPeriod}
+              onChange={(e) => {
+                const months = Number(e.target.value);
+                setSelectedValidityPeriod(months);
+                if (newCalibration.calibrationdate) {
+                  const validUntil = new Date(newCalibration.calibrationdate);
+                  validUntil.setMonth(validUntil.getMonth() + months);
+                  setNewCalibration(prev => ({
+                    ...prev,
+                    calibrationtodate: validUntil
+                  }));
+                }
+              }}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+            >
+              {VALIDITY_PERIODS.map(period => (
+                <option key={period.months} value={period.months}>
+                  {period.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              Calibration PO
+            </label>
+            <input
+              type="text"
+              value={newCalibration.calibrationpo}
+              onChange={(e) => setNewCalibration(prev => ({
+                ...prev,
+                calibrationpo: e.target.value
+              }))}
+              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            {isSaving ? (
+              <>
+                <LoadingSpinner />
+                <span>Saving...</span>
+              </>
+            ) : (
+              'Save'
+            )}
+          </button>
+          <button
+            onClick={onClose}
+            disabled={isSaving}
+            className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
