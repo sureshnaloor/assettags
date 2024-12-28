@@ -68,8 +68,8 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: C
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-4 sm:pt-8 px-4 overflow-y-auto">
+      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4">
         <div className="flex items-start gap-4">
           <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500 mt-1" />
           <div>
@@ -732,8 +732,8 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-4 sm:pt-8 px-4 overflow-y-auto">
+          <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4">
             <h3 className="text-lg font-semibold text-zinc-100 mb-4">Delete Calibration Record</h3>
             <p className="text-sm text-zinc-300 mb-4">
               This action will archive the calibration record. Please provide a reason:
@@ -799,8 +799,8 @@ function NewCalibrationModal({ isOpen, onConfirm, onCancel, isSaving, calibratio
   if (!isOpen || !calibration) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-4 sm:pt-8 px-4 overflow-y-auto">
+      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4">
         <div className="flex items-start gap-4">
           <div>
             <h3 className="text-lg font-semibold text-zinc-100 mb-2">Add New Calibration</h3>
@@ -941,8 +941,8 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-4 sm:pt-8 px-4 overflow-y-auto">
+      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4">
         <h3 className="text-lg font-semibold text-zinc-100 mb-4">New Calibration</h3>
         
         {error && (
