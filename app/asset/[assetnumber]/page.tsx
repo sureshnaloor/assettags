@@ -10,6 +10,7 @@ import CustodyDetails from '@/app/components/CustodyDetails';
 
 
 import { AssetData, Calibration } from '@/types/asset';
+import { Custody } from '@/types/custody';
 
 export default function AssetPage({ params }: { params: { assetnumber: string } }) {
   const router = useRouter();
@@ -119,6 +120,19 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
     }
   };
 
+  const handleCustodyUpdate = async (custody: Custody | null) => {
+    try {
+      // Refresh the custody records
+      const response = await fetch(`/api/custody/${params.assetnumber}`);
+      if (!response.ok) throw new Error('Failed to fetch custody records');
+      const updatedRecords = await response.json();
+      
+      setCustodyRecords(updatedRecords);
+    } catch (error) {
+      console.error('Error updating custody records:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -153,7 +167,12 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
             onUpdate={handleCalibrationUpdate}
             assetnumber={params.assetnumber} 
           />
-          <CustodyDetails custodyRecords={custodyRecords} />
+          <CustodyDetails 
+            currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}
+            custodyHistory={custodyRecords.length > 1 ? custodyRecords.slice(1) : []}
+            onUpdate={handleCustodyUpdate}
+            assetnumber={params.assetnumber}
+          />
         </main>
         
         <Footer />

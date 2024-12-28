@@ -48,7 +48,8 @@ export async function PUT(
       { 
         $set: {
           ...body,
-          custodyfrom: new Date(body.custodyfrom) // Ensure date is properly formatted
+          custodyfrom: new Date(body.custodyfrom), // Ensure date is properly formatted
+          custodyto: body.custodyto ? new Date(body.custodyto) : null
         }
       }
     );

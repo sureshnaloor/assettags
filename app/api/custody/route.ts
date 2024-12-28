@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     const custodyData = {
       ...body,
       createdate: new Date(),
-      custodyfrom: new Date(body.custodyfrom) // Ensure date is properly formatted
+      // custodyfrom: new Date(body.custodyfrom) // Ensure date is properly formatted
     };
     
     const result = await db.collection('equipmentcustody').insertOne(custodyData);

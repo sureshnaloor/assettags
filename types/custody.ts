@@ -1,12 +1,29 @@
 export interface Custody {
   _id?: string;
   assetnumber: string;
-  custodianempno: string;
-  custodianempname: string;
-  department: string;
+  employeenumber: string;
+  employeename: string;
+  locationType: 'warehouse' | 'department';
   location: string;
-  racklocation: string;
-  custodyfrom: Date;
+  warehouseLocation?: string;  // for room/rack/bin
+  warehouseCity?: 'Dammam' | 'Jubail';
+  departmentLocation?: string;  // city for department
+  project?: string; // wbs number for project
+  projectname?: string; // project name
+  createdat: Date;
   createdby: string;
-  createdate: Date;
-} 
+  custodyfrom: Date;
+  custodyto?: Date | null;  // Optional field
+}
+
+export interface Employee {
+  _id: string;
+  empno: string;
+  empname: string;
+}
+
+export interface Project {
+  _id: string;
+  wbs: string;
+  projectname: string;
+}
