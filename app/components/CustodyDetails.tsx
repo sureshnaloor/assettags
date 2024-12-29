@@ -89,6 +89,44 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
     }
   };
 
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Basic validation
+      if (!formData.employeenumber || !formData.custodyfrom) {
+        setError('Employee and From Date are required');
+        return;
+      }
+
+      // Add API call to save the custody record
+      const response = await fetch(`/api/custody/${assetnumber}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          createdat: new Date(),
+          createdby: 'current-user' // This should be replaced with actual user info when auth is implemented
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save custody record');
+      }
+
+      const savedCustody = await response.json();
+      onSave(savedCustody);
+      onClose();
+    } catch (error) {
+      console.error('Error saving custody:', error);
+      setError('Failed to save custody record');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -386,23 +424,7 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
 
         <div className="flex gap-3 mt-6">
           <button
-            onClick={async () => {
-              try {
-                setIsSaving(true);
-                // Add validation here
-                onSave({
-                  ...formData as Custody,
-                  createdat: new Date(),
-                  createdby: 'current-user'
-                });
-                onClose();
-              } catch (error) {
-                console.error('Error saving custody:', error);
-                setError('Failed to save custody record');
-              } finally {
-                setIsSaving(false);
-              }
-            }}
+            onClick={handleSave}
             disabled={isSaving}
             className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
           >

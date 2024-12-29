@@ -97,4 +97,56 @@ export async function DELETE(
       { status: 500 }
     );
   }
+}
+
+// POST new custody record
+export async function POST(
+  request: Request,
+  { params }: { params: { assetnumber: string } }
+) {
+  try {
+    const body = await request.json();
+    const { db } = await connectToDatabase();
+    
+    // Check if there's an active custody (no custodyto date)
+    const activeCustody = await db
+      .collection('equipmentcustody')
+      .findOne({ 
+        assetnumber: params.assetnumber,
+        custodyto: null
+      });
+
+    if (activeCustody) {
+      return NextResponse.json(
+        { error: 'Asset already has an active custody record' },
+        { status: 400 }
+      );
+    }
+
+    // Insert new custody record
+    const result = await db.collection('equipmentcustody').insertOne({
+      ...body,
+      assetnumber: params.assetnumber,
+      custodyfrom: new Date(body.custodyfrom),
+      custodyto: body.custodyto ? new Date(body.custodyto) : null,
+      createdat: new Date(),
+    });
+
+    if (!result.acknowledged) {
+      throw new Error('Failed to create custody record');
+    }
+
+    // Fetch and return the created record
+    const newCustody = await db
+      .collection('equipmentcustody')
+      .findOne({ _id: result.insertedId });
+
+    return NextResponse.json(newCustody);
+  } catch (error) {
+    console.error('Failed to create custody record:', error);
+    return NextResponse.json(
+      { error: 'Failed to create custody record' },
+      { status: 500 }
+    );
+  }
 } 
