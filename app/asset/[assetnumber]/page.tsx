@@ -11,6 +11,7 @@ import CustodyDetails from '@/app/components/CustodyDetails';
 
 import { AssetData, Calibration } from '@/types/asset';
 import { Custody } from '@/types/custody';
+import CollapsibleSection from '@/app/components/CollapsibleSection';
 
 export default function AssetPage({ params }: { params: { assetnumber: string } }) {
   const router = useRouter();
@@ -156,23 +157,31 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
       <div className="relative z-10 flex flex-col min-h-screen">
         <Header />
         
-        <main className="flex-1 flex flex-col items-center justify-center p-2 gap-2">
-          <AssetDetails 
-            asset={asset} 
-            onUpdate={handleAssetUpdate}
-          />
-          <CalibrationDetails 
-            currentCalibration={Array.isArray(calibrations) && calibrations.length > 0 ? calibrations[0] : null}
-            calibrationHistory={Array.isArray(calibrations) && calibrations.length > 1 ? calibrations.slice(1) : []}
-            onUpdate={handleCalibrationUpdate}
-            assetnumber={params.assetnumber} 
-          />
-          <CustodyDetails 
-            currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}
-            custodyHistory={custodyRecords.length > 1 ? custodyRecords.slice(1) : []}
-            onUpdate={handleCustodyUpdate}
-            assetnumber={params.assetnumber}
-          />
+        <main className="flex-1 flex flex-col items-center justify-center p-2 gap-4">
+          <CollapsibleSection title="Asset Details">
+            <AssetDetails 
+              asset={asset} 
+              onUpdate={handleAssetUpdate}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Calibration Details">
+            <CalibrationDetails 
+              currentCalibration={Array.isArray(calibrations) && calibrations.length > 0 ? calibrations[0] : null}
+              calibrationHistory={Array.isArray(calibrations) && calibrations.length > 1 ? calibrations.slice(1) : []}
+              onUpdate={handleCalibrationUpdate}
+              assetnumber={params.assetnumber} 
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Custody Details">
+            <CustodyDetails 
+              currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}
+              custodyHistory={custodyRecords.length > 1 ? custodyRecords.slice(1) : []}
+              onUpdate={handleCustodyUpdate}
+              assetnumber={params.assetnumber}
+            />
+          </CollapsibleSection>
         </main>
         
         <Footer />
