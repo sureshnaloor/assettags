@@ -16,6 +16,15 @@ export interface Custody {
   custodyto?: Date | null;  // Optional field
 }
 
+export interface CustodyRecord extends Custody {
+  _id: string;
+  assetnumber: string;
+  employeenumber: string;
+  employeename: string;
+  locationType: 'warehouse' | 'department';
+  location: string;
+}
+
 export interface Employee {
   _id: string;
   empno: string;

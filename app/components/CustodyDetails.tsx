@@ -649,7 +649,7 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
             onClick={() => setShowHistory(!showHistory)}
             className="text-xs text-emerald-300 hover:text-emerald-200 transition-colors"
           >
-            {showHistory ? 'Hide History' : `Show History (${custodyHistory.length} records)`}
+            {showHistory ? 'Hide History' : `Show History (${custodyHistory?.length || 0} records)`}
           </button>
         </div>
 

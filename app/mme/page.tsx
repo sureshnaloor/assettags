@@ -11,6 +11,8 @@ import {
 } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
+import Header  from '../components/Header';
+import Footer from '../components/Footer';
 
 interface Equipment {
   _id: string;
@@ -151,6 +153,7 @@ export default function MMEPage() {
 
   return (
     <div className="container mx-auto p-4">
+      <Header />
       <div className="mb-4">
         <input
           type="text"
@@ -201,6 +204,7 @@ export default function MMEPage() {
           </table>
         </div>
       </div>
+      <Footer />
     </div>
   );
 } 

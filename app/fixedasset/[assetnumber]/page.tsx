@@ -6,11 +6,12 @@ import Footer from '../../components/Footer';
 import AssetDetails from '../../components/AssetDetails';
 import CustodyDetails from '../../components/CustodyDetails';
 import { AssetData } from '@/types/asset';
+import { Custody } from '@/types/custody';
 
 export default function FixedAssetPage() {
   const params = useParams();
   const [asset, setAsset] = useState<AssetData | null>(null);
-  const [custodyRecords, setCustodyRecords] = useState([]);
+  const [custodyRecords, setCustodyRecords] = useState<Custody[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,7 +60,16 @@ export default function FixedAssetPage() {
               onUpdate={handleAssetUpdate}
             />
           )}
-          <CustodyDetails custodyRecords={custodyRecords} />
+          <CustodyDetails 
+            currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}
+            custodyHistory={custodyRecords.length > 1 ? custodyRecords.slice(1) : []}
+            onUpdate={(updatedCustody) => {
+              if (updatedCustody) {
+                setCustodyRecords(prev => [updatedCustody, ...prev.slice(1)]);
+              }
+            }}
+            assetnumber={params.assetnumber as string}
+          />
         </main>
         
         <Footer />

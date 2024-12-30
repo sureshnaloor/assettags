@@ -1,141 +1,217 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { 
+  useReactTable, 
+  getCoreRowModel, 
+  getSortedRowModel,
+  getFilteredRowModel,
+  ColumnDef,
+  SortingState,
+  ColumnFiltersState
+} from '@tanstack/react-table';
+import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import Pagination from '../components/Pagination';
+import Header from '@/app/components/Header';
+import Footer from '@/app/components/Footer';
 
-export default function FixedAssets() {
-  const [assets, setAssets] = useState([]);
+interface FixedAsset {
+  _id: string;
+  assetnumber: string;
+  assetdescription: string;
+  assetcategory?: string;
+  assetsubcategory?: string;
+  assetstatus?: string;
+  acquiredvalue?: number;
+  acquireddate?: Date;
+  assetlocation?: string;
+  assetcondition?: string;
+}
+
+export default function FixedAssetsPage() {
+  const [data, setData] = useState<FixedAsset[]>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [sortField, setSortField] = useState('assetnumber');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const fetchAssets = async () => {
-      try {
-        setLoading(true);
-        const queryParams = new URLSearchParams({
-          search,
-          sortField,
-          sortOrder,
-          page: page.toString(),
-        });
+    fetchFixedAssets();
+  }, []);
 
-        const response = await fetch(`/api/fixedassets?${queryParams}`);
-        if (!response.ok) throw new Error('Failed to fetch assets');
-        
-        const data = await response.json();
-        setAssets(data.assets);
-        setTotalPages(data.totalPages);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to fetch assets');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAssets();
-  }, [search, sortField, sortOrder, page]);
-
-  const handleSort = (field: string) => {
-    setSortOrder(currentOrder => 
-      sortField === field 
-        ? currentOrder === 'asc' ? 'desc' : 'asc'
-        : 'asc'
-    );
-    setSortField(field);
+  const fetchFixedAssets = async () => {
+    try {
+      const response = await fetch('/api/fixedassets');
+      if (!response.ok) throw new Error('Failed to fetch fixed assets');
+      const data = await response.json();
+      setData(data);
+    } catch (error) {
+      console.error('Error fetching fixed assets:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="relative flex flex-col min-h-screen">
-      <div className="fixed inset-0 z-0 bg-gradient-to-br from-indigo-900 via-blue-900 to-blue-700 opacity-50" />
-      
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <Header />
-        
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg shadow-lg p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-white">Fixed Assets</h1>
-              
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search assets..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-white/50" />
-              </div>
-            </div>
+  const columns: ColumnDef<FixedAsset>[] = [
+    {
+      accessorKey: 'assetnumber',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Asset Number
+          <ArrowUpDown className="h-4 w-4" />
+        </button>
+      ),
+      cell: ({ row }) => (
+        <Link 
+          href={`/fixedasset/${row.original.assetnumber}`}
+          className="text-blue-400 hover:text-blue-300"
+        >
+          {row.original.assetnumber}
+        </Link>
+      ),
+    },
+    {
+      accessorKey: 'assetdescription',
+      header: 'Description',
+      cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue('assetdescription')}</div>,
+    },
+    {
+      accessorKey: 'assetcategory',
+      header: 'Category',
+    },
+    {
+      accessorKey: 'assetsubcategory',
+      header: 'Subcategory',
+    },
+    {
+      accessorKey: 'assetstatus',
+      header: 'Status',
+    },
+    {
+      accessorKey: 'acquiredvalue',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Value
+          <ArrowUpDown className="h-4 w-4" />
+        </button>
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue('acquiredvalue');
+        return typeof value === 'number' ? new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'SAR'
+        }).format(value) : 'N/A';
+      }
+    },
+    {
+      accessorKey: 'acquireddate',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Acquiring Date
+          <ArrowUpDown className="h-4 w-4" />
+        </button>
+      ),
+      cell: ({ row }) => {
+        const date = row.getValue('acquireddate') as string;
+        return date ? new Date(date).toLocaleDateString() : 'N/A';
+      }
+    },
+    {
+      accessorKey: 'assetlocation',
+      header: 'Location',
+    },
+    {
+      accessorKey: 'assetcondition',
+      header: 'Condition',
+    },
+  ];
 
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-100 px-4 py-2 rounded-lg mb-6">
-                {error}
-              </div>
-            )}
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
+    state: {
+      sorting,
+      columnFilters,
+      globalFilter,
+    },
+  });
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-white/70">
-                    <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('assetnumber')}>
-                      Asset Number {sortField === 'assetnumber' && (sortOrder === 'asc' ? '↑' : '↓')}
-                    </th>
-                    <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('description')}>
-                      Description {sortField === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}
-                    </th>
-                    <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('location')}>
-                      Location {sortField === 'location' && (sortOrder === 'asc' ? '↑' : '↓')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {assets.map((asset: any) => (
-                    <tr 
-                      key={asset._id} 
-                      className="border-t border-white/10 text-white hover:bg-white/5"
-                    >
-                      <td className="px-4 py-2">
-                        <Link href={`/fixedasset/${asset.assetnumber}`}>
-                          {asset.assetnumber}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-2">{asset.assetdescription}</td>
-                      <td className="px-4 py-2">{asset.acquireddate}</td>
-                      <td className="px-4 py-2">{asset.acquiredvalue}</td>
-                      <td className="px-4 py-2">{asset.assetcategory}</td>
-                      <td className="px-4 py-2">{asset.assetstatus}</td>
-                      <td className="px-4 py-2">{asset.assetlocation}</td>
-                      <td className="px-4 py-2">{asset.assetcondition}</td>
-                      <td className="px-4 py-2">{asset.assettype}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-            />
-          </div>
-        </main>
-
-        <Footer />
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
       </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <Header />
+      <div className="mb-4">
+        <input
+          type="text"
+          value={globalFilter ?? ''}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Search fixed assets..."
+          className="w-full max-w-sm px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div className="rounded-md border">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : typeof header.column.columnDef.header === 'function'
+                          ? header.column.columnDef.header(header.getContext())
+                          : header.column.columnDef.header}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                    >
+                      {typeof cell.column.columnDef.cell === 'function'
+                        ? cell.column.columnDef.cell(cell.getContext())
+                        : cell.getValue() as string}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 } 
