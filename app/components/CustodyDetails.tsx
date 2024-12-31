@@ -5,6 +5,7 @@ import Select from 'react-select';
 import { Custody, Employee, Project } from '@/types/custody';
 import DatePicker from 'react-datepicker';
 import AsyncSelect from 'react-select/async';
+import Link from 'next/link';
 
 interface CustodyDetailsProps {
   currentCustody: Custody | null;
@@ -130,316 +131,318 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-start justify-center overflow-y-auto p-4">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full my-8 min-h-[80vh] flex flex-col relative">
-        <h3 className="text-lg font-semibold text-zinc-100 mb-4">New Custody Record</h3>
-        
-        <div className="flex-1">
-          {error && (
-            <div className="bg-red-500/20 text-red-100 px-4 py-2 rounded-lg text-sm mb-4">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {/* Employee Selection */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">
-                Employee Number
-              </label>
-              <AsyncSelect
-                loadOptions={loadEmployeeOptions}
-                defaultOptions={false}
-                cacheOptions
-                onChange={(option: { value: string; label: string; employee: Employee } | null) => {
-                  if (option) {
-                    setFormData(prev => ({
-                      ...prev,
-                      employeenumber: option.value,
-                      employeename: option.employee.empname
-                    }));
-                  }
-                }}
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    background: 'rgb(51 65 85 / 0.5)',
-                    borderColor: 'rgb(71 85 105)',
-                    '&:hover': {
-                      borderColor: 'rgb(100 116 139)'
-                    }
-                  }),
-                  menu: (base) => ({
-                    ...base,
-                    background: 'rgb(30 41 59)',
-                    border: '1px solid rgb(71 85 105)'
-                  }),
-                  option: (base, state) => ({
-                    ...base,
-                    backgroundColor: state.isFocused 
-                      ? 'rgb(51 65 85)' 
-                      : state.isSelected 
-                        ? 'rgb(30 58 138)' 
-                        : 'transparent',
-                    color: 'rgb(226 232 240)',
-                    '&:hover': {
-                      backgroundColor: 'rgb(51 65 85)'
-                    }
-                  }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: 'rgb(226 232 240)'
-                  }),
-                  input: (base) => ({
-                    ...base,
-                    color: 'rgb(226 232 240)'
-                  })
-                }}
-                className="text-sm"
-                classNamePrefix="react-select"
-                placeholder="Search by employee number or name..."
-                isClearable
-              />
-            </div>
-
-            {/* Location Type Selection */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">
-                Location Type
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="warehouse"
-                    checked={locationType === 'warehouse'}
-                    onChange={(e) => {
-                      setLocationType('warehouse');
-                      setFormData(prev => ({
-                        ...prev,
-                        locationType: 'warehouse',
-                        warehouseCity: 'Dammam'
-                      }));
-                    }}
-                    className="mr-2"
-                  />
-                  Warehouse
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="department"
-                    checked={locationType === 'department'}
-                    onChange={(e) => {
-                      setLocationType('department');
-                      setFormData(prev => ({
-                        ...prev,
-                        locationType: 'department'
-                      }));
-                    }}
-                    className="mr-2"
-                  />
-                  Department
-                </label>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] overflow-y-auto">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-2xl my-10">
+          <h3 className="text-lg font-semibold text-zinc-100 mb-6">New Custody Record</h3>
+          
+          <div className="space-y-6">
+            {error && (
+              <div className="bg-red-500/20 text-red-100 px-4 py-2 rounded-lg text-sm">
+                {error}
               </div>
-            </div>
-
-            {/* Warehouse Fields */}
-            {locationType === 'warehouse' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">
-                    Warehouse Location
-                  </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="Dammam"
-                        checked={formData.warehouseCity === 'Dammam'}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          warehouseCity: 'Dammam'
-                        }))}
-                        className="mr-2"
-                      />
-                      Dammam
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="Jubail"
-                        checked={formData.warehouseCity === 'Jubail'}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          warehouseCity: 'Jubail'
-                        }))}
-                        className="mr-2"
-                      />
-                      Jubail
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">
-                    Room/Rack/Bin Location
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.warehouseLocation || ''}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      warehouseLocation: e.target.value
-                    }))}
-                    className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                  />
-                </div>
-              </>
             )}
 
-            {/* Department Fields */}
-            {locationType === 'department' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">
-                    Location
-                  </label>
-                  <select
-                    value={formData.departmentLocation || ''}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      departmentLocation: e.target.value
-                    }))}
-                    className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                  >
-                    <option value="">Select Location</option>
-                    <option value="Dammam">Dammam</option>
-                    <option value="Jubail">Jubail</option>
-                    <option value="Riyadh">Riyadh</option>
-                    <option value="Abha">Abha</option>
-                    <option value="Mecca">Mecca</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">
-                    Project
-                  </label>
-                  <Select
-                    options={projects.map(proj => ({
-                      value: proj.wbs + " - " + proj.projectname,
-                      label: `${proj.wbs} - ${proj.projectname}`,
-                      project: proj
-                    }))}
-                    onChange={(option) => {
-                      if (option) {
+            <div className="space-y-6">
+              {/* Employee Selection */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Employee Number
+                </label>
+                <AsyncSelect
+                  loadOptions={loadEmployeeOptions}
+                  defaultOptions={false}
+                  cacheOptions
+                  onChange={(option: { value: string; label: string; employee: Employee } | null) => {
+                    if (option) {
+                      setFormData(prev => ({
+                        ...prev,
+                        employeenumber: option.value,
+                        employeename: option.employee.empname
+                      }));
+                    }
+                  }}
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      background: 'rgb(51 65 85 / 0.5)',
+                      borderColor: 'rgb(71 85 105)',
+                      '&:hover': {
+                        borderColor: 'rgb(100 116 139)'
+                      }
+                    }),
+                    menu: (base) => ({
+                      ...base,
+                      background: 'rgb(30 41 59)',
+                      border: '1px solid rgb(71 85 105)'
+                    }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isFocused 
+                        ? 'rgb(51 65 85)' 
+                        : state.isSelected 
+                          ? 'rgb(30 58 138)' 
+                          : 'transparent',
+                      color: 'rgb(226 232 240)',
+                      '&:hover': {
+                        backgroundColor: 'rgb(51 65 85)'
+                      }
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: 'rgb(226 232 240)'
+                    }),
+                    input: (base) => ({
+                      ...base,
+                      color: 'rgb(226 232 240)'
+                    })
+                  }}
+                  className="text-sm"
+                  classNamePrefix="react-select"
+                  placeholder="Search by employee number or name..."
+                  isClearable
+                />
+              </div>
+
+              {/* Location Type Selection */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Location Type
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="warehouse"
+                      checked={locationType === 'warehouse'}
+                      onChange={(e) => {
+                        setLocationType('warehouse');
                         setFormData(prev => ({
                           ...prev,
-                          project: option.value
+                          locationType: 'warehouse',
+                          warehouseCity: 'Dammam'
                         }));
-                      }
-                    }}
-                    styles={{
-                      control: (base) => ({
-                        ...base,
-                        background: 'rgb(51 65 85 / 0.5)',
-                        borderColor: 'rgb(71 85 105)',
-                        '&:hover': {
-                          borderColor: 'rgb(100 116 139)'
-                        }
-                      }),
-                      menu: (base) => ({
-                        ...base,
-                        background: 'rgb(30 41 59)',
-                        border: '1px solid rgb(71 85 105)'
-                      }),
-                      option: (base, state) => ({
-                        ...base,
-                        backgroundColor: state.isFocused 
-                          ? 'rgb(51 65 85)' 
-                          : state.isSelected 
-                            ? 'rgb(30 58 138)' 
-                            : 'transparent',
-                        color: 'rgb(226 232 240)',
-                        '&:hover': {
-                          backgroundColor: 'rgb(51 65 85)'
-                        }
-                      }),
-                      singleValue: (base) => ({
-                        ...base,
-                        color: 'rgb(226 232 240)'
-                      }),
-                      input: (base) => ({
-                        ...base,
-                        color: 'rgb(226 232 240)'
-                      })
-                    }}
-                    className="text-sm"
-                    classNamePrefix="react-select"
-                    placeholder="Search by WBS or project name..."
-                    isClearable
-                    isSearchable
-                  />
+                      }}
+                      className="mr-2"
+                    />
+                    Warehouse
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="department"
+                      checked={locationType === 'department'}
+                      onChange={(e) => {
+                        setLocationType('department');
+                        setFormData(prev => ({
+                          ...prev,
+                          locationType: 'department'
+                        }));
+                      }}
+                      className="mr-2"
+                    />
+                    Department
+                  </label>
                 </div>
-              </>
-            )}
+              </div>
 
-            {/* Add Custody From Date */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">
-                Custody From Date <span className="text-red-400">*</span>
-              </label>
-              <DatePicker
-                selected={formData.custodyfrom}
-                onChange={(date: Date | null) => {
-                  if (date) {
-                    setFormData(prev => ({
-                      ...prev,
-                      custodyfrom: date
-                    }));
-                  }
-                }}
-                className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                dateFormat="yyyy-MM-dd"
-                required
-              />
-            </div>
+              {/* Warehouse Fields */}
+              {locationType === 'warehouse' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Warehouse Location
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="Dammam"
+                          checked={formData.warehouseCity === 'Dammam'}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            warehouseCity: 'Dammam'
+                          }))}
+                          className="mr-2"
+                        />
+                        Dammam
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="Jubail"
+                          checked={formData.warehouseCity === 'Jubail'}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            warehouseCity: 'Jubail'
+                          }))}
+                          className="mr-2"
+                        />
+                        Jubail
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Room/Rack/Bin Location
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.warehouseLocation || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        warehouseLocation: e.target.value
+                      }))}
+                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                    />
+                  </div>
+                </>
+              )}
 
-            {/* Add Custody To Date */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">
-                Custody To Date
-              </label>
-              <DatePicker
-                selected={formData.custodyto}
-                onChange={(date: Date | null) => setFormData(prev => ({
-                  ...prev,
-                  custodyto: date
-                }))}
-                className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                dateFormat="yyyy-MM-dd"
-                isClearable
-                minDate={formData.custodyfrom || undefined}
-              />
+              {/* Department Fields */}
+              {locationType === 'department' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Location
+                    </label>
+                    <select
+                      value={formData.departmentLocation || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        departmentLocation: e.target.value
+                      }))}
+                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                    >
+                      <option value="">Select Location</option>
+                      <option value="Dammam">Dammam</option>
+                      <option value="Jubail">Jubail</option>
+                      <option value="Riyadh">Riyadh</option>
+                      <option value="Abha">Abha</option>
+                      <option value="Mecca">Mecca</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Project
+                    </label>
+                    <Select
+                      options={projects.map(proj => ({
+                        value: proj.wbs + " - " + proj.projectname,
+                        label: `${proj.wbs} - ${proj.projectname}`,
+                        project: proj
+                      }))}
+                      onChange={(option) => {
+                        if (option) {
+                          setFormData(prev => ({
+                            ...prev,
+                            project: option.value
+                          }));
+                        }
+                      }}
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          background: 'rgb(51 65 85 / 0.5)',
+                          borderColor: 'rgb(71 85 105)',
+                          '&:hover': {
+                            borderColor: 'rgb(100 116 139)'
+                          }
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          background: 'rgb(30 41 59)',
+                          border: '1px solid rgb(71 85 105)'
+                        }),
+                        option: (base, state) => ({
+                          ...base,
+                          backgroundColor: state.isFocused 
+                            ? 'rgb(51 65 85)' 
+                            : state.isSelected 
+                              ? 'rgb(30 58 138)' 
+                              : 'transparent',
+                          color: 'rgb(226 232 240)',
+                          '&:hover': {
+                            backgroundColor: 'rgb(51 65 85)'
+                          }
+                        }),
+                        singleValue: (base) => ({
+                          ...base,
+                          color: 'rgb(226 232 240)'
+                        }),
+                        input: (base) => ({
+                          ...base,
+                          color: 'rgb(226 232 240)'
+                        })
+                      }}
+                      className="text-sm"
+                      classNamePrefix="react-select"
+                      placeholder="Search by WBS or project name..."
+                      isClearable
+                      isSearchable
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Add Custody From Date */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Custody From Date <span className="text-red-400">*</span>
+                </label>
+                <DatePicker
+                  selected={formData.custodyfrom}
+                  onChange={(date: Date | null) => {
+                    if (date) {
+                      setFormData(prev => ({
+                        ...prev,
+                        custodyfrom: date
+                      }));
+                    }
+                  }}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  dateFormat="yyyy-MM-dd"
+                  required
+                />
+              </div>
+
+              {/* Add Custody To Date */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Custody To Date
+                </label>
+                <DatePicker
+                  selected={formData.custodyto}
+                  onChange={(date: Date | null) => setFormData(prev => ({
+                    ...prev,
+                    custodyto: date
+                  }))}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  dateFormat="yyyy-MM-dd"
+                  isClearable
+                  minDate={formData.custodyfrom || undefined}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-4 border-t border-slate-700 pt-4">
-          <div className="flex gap-3">
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              {isSaving ? 'Saving...' : 'Save'}
-            </button>
-            <button
-              onClick={onClose}
-              disabled={isSaving}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Cancel
-            </button>
+          <div className="mt-8 border-t border-slate-700 pt-6">
+            <div className="flex gap-4">
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-3 rounded-md text-sm font-medium transition-colors"
+              >
+                {isSaving ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={onClose}
+                disabled={isSaving}
+                className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-3 rounded-md text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -549,13 +552,13 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
         <h2 className="text-sm font-semibold text-emerald-200">Current Custody</h2>
         <div className="flex gap-2">
           {canCreateNewCustody && (
-            <button
-              onClick={() => setShowNewCustodyModal(true)}
+            <Link
+              href={`/fixedasset/${assetnumber}/custody/new`}
               className="p-1 text-emerald-300 hover:text-emerald-200 transition-colors"
               title="New Custody Record"
             >
               <PlusIcon className="h-5 w-5" />
-            </button>
+            </Link>
           )}
           {currentCustody && !currentCustody.custodyto && (
             <button
