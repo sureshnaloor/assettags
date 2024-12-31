@@ -33,7 +33,7 @@ export default function CollapsibleSection({
           isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}
       >
-        <div className="pt-3">
+        <div className="pt-3 flex justify-center items-center">
           {children}
         </div>
       </div>

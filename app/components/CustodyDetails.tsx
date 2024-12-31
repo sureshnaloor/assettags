@@ -130,9 +130,9 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-4 sm:pt-8 px-4 overflow-y-auto">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4">
-        <h3 className="text-lg font-semibold text-zinc-100 mb-4">New Custody Record</h3>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center min-h-screen">
+      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 h-[80vh] overflow-y-auto relative">
+        <h3 className="text-lg font-semibold text-zinc-100 mb-4 sticky top-0 bg-slate-800 z-10">New Custody Record</h3>
         
         {error && (
           <div className="bg-red-500/20 text-red-100 px-4 py-2 rounded-lg text-sm mb-4">

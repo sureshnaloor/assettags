@@ -8,6 +8,8 @@ import CustodyDetails from '../../components/CustodyDetails';
 import { AssetData } from '@/types/asset';
 import { Custody } from '@/types/custody';
 
+import CollapsibleSection from '@/app/components/CollapsibleSection';
+
 export default function FixedAssetPage() {
   const params = useParams();
   const [asset, setAsset] = useState<AssetData | null>(null);
@@ -55,11 +57,15 @@ export default function FixedAssetPage() {
         
         <main className="flex-1 flex flex-col items-center justify-center p-2 gap-2">
           {asset && (
+            <CollapsibleSection title="Asset Details">
             <AssetDetails 
               asset={asset} 
               onUpdate={handleAssetUpdate}
             />
-          )}
+            </CollapsibleSection>
+          )
+          }
+          <CollapsibleSection title="Custody Details">
           <CustodyDetails 
             currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}
             custodyHistory={custodyRecords.length > 1 ? custodyRecords.slice(1) : []}
@@ -70,6 +76,7 @@ export default function FixedAssetPage() {
             }}
             assetnumber={params.assetnumber as string}
           />
+          </CollapsibleSection>
         </main>
         
         <Footer />
