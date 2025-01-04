@@ -149,6 +149,14 @@ export default function CategoriesManagement() {
     }
   };
 
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setEditingSubcategory(prev => prev ? {
+      _id: prev._id,
+      category: e.target.value,
+      name: prev.name
+    } : null);
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="bg-slate-800 rounded-lg shadow-xl p-6">
@@ -306,7 +314,11 @@ export default function CategoriesManagement() {
                   <div className="flex-1 flex gap-2 mr-2">
                     <select
                       value={editingSubcategory.category}
-                      onChange={(e) => setEditingSubcategory(prev => ({ ...prev, category: e.target.value }))}
+                      onChange={(e) => setEditingSubcategory(prev => prev ? {
+                        _id: prev._id,
+                        category: prev.category,
+                        name: e.target.value
+                      } : null)}
                       className="bg-slate-600 text-zinc-100 rounded-md px-2 py-1"
                     >
                       {categories.map((category) => (
@@ -318,7 +330,9 @@ export default function CategoriesManagement() {
                     <input
                       type="text"
                       value={editingSubcategory.name}
-                      onChange={(e) => setEditingSubcategory(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) => setEditingSubcategory(prev => 
+                        prev ? { ...prev, name: e.target.value } : null
+                      )}
                       className="flex-1 bg-slate-600 text-zinc-100 rounded-md px-2 py-1"
                     />
                   </div>
