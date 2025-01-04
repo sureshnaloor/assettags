@@ -63,7 +63,7 @@ export default function CategoriesManagement() {
 
   const handleAddCategory = async () => {
     try {
-      const response = await fetch(`/api/categories/${activeTab}`, {
+      const response = await fetch(`/api/categories/${activeTab === 'mme' ? 'mme' : 'fixedasset'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newCategoryName }),
@@ -72,13 +72,14 @@ export default function CategoriesManagement() {
       fetchCategories();
       setNewCategoryName('');
     } catch (error) {
+      console.error('Error adding category:', error); // Add debug log
       setError('Failed to add category');
     }
   };
 
   const handleUpdateCategory = async (category: Category) => {
     try {
-      const response = await fetch(`/api/categories/${activeTab}`, {
+      const response = await fetch(`/api/categories/${activeTab === 'mme' ? 'mme' : 'fixedasset'}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(category),
@@ -87,6 +88,7 @@ export default function CategoriesManagement() {
       fetchCategories();
       setEditingCategory(null);
     } catch (error) {
+      console.error('Error updating category:', error); // Add debug log
       setError('Failed to update category');
     }
   };
@@ -107,7 +109,7 @@ export default function CategoriesManagement() {
 
   const handleAddSubcategory = async () => {
     try {
-      const response = await fetch(`/api/subcategories/${activeTab}`, {
+      const response = await fetch(`/api/subcategories/${activeTab === 'mme' ? 'mme' : 'fixedasset'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSubcategory),
@@ -116,13 +118,14 @@ export default function CategoriesManagement() {
       fetchSubcategories();
       setNewSubcategory({ category: '', name: '' });
     } catch (error) {
+      console.error('Error adding subcategory:', error);
       setError('Failed to add subcategory');
     }
   };
 
   const handleUpdateSubcategory = async (subcategory: Subcategory) => {
     try {
-      const response = await fetch(`/api/subcategories/${activeTab}`, {
+      const response = await fetch(`/api/subcategories/${activeTab === 'mme' ? 'mme' : 'fixedasset'}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subcategory),
@@ -131,6 +134,7 @@ export default function CategoriesManagement() {
       fetchSubcategories();
       setEditingSubcategory(null);
     } catch (error) {
+      console.error('Error updating subcategory:', error);
       setError('Failed to update subcategory');
     }
   };
