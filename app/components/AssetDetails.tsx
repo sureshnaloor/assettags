@@ -4,25 +4,43 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { PencilIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { AssetData } from '@/types/asset';
+import { usePathname } from 'next/navigation';
 
-// Define the asset categories and statuses
-const ASSET_CATEGORIES = [
-  'Select Category',  // Default option
+// Define separate category constants
+const MME_CATEGORIES = [
+  'Select Category',
   'Test Equipment',
   'Measurement Equipment',
   'Calibration Equipment',
-  // ... add more categories
+  // ... MME specific categories
 ];
 
-const ASSET_SUBCATEGORIES: { [key: string]: string[] } = {
+const FIXED_ASSET_CATEGORIES = [
+  'Select Category',
+  'Office Equipment',
+  'Furniture',
+  'IT Equipment',
+  'Vehicles',
+  // ... Fixed asset specific categories
+];
+
+const MME_SUBCATEGORIES: { [key: string]: string[] } = {
   'Test Equipment': ['Oscilloscope', 'Signal Generator', 'Power Supply'],
   'Measurement Equipment': ['Multimeter', 'LCR Meter', 'Spectrum Analyzer'],
   'Calibration Equipment': ['Temperature Calibrator', 'Pressure Calibrator'],
-  // ... add more subcategories
+  // ... MME specific subcategories
+};
+
+const FIXED_ASSET_SUBCATEGORIES: { [key: string]: string[] } = {
+  'Office Equipment': ['Printer', 'Scanner', 'Copier'],
+  'Furniture': ['Desk', 'Chair', 'Cabinet'],
+  'IT Equipment': ['Desktop', 'Laptop', 'Server'],
+  'Vehicles': ['Car', 'Van', 'Truck'],
+  // ... Fixed asset specific subcategories
 };
 
 const ASSET_STATUSES = [
-   // Default option
+  'Select Status',   // Default option
   'Active',
   'In Calibration',
   'Under Repair',
@@ -131,6 +149,13 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: C
 }
 
 export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
+  const pathname = usePathname();
+  
+  // Determine which categories to use based on the current path
+  const isFixedAsset = pathname.includes('/fixedasset/');
+  const ASSET_CATEGORIES = isFixedAsset ? FIXED_ASSET_CATEGORIES : MME_CATEGORIES;
+  const ASSET_SUBCATEGORIES = isFixedAsset ? FIXED_ASSET_SUBCATEGORIES : MME_SUBCATEGORIES;
+
   const [isEditing, setIsEditing] = useState(false);
   const [editedAsset, setEditedAsset] = useState(asset);
   const [isSaving, setIsSaving] = useState(false);

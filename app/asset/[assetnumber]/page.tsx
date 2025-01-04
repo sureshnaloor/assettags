@@ -11,6 +11,7 @@ import CustodyDetails from '@/app/components/CustodyDetails';
 
 import { AssetData, Calibration } from '@/types/asset';
 import { Custody } from '@/types/custody';
+
 import CollapsibleSection from '@/app/components/CollapsibleSection';
 
 export default function AssetPage({ params }: { params: { assetnumber: string } }) {
