@@ -148,31 +148,77 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: C
   );
 }
 
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface Subcategory {
+  _id: string;
+  category: string;
+  name: string;
+}
+
 export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
   const pathname = usePathname();
-  
-  // Determine which categories to use based on the current path
   const isFixedAsset = pathname.includes('/fixedasset/');
-  const ASSET_CATEGORIES = isFixedAsset ? FIXED_ASSET_CATEGORIES : MME_CATEGORIES;
-  const ASSET_SUBCATEGORIES = isFixedAsset ? FIXED_ASSET_SUBCATEGORIES : MME_SUBCATEGORIES;
-
+  
   const [isEditing, setIsEditing] = useState(false);
-  const [editedAsset, setEditedAsset] = useState(asset);
+  const [editedAsset, setEditedAsset] = useState<AssetData>(asset);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(
+          isFixedAsset ? '/api/categories/fixedasset' : '/api/categories/mme'
+        );
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        const data = await response.json();
+        setCategories([{ _id: '0', name: 'Select Category' }, ...data]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setError('Failed to load categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, [isFixedAsset]);
+
+  // Fetch subcategories when category changes
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      if (!editedAsset.assetcategory || editedAsset.assetcategory === 'Select Category') {
+        setSubcategories([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${isFixedAsset ? '/api/subcategories/fixedasset' : '/api/subcategories/mme'}?category=${encodeURIComponent(editedAsset.assetcategory)}`
+        );
+        if (!response.ok) throw new Error('Failed to fetch subcategories');
+        const data = await response.json();
+        setSubcategories([{ _id: '0', category: editedAsset.assetcategory, name: 'Select Subcategory' }, ...data]);
+      } catch (error) {
+        console.error('Error fetching subcategories:', error);
+        setError('Failed to load subcategories');
+      }
+    };
+    fetchSubcategories();
+  }, [editedAsset?.assetcategory, isFixedAsset]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [editorContent, setEditorContent] = useState(asset.assetnotes);
-  const [error, setError] = useState<string | null>(null);
   const [availableSubcategories, setAvailableSubcategories] = useState<string[]>(['Select Subcategory']);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<any>(null);
-
-  useEffect(() => {
-    if (editedAsset.assetcategory && editedAsset.assetcategory !== 'Select Category') {
-      const subcategories = ASSET_SUBCATEGORIES[editedAsset.assetcategory] || [];
-      setAvailableSubcategories(['Select Subcategory', ...subcategories]);
-    } else {
-      setAvailableSubcategories(['Select Subcategory']);
-    }
-  }, [editedAsset.assetcategory]);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -390,8 +436,8 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
               onChange={handleCategoryChange}
               className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600"
             >
-              {ASSET_CATEGORIES.map(category => (
-                <option key={category} value={category}>{category}</option>
+              {categories.map(category => (
+                <option key={category._id} value={category.name}>{category.name}</option>
               ))}
             </select>
           ) : (
@@ -411,8 +457,8 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
               className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600"
               disabled={editedAsset.assetcategory === 'Select Category'}
             >
-              {availableSubcategories.map(subcategory => (
-                <option key={subcategory} value={subcategory}>{subcategory}</option>
+              {subcategories.map(subcategory => (
+                <option key={subcategory._id} value={subcategory.name}>{subcategory.name}</option>
               ))}
             </select>
           ) : (
