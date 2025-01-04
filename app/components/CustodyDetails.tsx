@@ -547,14 +547,14 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
   const canCreateNewCustody = !currentCustody || currentCustody.custodyto !== null;
 
   return (
-    <div className="bg-sky-600/80 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl">
+    <div className="bg-white dark:bg-slate-800/20 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-semibold text-emerald-200">Current Custody</h2>
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Current Custody</h2>
         <div className="flex gap-2">
           {canCreateNewCustody && (
             <Link
               href={`/fixedasset/${assetnumber}/custody/new`}
-              className="p-1 text-emerald-300 hover:text-emerald-200 transition-colors"
+              className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
               title="New Custody Record"
             >
               <PlusIcon className="h-5 w-5" />
@@ -563,7 +563,7 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           {currentCustody && !currentCustody.custodyto && (
             <button
               onClick={() => setShowEditModal(true)}
-              className="p-1 text-emerald-300 hover:text-emerald-200 transition-colors"
+              className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
               title="End Current Custody"
             >
               <PencilIcon className="h-5 w-5" />
@@ -576,17 +576,17 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
       {currentCustody && (
         <div className="grid grid-cols-2 gap-4 mt-2">
           {/* Employee */}
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-teal-100">Employee</label>
-            <div className="text-xs text-zinc-100">
+          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Employee</label>
+            <div className="text-sm text-gray-900 dark:text-white">
               {currentCustody.employeename} ({currentCustody.employeenumber})
             </div>
           </div>
 
           {/* Location Type */}
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-teal-100">Location Type</label>
-            <div className="text-xs text-zinc-100">
+          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location Type</label>
+            <div className="text-sm text-gray-900 dark:text-white capitalize">
               {currentCustody.locationType}
             </div>
           </div>
@@ -595,17 +595,17 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           {currentCustody.locationType === 'warehouse' ? (
             <>
               {/* Warehouse City */}
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-teal-100">Warehouse City</label>
-                <div className="text-xs text-zinc-100">
+              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Warehouse City</label>
+                <div className="text-sm text-gray-900 dark:text-white">
                   {currentCustody.warehouseCity}
                 </div>
               </div>
 
               {/* Warehouse Location */}
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-teal-100">Location</label>
-                <div className="text-xs text-zinc-100">
+              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location</label>
+                <div className="text-sm text-gray-900 dark:text-white">
                   {currentCustody.warehouseLocation}
                 </div>
               </div>
@@ -613,17 +613,17 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           ) : (
             <>
               {/* Department Location */}
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-teal-100">Department Location</label>
-                <div className="text-xs text-zinc-100">
+              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Department Location</label>
+                <div className="text-sm text-gray-900 dark:text-white">
                   {currentCustody.departmentLocation}
                 </div>
               </div>
 
               {/* Project */}
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-teal-100">Project</label>
-                <div className="text-xs text-zinc-100">
+              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Project</label>
+                <div className="text-sm text-gray-900 dark:text-white">
                   {currentCustody.project}
                 </div>
               </div>
@@ -631,17 +631,17 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           )}
 
           {/* Custody From Date */}
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-teal-100">From Date</label>
-            <div className="text-xs text-zinc-100">
+          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">From Date</label>
+            <div className="text-sm text-gray-900 dark:text-white">
               {new Date(currentCustody.custodyfrom).toLocaleDateString()}
             </div>
           </div>
 
           {/* Custody To Date */}
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-teal-100">To Date</label>
-            <div className="text-xs text-zinc-100">
+          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">To Date</label>
+            <div className="text-sm text-gray-900 dark:text-white">
               {currentCustody.custodyto ? new Date(currentCustody.custodyto).toLocaleDateString() : 'Current'}
             </div>
           </div>
@@ -649,12 +649,12 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
       )}
 
       {/* History Section */}
-      <div className="mt-6 border-t border-sky-500/30 pt-4">
+      <div className="mt-6 border-t border-gray-200 dark:border-slate-600/80 pt-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-emerald-200">Custody History</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Custody History</h3>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="text-xs text-emerald-300 hover:text-emerald-200 transition-colors"
+            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
           >
             {showHistory ? 'Hide History' : `Show History (${custodyHistory?.length || 0} records)`}
           </button>
@@ -662,24 +662,24 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
 
         {showHistory && custodyHistory.length > 0 && (
           <div className="space-y-3">
-            {custodyHistory.map((record, index) => (
+            {custodyHistory.map((record) => (
               <div 
                 key={record._id}
-                className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-3"
+                className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-3"
               >
                 <div className="grid grid-cols-2 gap-4">
                   {/* Employee */}
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">Employee</label>
-                    <div className="text-xs text-zinc-100">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Employee</label>
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {record.employeename} ({record.employeenumber})
                     </div>
                   </div>
 
                   {/* Location Type */}
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">Location Type</label>
-                    <div className="text-xs text-zinc-100">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location Type</label>
+                    <div className="text-sm text-gray-900 dark:text-white capitalize">
                       {record.locationType}
                     </div>
                   </div>
@@ -688,37 +688,37 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
                   {record.locationType === 'warehouse' ? (
                     <>
                       <div>
-                        <label className="block text-xs font-medium text-teal-100">Warehouse City</label>
-                        <div className="text-xs text-zinc-100">{record.warehouseCity}</div>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Warehouse City</label>
+                        <div className="text-sm text-gray-900 dark:text-white">{record.warehouseCity}</div>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-teal-100">Location</label>
-                        <div className="text-xs text-zinc-100">{record.warehouseLocation}</div>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location</label>
+                        <div className="text-sm text-gray-900 dark:text-white">{record.warehouseLocation}</div>
                       </div>
                     </>
                   ) : (
                     <>
                       <div>
-                        <label className="block text-xs font-medium text-teal-100">Department Location</label>
-                        <div className="text-xs text-zinc-100">{record.departmentLocation}</div>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Department Location</label>
+                        <div className="text-sm text-gray-900 dark:text-white">{record.departmentLocation}</div>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-teal-100">Project</label>
-                        <div className="text-xs text-zinc-100">{record.project}</div>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Project</label>
+                        <div className="text-sm text-gray-900 dark:text-white">{record.project}</div>
                       </div>
                     </>
                   )}
 
                   {/* Dates */}
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">From Date</label>
-                    <div className="text-xs text-zinc-100">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">From Date</label>
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {new Date(record.custodyfrom).toLocaleDateString()}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">To Date</label>
-                    <div className="text-xs text-zinc-100">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">To Date</label>
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {record.custodyto ? new Date(record.custodyto).toLocaleDateString() : 'Current'}
                     </div>
                   </div>

@@ -417,9 +417,9 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   const assetNumber = currentCalibration?.assetnumber || calibrationHistory[0]?.assetnumber || '';
 
   return (
-    <div className="bg-teal-800/80 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative">
+    <div className="bg-white dark:bg-slate-800/20 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-semibold text-emerald-200">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
           {isNewMode ? 'New Calibration' : 'Current Calibration'}
         </h2>
         
@@ -428,7 +428,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
             <>
               <button
                 onClick={() => setShowNewCalibrationModal(true)}
-                className="p-1 text-emerald-300 hover:text-emerald-200 transition-colors"
+                className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                 title="New Calibration"
               >
                 <PlusIcon className="h-5 w-5" />
@@ -436,7 +436,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
               {currentCalibration && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-1 text-emerald-300 hover:text-emerald-200 transition-colors"
+                  className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                 >
                   <PencilIcon className="h-5 w-5" />
                 </button>
@@ -455,7 +455,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                   }
                   resetForm();
                 }}
-                className="p-1 text-red-300 hover:text-red-200 transition-colors"
+                className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
                 disabled={isSaving}
               >
                 <XMarkIcon className="h-5 w-5" />
@@ -473,7 +473,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                     handleSave();
                   }
                 }}
-                className="p-1 text-green-300 hover:text-green-200 transition-colors"
+                className="p-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
                 disabled={isSaving}
               >
                 <CheckIcon className="h-5 w-5" />
@@ -484,15 +484,15 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       </div>
 
       {error && (
-        <div className="absolute top-0 left-0 right-0 bg-red-500/20 text-red-100 px-4 py-2 rounded-t-lg text-sm">
+        <div className="absolute top-0 left-0 right-0 bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-200 px-4 py-2 rounded-t-lg text-sm">
           {error}
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-4 mt-2">
         {/* Calibrated By */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-teal-100">Calibrated By</label>
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibrated By</label>
           {isEditing ? (
             <select
               value={editedCalibration.calibratedby || ''}
@@ -500,7 +500,9 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibratedby: e.target.value
               }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600"
+              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
+                       border border-gray-300 dark:border-slate-500
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             >
               <option value="">Select Company</option>
               {calibrationCompanies.map(company => (
@@ -510,37 +512,41 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
               ))}
             </select>
           ) : (
-            <div className="text-xs text-zinc-100">
+            <div className="text-sm text-gray-900 dark:text-white">
               {currentCalibration?.calibratedby || 'Not specified'}
             </div>
           )}
         </div>
 
         {/* Calibration Date */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-teal-100">Calibration Date</label>
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration Date</label>
           {isEditing ? (
             <DatePicker
               selected={editedCalibration.calibrationdate}
               onChange={handleCalibrationDateChange}
-              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
+                       border border-gray-300 dark:border-slate-500 p-2
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
               dateFormat="yyyy-MM-dd"
             />
           ) : (
-            <div className="text-xs text-zinc-100">
+            <div className="text-sm text-gray-900 dark:text-white">
               {formatDate(currentCalibration?.calibrationdate ?? null)}
             </div>
           )}
         </div>
 
         {/* Validity Period */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-teal-100">Validity Period</label>
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Validity Period</label>
           {isEditing ? (
             <select
               value={selectedValidityPeriod}
               onChange={(e) => handleValidityPeriodChange(Number(e.target.value))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600"
+              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
+                       border border-gray-300 dark:border-slate-500
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             >
               {VALIDITY_PERIODS.map(period => (
                 <option key={period.months} value={period.months}>
@@ -549,32 +555,25 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
               ))}
             </select>
           ) : (
-            <div className="text-xs text-zinc-100">
+            <div className="text-sm text-gray-900 dark:text-white">
               {`${selectedValidityPeriod} Months`}
             </div>
           )}
         </div>
 
         {/* Valid Until */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-teal-100">Valid Until</label>
-          {isEditing ? (  
-            <DatePicker
-              selected={editedCalibration.calibrationtodate}
-              onChange={handleCalibrationDateChange}
-              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
-              dateFormat="yyyy-MM-dd"
-            />
-          ) : (
-            <div className="text-xs text-zinc-100">
-              {currentCalibration?.calibrationtodate ? new Date(currentCalibration.calibrationtodate).toLocaleDateString() : '-'}
-            </div>
-          )}
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Valid Until</label>
+          <div className="text-sm text-gray-900 dark:text-white">
+            {currentCalibration?.calibrationtodate 
+              ? new Date(currentCalibration.calibrationtodate).toLocaleDateString() 
+              : '-'}
+          </div>
         </div>
 
         {/* Calibration PO */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-teal-100">Calibration PO</label>
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration PO</label>
           {isEditing ? (  
             <input
               type="text"
@@ -583,18 +582,20 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibrationpo: e.target.value
               }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
+                       border border-gray-300 dark:border-slate-500 p-2
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             />
           ) : (
-            <div className="text-xs text-zinc-100">
+            <div className="text-sm text-gray-900 dark:text-white">
               {currentCalibration?.calibrationpo || 'Not specified'}
             </div>
           )}
         </div>
 
         {/* Calibration File */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-teal-100">Calibration File</label>
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration File</label>
           {isEditing ? (
             <input
               type="text"
@@ -603,18 +604,20 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibfile: e.target.value
               }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
+                       border border-gray-300 dark:border-slate-500 p-2
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             />
           ) : (
-            <div className="text-xs text-zinc-100">
+            <div className="text-sm text-gray-900 dark:text-white">
               {currentCalibration?.calibfile || 'Not specified'}
             </div>
           )}
         </div>
 
         {/* Calibration certificate */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-teal-100">Calibration Certificate</label>
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration Certificate</label>
           {isEditing ? (
             <input
               type="text"
@@ -623,10 +626,12 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibcertificate: e.target.value
               }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-xs rounded-md border-0 ring-1 ring-slate-600 p-2"
+              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
+                       border border-gray-300 dark:border-slate-500 p-2
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             />
           ) : (
-            <div className="text-xs text-zinc-100">
+            <div className="text-sm text-gray-900 dark:text-white">
               {currentCalibration?.calibcertificate || 'Not specified'}
             </div>
           )}
@@ -634,12 +639,12 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       </div>
 
       {/* History Section */}
-      <div className="mt-6 border-t border-teal-500/80 pt-4">
+      <div className="mt-6 border-t border-gray-200 dark:border-slate-600/80 pt-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold text-emerald-400">Calibration History</h3>
+          <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Calibration History</h3>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="text-xs text-emerald-300 hover:text-emerald-200 transition-colors"
+            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
           >
             {showHistory ? 'Hide History' : `Show History (${calibrationHistory.length} previous records)`}
           </button>
@@ -650,48 +655,49 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
             {calibrationHistory.map((record) => (
               <div 
                 key={record._id}
-                className="bg-gradient-to-br from-slate-800/30 to-slate-900/30 rounded-md p-2 shadow-md ring-1 ring-slate-700/30"
+                className="bg-gray-200 dark:bg-slate-700/30 rounded-md p-2 shadow-md 
+                         border border-gray-200 dark:border-slate-600/30"
               >
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">Calibrated By</label>
-                    <div className="text-sm text-zinc-100">{record.calibratedby}</div>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibrated By</label>
+                    <div className="text-sm text-gray-900 dark:text-white">{record.calibratedby}</div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">Calibration Date</label>
-                    <div className="text-sm text-zinc-100">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration Date</label>
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {record.calibrationdate ? new Date(record.calibrationdate).toLocaleDateString() : '-'}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">Valid Until</label>
-                    <div className="text-sm text-zinc-100">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Valid Until</label>
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {record.calibrationtodate ? new Date(record.calibrationtodate).toLocaleDateString() : '-'}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">PO Number</label>
-                    <div className="text-sm text-zinc-100">{record.calibrationpo || '-'}</div>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">PO Number</label>
+                    <div className="text-sm text-gray-900 dark:text-white">{record.calibrationpo || '-'}</div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">Certificate</label>
-                    <div className="text-sm text-zinc-100">{record.calibcertificate || '-'}</div>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Certificate</label>
+                    <div className="text-sm text-gray-900 dark:text-white">{record.calibcertificate || '-'}</div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-teal-100">File Reference</label>
-                    <div className="text-sm text-zinc-100">{record.calibfile || '-'}</div>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">File Reference</label>
+                    <div className="text-sm text-gray-900 dark:text-white">{record.calibfile || '-'}</div>
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-teal-100">Created By</label>
-                    <div className="text-sm text-zinc-100">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Created By</label>
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {record.createdby}
-                      <span className="text-xs text-zinc-400 ml-2">
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">
                         on {new Date(record.createdat).toLocaleDateString()}
                       </span>
                     </div>

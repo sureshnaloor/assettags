@@ -2,6 +2,9 @@
 import { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 
+import Header from '@/app/components/Header';
+import ThemeSwitcher from '@/app/components/ThemeSwitcher';
+
 interface Category {
   _id: string;
   name: string;
@@ -162,227 +165,253 @@ export default function CategoriesManagement() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6">
-        <h1 className="text-2xl font-bold text-zinc-100 mb-6">Categories Management</h1>
-
-        {/* Tab Navigation */}
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setActiveTab('mme')}
-            className={`px-4 py-2 rounded-md ${
-              activeTab === 'mme' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-slate-700 text-zinc-300'
-            }`}
-          >
-            MME Categories
-          </button>
-          <button
-            onClick={() => setActiveTab('fixed')}
-            className={`px-4 py-2 rounded-md ${
-              activeTab === 'fixed' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-slate-700 text-zinc-300'
-            }`}
-          >
-            Fixed Asset Categories
-          </button>
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-900">
+      <div className="container mx-auto p-6">
+        <div className="flex justify-end mb-4">
+          <ThemeSwitcher />
         </div>
 
-        {error && (
-          <div className="bg-red-500/20 text-red-100 px-4 py-2 rounded-lg text-sm mb-4">
-            {error}
-          </div>
-        )}
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            Categories Management
+          </h1>
 
-        {/* Categories Section */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-zinc-100 mb-4">Categories</h2>
-          
-          {/* Add Category Form */}
-          <div className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="New category name"
-              className="flex-1 bg-slate-700/50 text-zinc-100 rounded-md px-3 py-2"
-            />
+          {/* Tab Navigation */}
+          <div className="flex gap-4 mb-6">
             <button
-              onClick={handleAddCategory}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+              onClick={() => setActiveTab('mme')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                activeTab === 'mme'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
+              }`}
             >
-              Add Category
+              MME Categories
+            </button>
+            <button
+              onClick={() => setActiveTab('fixed')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                activeTab === 'fixed'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
+              }`}
+            >
+              Fixed Asset Categories
             </button>
           </div>
 
-          {/* Categories List */}
-          <div className="space-y-2">
-            {categories.map((category) => (
-              <div
-                key={category._id}
-                className="flex items-center justify-between bg-slate-700/30 p-3 rounded-md"
-              >
-                {editingCategory?._id === category._id ? (
-                  <input
-                    type="text"
-                    value={editingCategory.name}
-                    onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                    className="flex-1 bg-slate-600 text-zinc-100 rounded-md px-2 py-1 mr-2"
-                  />
-                ) : (
-                  <span className="text-zinc-100">{category.name}</span>
-                )}
-                
-                <div className="flex gap-2">
-                  {editingCategory?._id === category._id ? (
-                    <>
-                      <button
-                        onClick={() => handleUpdateCategory(editingCategory)}
-                        className="text-green-400 hover:text-green-300"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingCategory(null)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => setEditingCategory(category)}
-                        className="text-blue-400 hover:text-blue-300"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCategory(category._id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-200 px-4 py-2 rounded-lg text-sm mb-4">
+              {error}
+            </div>
+          )}
 
-        {/* Subcategories Section */}
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-100 mb-4">Subcategories</h2>
-          
-          {/* Add Subcategory Form */}
-          <div className="flex gap-2 mb-4">
-            <select
-              value={newSubcategory.category}
-              onChange={(e) => setNewSubcategory(prev => ({ ...prev, category: e.target.value }))}
-              className="bg-slate-700/50 text-zinc-100 rounded-md px-3 py-2"
-            >
-              <option value="">Select Category</option>
+          {/* Categories Section */}
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Categories
+            </h2>
+
+            {/* Add Category Form */}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="New category name"
+                className="flex-1 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white 
+                         border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+              <button
+                onClick={handleAddCategory}
+                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 
+                         text-white px-4 py-2 rounded-md transition-colors"
+              >
+                Add Category
+              </button>
+            </div>
+
+            {/* Categories List */}
+            <div className="space-y-2">
               {categories.map((category) => (
-                <option key={category._id} value={category.name}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              value={newSubcategory.name}
-              onChange={(e) => setNewSubcategory(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="New subcategory name"
-              className="flex-1 bg-slate-700/50 text-zinc-100 rounded-md px-3 py-2"
-            />
-            <button
-              onClick={handleAddSubcategory}
-              disabled={!newSubcategory.category || !newSubcategory.name}
-              className="bg-green-600 hover:bg-green-700 disabled:bg-green-800/50 text-white px-4 py-2 rounded-md"
-            >
-              Add Subcategory
-            </button>
-          </div>
-
-          {/* Subcategories List */}
-          <div className="space-y-2">
-            {subcategories.map((subcategory) => (
-              <div
-                key={subcategory._id}
-                className="flex items-center justify-between bg-slate-700/30 p-3 rounded-md"
-              >
-                {editingSubcategory?._id === subcategory._id ? (
-                  <div className="flex-1 flex gap-2 mr-2">
-                    <select
-                      value={editingSubcategory.category}
-                      onChange={(e) => setEditingSubcategory(prev => prev ? {
-                        _id: prev._id,
-                        category: prev.category,
-                        name: e.target.value
-                      } : null)}
-                      className="bg-slate-600 text-zinc-100 rounded-md px-2 py-1"
-                    >
-                      {categories.map((category) => (
-                        <option key={category._id} value={category.name}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
+                <div
+                  key={category._id}
+                  className="flex items-center justify-between bg-gray-50 dark:bg-slate-700/50 
+                           border border-gray-200 dark:border-slate-600 p-3 rounded-md"
+                >
+                  {editingCategory?._id === category._id ? (
                     <input
                       type="text"
-                      value={editingSubcategory.name}
-                      onChange={(e) => setEditingSubcategory(prev => 
-                        prev ? { ...prev, name: e.target.value } : null
-                      )}
-                      className="flex-1 bg-slate-600 text-zinc-100 rounded-md px-2 py-1"
+                      value={editingCategory.name}
+                      onChange={(e) => setEditingCategory(prev => prev ? { ...prev, name: e.target.value } : null)}
+                      className="flex-1 bg-white dark:bg-slate-600 text-gray-900 dark:text-white 
+                               border border-gray-300 dark:border-slate-500 rounded-md px-2 py-1 mr-2
+                               focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
                     />
-                  </div>
-                ) : (
-                  <div className="text-zinc-100">
-                    <span className="text-zinc-400">{subcategory.category}</span>
-                    <span className="mx-2">→</span>
-                    <span>{subcategory.name}</span>
-                  </div>
-                )}
-                
-                <div className="flex gap-2">
-                  {editingSubcategory?._id === subcategory._id ? (
-                    <>
-                      <button
-                        onClick={() => handleUpdateSubcategory(editingSubcategory)}
-                        className="text-green-400 hover:text-green-300"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingSubcategory(null)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        Cancel
-                      </button>
-                    </>
                   ) : (
-                    <>
-                      <button
-                        onClick={() => setEditingSubcategory(subcategory)}
-                        className="text-blue-400 hover:text-blue-300"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSubcategory(subcategory._id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </>
+                    <span className="text-gray-900 dark:text-white">{category.name}</span>
                   )}
+                  
+                  <div className="flex gap-2">
+                    {editingCategory?._id === category._id ? (
+                      <>
+                        <button
+                          onClick={() => handleUpdateCategory(editingCategory)}
+                          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingCategory(null)}
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setEditingCategory(category)}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category._id)}
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          {/* Subcategories Section */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Subcategories
+            </h2>
+            
+            {/* Add Subcategory Form */}
+            <div className="flex gap-2 mb-4">
+              <select
+                value={newSubcategory.category}
+                onChange={(e) => setNewSubcategory(prev => ({ ...prev, category: e.target.value }))}
+                className="bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white 
+                         border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              >
+                <option value="">Select Category</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                value={newSubcategory.name}
+                onChange={(e) => setNewSubcategory(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="New subcategory name"
+                className="flex-1 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white 
+                         border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2
+                         focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+              <button
+                onClick={handleAddSubcategory}
+                disabled={!newSubcategory.category || !newSubcategory.name}
+                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 
+                         text-white px-4 py-2 rounded-md transition-colors"
+              >
+                Add Subcategory
+              </button>
+            </div>
+
+            {/* Subcategories List */}
+            <div className="space-y-2">
+              {subcategories.map((subcategory) => (
+                <div
+                  key={subcategory._id}
+                  className="flex items-center justify-between bg-gray-50 dark:bg-slate-700/50 
+                           border border-gray-200 dark:border-slate-600 p-3 rounded-md"
+                >
+                  {editingSubcategory?._id === subcategory._id ? (
+                    <div className="flex-1 flex gap-2 mr-2">
+                      <select
+                        value={editingSubcategory.category}
+                        onChange={(e) => setEditingSubcategory(prev => prev ? {
+                          _id: prev._id,
+                          category: prev.category,
+                          name: e.target.value
+                        } : null)}
+                        className="bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white 
+                                 border border-gray-300 dark:border-slate-600 rounded-md px-2 py-1"
+                      >
+                        {categories.map((category) => (
+                          <option key={category._id} value={category.name}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        value={editingSubcategory.name}
+                        onChange={(e) => setEditingSubcategory(prev => 
+                          prev ? { ...prev, name: e.target.value } : null
+                        )}
+                        className="flex-1 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white 
+                                 border border-gray-300 dark:border-slate-600 rounded-md px-2 py-1"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-gray-900 dark:text-white">
+                      <span className="text-gray-400 dark:text-gray-500">{subcategory.category}</span>
+                      <span className="mx-2">→</span>
+                      <span>{subcategory.name}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    {editingSubcategory?._id === subcategory._id ? (
+                      <>
+                        <button
+                          onClick={() => handleUpdateSubcategory(editingSubcategory)}
+                          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingSubcategory(null)}
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setEditingSubcategory(subcategory)}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSubcategory(subcategory._id)}
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

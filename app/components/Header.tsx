@@ -1,26 +1,28 @@
 import Image from 'next/image';
+import ThemeSwitcher from './ThemeSwitcher';
 
 export default function Header() {
   return (
-    <header className="w-full">
-      <div className="container mx-auto max-w-4xl flex items-center justify-between p-2">
-        <div className="relative w-20 sm:w-40 md:w-24">
-          <Image
-            src="/images/logo.jpg"
-            alt="JAL Logo"
-            width={60}
-            height={30}
-            className="object-contain w-full h-auto drop-shadow-[0_8px_8px_rgba(0,0,0,0.5)]"
-            priority
-          />
+    <header className="sticky top-0 z-50 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="relative w-12 h-8">
+            <Image
+              src="/images/logo.jpg"
+              alt="JAL Logo"
+              fill
+              className="object-contain drop-shadow-sm"
+              priority
+            />
+          </div>
+          
+          <div className="text-sm sm:text-base font-semibold italic uppercase 
+                        text-slate-800 dark:text-zinc-100 tracking-wider
+                        transform hover:scale-105 transition-transform duration-200">
+            Asset Tags
+          </div>
         </div>
-        
-        <div className="text-sm sm:text-base md:text-lg font-semibold italic uppercase 
-                      text-zinc-100 tracking-wider
-                      drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]
-                      transform hover:scale-105 transition-transform duration-200">
-          Asset Tags
-        </div>
+        <ThemeSwitcher />
       </div>
     </header>
   );
