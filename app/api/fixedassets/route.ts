@@ -3,12 +3,29 @@ import { connectToDatabase } from '@/lib/mongodb';
 
 export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const assetNumber = searchParams.get('assetNumber');
+    const assetName = searchParams.get('assetName');
+
+    // Return empty array if both parameters are empty or null
+    if (!assetNumber?.trim() && !assetName?.trim()) {
+      return NextResponse.json([]);
+    }
+
     const { db } = await connectToDatabase();
     
-    // Get all fixed assets
+    // Build query based on provided parameters
+    const query: any = {};
+    if (assetNumber?.trim()) {
+      query.assetnumber = { $regex: assetNumber, $options: 'i' };
+    }
+    if (assetName?.trim()) {
+      query.assetdescription = { $regex: assetName, $options: 'i' };
+    }
+
     const fixedAssets = await db
       .collection('fixedassets')
-      .find({}).limit(10)
+      .find(query)
       .toArray();
 
     return NextResponse.json(fixedAssets);
@@ -19,4 +36,4 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
