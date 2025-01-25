@@ -13,6 +13,7 @@ import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 import Header  from '../components/Header';
 import Footer from '../components/Footer';
+import { AssetQRCode } from '@/components/AssetQRCode';
 
 interface Equipment {
   _id: string;
@@ -151,6 +152,10 @@ export default function MMEPage() {
         return date ? new Date(date).toLocaleDateString() : 'N/A';
       }
     },
+    {
+      header: 'QR Code',
+      cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} />
+    }
   ];
 
   const table = useReactTable({

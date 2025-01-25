@@ -14,6 +14,9 @@ import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
+// Add this import at the top with other imports
+import { AssetQRCode } from '@/components/AssetQRCode';
+
 interface FixedAsset {
   _id: string;
   assetnumber: string;
@@ -131,6 +134,12 @@ export default function FixedAssetPage() {
           currency: 'SAR'
         }).format(value) : 'N/A';
       }
+    },
+    // Add the new QR code column
+    {
+      id: 'qrcode',
+      header: 'QR Code',
+      cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} />,
     },
   ];
 
