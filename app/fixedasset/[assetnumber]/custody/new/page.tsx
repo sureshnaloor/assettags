@@ -21,22 +21,15 @@ export default function NewCustodyPage() {
   const router = useRouter();
   const params = useParams() as { assetnumber: string };
   
-  const [formData, setFormData] = useState<Partial<Custody>>({
-    assetnumber: params.assetnumber,
-    locationType: 'warehouse',
-    warehouseCity: 'Dammam',
-    custodyfrom: new Date(),
-    custodyto: null
-  });
-
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [locationType, setLocationType] = useState<'warehouse' | 'department'>('warehouse');
   
+  // Keep only one formData declaration
   const [formData, setFormData] = useState<Partial<Custody>>({
-    assetnumber: params.assetnumber as string,
+    assetnumber: params.assetnumber,
     locationType: 'warehouse',
     warehouseCity: 'Dammam',
     custodyfrom: new Date(),
