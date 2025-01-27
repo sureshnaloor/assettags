@@ -10,8 +10,13 @@ import { Custody } from '@/types/custody';
 
 import CollapsibleSection from '@/app/components/CollapsibleSection';
 
+interface PageParams {
+  assetnumber: string;
+}
+
 export default function FixedAssetPage() {
   const params = useParams();
+  const assetnumber = params?.assetnumber as string;
   const [asset, setAsset] = useState<AssetData | null>(null);
   const [custodyRecords, setCustodyRecords] = useState<Custody[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,14 +26,13 @@ export default function FixedAssetPage() {
     const fetchAssetData = async () => {
       try {
         setLoading(true);
-        // Fetch asset details
-        const assetResponse = await fetch(`/api/fixedassets/${params.assetnumber}`);
+        const assetResponse = await fetch(`/api/fixedassets/${params?.assetnumber}`);
         if (!assetResponse.ok) throw new Error('Failed to fetch asset');
         const assetData = await assetResponse.json();
         setAsset(assetData);
 
         // Fetch custody records
-        const custodyResponse = await fetch(`/api/custody/${params.assetnumber}`);
+        const custodyResponse = await fetch(`/api/custody/${params?.assetnumber}`);
         if (!custodyResponse.ok) throw new Error('Failed to fetch custody records');
         const custodyData = await custodyResponse.json();
         setCustodyRecords(custodyData);
@@ -39,10 +43,8 @@ export default function FixedAssetPage() {
       }
     };
 
-    if (params.assetnumber) {
-      fetchAssetData();
-    }
-  }, [params.assetnumber]);
+    fetchAssetData();
+  }, [params?.assetnumber]);
 
   const handleAssetUpdate = async (updatedAsset: Partial<AssetData>): Promise<void> => {
     setAsset(updatedAsset as AssetData);
@@ -74,7 +76,7 @@ export default function FixedAssetPage() {
                 setCustodyRecords(prev => [updatedCustody, ...prev.slice(1)]);
               }
             }}
-            assetnumber={params.assetnumber as string}
+            assetnumber={assetnumber}
           />
           </CollapsibleSection>
         </main>
@@ -83,4 +85,4 @@ export default function FixedAssetPage() {
       </div>
     </div>
   );
-} 
+}
