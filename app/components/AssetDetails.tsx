@@ -161,7 +161,7 @@ interface Subcategory {
 
 export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
   const pathname = usePathname();
-  const isFixedAsset = pathname.includes('/fixedasset/');
+  const isFixedAsset = pathname?.includes('/fixedasset/') ?? false;
   
   const [isEditing, setIsEditing] = useState(false);
   const [editedAsset, setEditedAsset] = useState<AssetData>(asset);
