@@ -8,9 +8,27 @@ import AsyncSelect from 'react-select/async';
 import DatePicker from 'react-datepicker';
 import { Employee, Project, Custody } from '@/types/custody';
 
+// Add proper type definition for params
+// Remove this interface as we'll use useParams
+interface PageProps {
+  params: {
+    assetnumber: string;
+  };
+}
+
+// Update the component definition
 export default function NewCustodyPage() {
   const router = useRouter();
-  const params = useParams();
+  const params = useParams() as { assetnumber: string };
+  
+  const [formData, setFormData] = useState<Partial<Custody>>({
+    assetnumber: params.assetnumber,
+    locationType: 'warehouse',
+    warehouseCity: 'Dammam',
+    custodyfrom: new Date(),
+    custodyto: null
+  });
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -390,4 +408,4 @@ export default function NewCustodyPage() {
       </div>
     </div>
   );
-} 
+}
