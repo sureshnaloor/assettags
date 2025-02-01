@@ -1,8 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
 
 import AssetDetails from '@/app/components/AssetDetails';
 import CalibrationDetails from '@/app/components/CalibrationDetails';
@@ -160,7 +158,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
       <div className="fixed inset-0 z-0 bg-[conic-gradient(at_top_right,_#111111,_#1e40af,_#eeef46)] opacity-50" />
       
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Header />
+        
         
         <main className="flex-1 flex flex-col items-center justify-center p-2 gap-4">
           <CollapsibleSection title="Asset Details">
@@ -199,7 +197,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
           </button>
         </main>
         
-        <Footer />
+        
       </div>
     </div>
   );

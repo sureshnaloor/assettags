@@ -1,8 +1,7 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 function LocationContent() {
@@ -104,7 +103,7 @@ export default function LogLocationPage() {
       <div className="fixed inset-0 z-0 bg-[conic-gradient(at_top_right,_#111111,_#1e40af,_#eeef46)] opacity-50" />
       
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Header />
+        
         
         <main className="flex-1 flex flex-col items-center justify-center p-4">
           <Suspense fallback={
@@ -116,7 +115,7 @@ export default function LogLocationPage() {
           </Suspense>
         </main>
         
-        <Footer />
+        
       </div>
     </div>
   );

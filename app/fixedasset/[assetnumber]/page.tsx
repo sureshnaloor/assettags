@@ -1,8 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+
 import AssetDetails from '../../components/AssetDetails';
 import CustodyDetails from '../../components/CustodyDetails';
 import { AssetData } from '@/types/asset';
@@ -61,7 +60,7 @@ export default function FixedAssetPage() {
       <div className="fixed inset-0 z-0 bg-[conic-gradient(at_top_right,_#111111,_#1e40af,_#eeef46)] opacity-50" />
       
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Header />
+      
         
         <main className="flex-1 flex flex-col items-center justify-center p-2 gap-2">
           {asset && (
@@ -96,7 +95,7 @@ export default function FixedAssetPage() {
           </button>
         </main>
         
-        <Footer />
+        
       </div>
     </div>
   );

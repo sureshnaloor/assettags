@@ -11,8 +11,7 @@ import {
 } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+
 
 // Add this import at the top with other imports
 import { AssetQRCode } from '@/components/AssetQRCode';
@@ -159,7 +158,7 @@ export default function FixedAssetPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <Header />
+      
       <div className="mt-8 mb-4 flex gap-4">
         <input
           type="text"
@@ -233,7 +232,7 @@ export default function FixedAssetPage() {
           </table>
         </div>
       </div>
-      <Footer />
+      
     </div>
   );
 }
