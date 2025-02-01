@@ -3,6 +3,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import 'react-datepicker/dist/react-datepicker.css';
 import { Providers } from './providers';
+import { Inter } from 'next/font/google';
+import Header from './components/Header/Header';
+import AuthProvider from './providers/AuthProvider';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -14,6 +17,8 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: "Asset tags",
@@ -28,8 +33,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>{children}</Providers>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased ${inter.className}`}>
+        <AuthProvider>
+          <Header />
+          <main>{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );
