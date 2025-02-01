@@ -70,9 +70,9 @@ export default function Header() {
                 className="flex items-center space-x-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <div className="relative h-8 w-8 rounded-full bg-gray-200">
-                  {session.user?.image ? (
+                  {session.user?.email ? (
                     <Image
-                      src={session.user.image}
+                      src={session.user?.email || ''}
                       alt="Profile"
                       fill
                       className="rounded-full object-cover"

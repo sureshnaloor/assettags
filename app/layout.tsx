@@ -7,7 +7,7 @@ import { Inter } from 'next/font/google';
 import Header from './components/Header';
 import AuthProvider from './providers/AuthProvider';
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
