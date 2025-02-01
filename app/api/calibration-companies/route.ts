@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 
 export async function GET() {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const companies = await db.collection('calibrationcompanies')
       .find({})
       .sort({ name: 1 })

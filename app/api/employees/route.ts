@@ -1,9 +1,9 @@
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const employees = await db
       .collection('employees')
       .find({})
@@ -13,6 +13,9 @@ export async function GET() {
     return NextResponse.json(employees);
   } catch (error) {
     console.error('Database Error:', error);
-    return NextResponse.json({ error: 'Failed to fetch employees' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch employees' }, 
+      { status: 500 }
+    );
   }
 } 

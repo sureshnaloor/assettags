@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 import { ObjectId } from 'mongodb';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 
@@ -35,8 +35,8 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Connect to database
-    const { db } = await connectToDatabase();
+    // Connect to database using the new getDb function
+    const db = await getDb();
     
     // Update user approval status
     const result = await db.collection('authusers').updateOne(

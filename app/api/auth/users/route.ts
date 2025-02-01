@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../[...nextauth]/auth';
 
@@ -15,8 +15,8 @@ export async function GET() {
       );
     }
 
-    // Connect to database
-    const { db } = await connectToDatabase();
+    // Connect to database using the new getDb function
+    const db = await getDb();
     
     // Fetch users
     const users = await db.collection('authusers')

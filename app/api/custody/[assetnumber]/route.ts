@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 
 // GET custody records for specific asset
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
   try {
     console.log('Fetching custody for asset:', params.assetnumber);
     
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const custodyRecords = await db
       .collection('equipmentcustody')
       .find({ assetnumber: params.assetnumber })
@@ -41,7 +41,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     const result = await db.collection('equipmentcustody').updateOne(
       { assetnumber: params.assetnumber },
@@ -77,7 +77,7 @@ export async function DELETE(
   { params }: { params: { assetnumber: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const result = await db.collection('equipmentcustody').deleteOne({
       assetnumber: params.assetnumber
     });
@@ -106,7 +106,7 @@ export async function POST(
 ) {
   try {
     const body = await request.json();
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     // Check if there's an active custody (no custodyto date)
     const activeCustody = await db

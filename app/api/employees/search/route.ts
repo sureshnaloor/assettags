@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 
 export async function GET(request: Request) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     // Create text index on empno and empname fields (do this once in MongoDB)
     // db.employees.createIndex({ empno: "text", empname: "text" })

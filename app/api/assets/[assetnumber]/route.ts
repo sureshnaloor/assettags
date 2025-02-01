@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 
 export async function GET(
   request: Request,
   { params }: { params: { assetnumber: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const asset = await db
       .collection('equipmentandtools')
       .findOne({ assetnumber: params.assetnumber });
@@ -38,7 +38,7 @@ export async function PUT(
 
     console.log('Processing update for asset:', assetnumber);
 
-    const { db } = await connectToDatabase();
+    const db = await getDb();
 
     // First check if the asset exists
     const existingAsset = await db.collection('equipmentandtools').findOne({ assetnumber });
@@ -99,7 +99,7 @@ export async function DELETE(
   { params }: { params: { assetnumber: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const result = await db.collection('equipmentandtools').deleteOne({
       assetnumber: params.assetnumber
     });

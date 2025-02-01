@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 import { ObjectId } from 'mongodb';
 
 export async function GET() {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const categories = await db.collection('MME_CATEGORIES').find({}).toArray();
     return NextResponse.json(categories);
   } catch (error) {
@@ -15,7 +15,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { name } = await request.json();
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const result = await db.collection('MME_CATEGORIES').insertOne({ name });
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const { _id, name } = await request.json();
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const result = await db.collection('MME_CATEGORIES').updateOne(
       { _id: new ObjectId(_id) },
       { $set: { name } }
@@ -43,7 +43,7 @@ export async function DELETE(request: Request) {
     const id = searchParams.get('id');
     if (!id) throw new Error('ID is required');
 
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const result = await db.collection('MME_CATEGORIES').deleteOne({
       _id: new ObjectId(id)
     });

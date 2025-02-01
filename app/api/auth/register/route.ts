@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 import { hash } from 'bcrypt';
 
 export async function POST(req: Request) {
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     const existingUser = await db.collection('authusers').findOne({ email });
     if (existingUser) {

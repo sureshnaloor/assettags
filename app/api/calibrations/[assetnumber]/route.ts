@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 import { ObjectId } from 'mongodb';
 
 // GET calibrations for specific asset
@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: { assetnumber: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const calibrations = await db
       .collection('equipmentcalibcertificates')
       .find({ assetnumber: params.assetnumber })
@@ -38,7 +38,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     // Ensure we have an _id to update the specific calibration
     if (!body._id) {
@@ -87,7 +87,7 @@ export async function DELETE(
   { params }: { params: { assetnumber: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const result = await db.collection('equipmentcalibcertificates').deleteOne({
       assetnumber: params.assetnumber
     });
@@ -119,7 +119,7 @@ export async function POST(
     console.log('Received POST body:', body);
     console.log('Asset number from params:', params.assetnumber);
 
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     const newCalibration = {
       ...body,

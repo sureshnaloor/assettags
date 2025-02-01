@@ -1,5 +1,5 @@
+import { getDb } from '@/lib/mongodb-client';
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
 
 export async function GET(request: Request) {
   try {
@@ -7,14 +7,13 @@ export async function GET(request: Request) {
     const assetNumber = searchParams.get('assetNumber');
     const assetName = searchParams.get('assetName');
 
-    const { db } = await connectToDatabase();
-
     // Return empty array if both parameters are empty or null
     if (!assetNumber?.trim() && !assetName?.trim()) {
       return NextResponse.json([]);
     }
     
-    // Build query based on provided parameters
+    const db = await getDb();
+    
     const query: any = {};
     if (assetNumber?.trim()) {
       query.assetnumber = { $regex: assetNumber, $options: 'i' };
@@ -41,7 +40,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const result = await db.collection('equipmentandtools').insertOne(body);
     return NextResponse.json(result, { status: 201 });
   } catch (err) {

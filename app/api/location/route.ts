@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 
 export async function POST(request: Request) {
   try {
     const { assetNumber, latitude, longitude, landmark, timestamp } = await request.json();
 
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     const result = await db.collection('locationLogs').insertOne({
       assetNumber,

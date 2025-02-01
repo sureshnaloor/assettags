@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 import type { Calibration } from '@/types/asset';
 
 // GET all calibrations
 export async function GET() {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const calibrations = await db.collection('equipmentcalibcertificates').find({}).toArray();
     return NextResponse.json(calibrations);
   } catch (err) {
@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body: Omit<Calibration, '_id'> = await request.json();
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     // Create new document without _id (MongoDB will generate it)
     const calibrationData = {

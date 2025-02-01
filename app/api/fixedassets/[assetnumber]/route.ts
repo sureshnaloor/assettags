@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 
 export async function GET(
   request: Request,
   { params }: { params: { assetnumber: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     const asset = await db
       .collection('fixedassets')
       .findOne({ assetnumber: params.assetnumber });
@@ -34,7 +34,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     const result = await db.collection('fixedassets').updateOne(
       { assetnumber: params.assetnumber },

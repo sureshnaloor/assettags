@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb-client';
 import { ObjectId } from 'mongodb';
 
 export async function PUT(
@@ -12,7 +12,7 @@ export async function PUT(
     
     const { _id, ...updateData } = body;
     
-    const { db } = await connectToDatabase();
+    const db = await getDb();
     
     const result = await db.collection('equipmentcustody').updateOne(
       { 
