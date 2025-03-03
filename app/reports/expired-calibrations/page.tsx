@@ -12,36 +12,38 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
 
-interface WarehouseEquipment {
+interface ExpiredCalibration {
     assetnumber: string;
     assetdescription: string;
-    assetstatus: string;
+    calibrationdate: string;
+    calibrationtodate: string;
+    calibratedby: string;
+    calibcertificate: string;
     assetmodel: string;
     assetmanufacturer: string;
-    assetserialnumber: string;
-    warehouseCity: string;
 }
 
-type SortField = 'assetnumber' | 'assetdescription';
+type SortField = 'assetnumber' | 'assetdescription' | 'calibrationtodate';
 type SortOrder = 'asc' | 'desc';
 
-export default function WarehouseEquipmentReport() {
-    const [equipment, setEquipment] = useState<WarehouseEquipment[]>([]);
+export default function ExpiredCalibrationsReport() {
+    const [calibrations, setCalibrations] = useState<ExpiredCalibration[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [sortField, setSortField] = useState<SortField>('assetnumber');
+    const [sortField, setSortField] = useState<SortField>('calibrationtodate');
     const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-    const fetchWarehouseEquipment = async () => {
+    const fetchExpiredCalibrations = async () => {
         try {
-            const response = await fetch(`/api/reports/warehouse-equipment?sortField=${sortField}&sortOrder=${sortOrder}`);
+            const response = await fetch(`/api/reports/expired-calibrations?sortField=${sortField}&sortOrder=${sortOrder}`);
             if (!response.ok) throw new Error('Failed to fetch data');
             
             const result = await response.json();
-            setEquipment(result.data);
+            setCalibrations(result.data);
         } catch (err) {
-            setError('Failed to load warehouse equipment data');
+            setError('Failed to load expired calibrations data');
             console.error(err);
         } finally {
             setLoading(false);
@@ -49,7 +51,7 @@ export default function WarehouseEquipmentReport() {
     };
 
     useEffect(() => {
-        fetchWarehouseEquipment();
+        fetchExpiredCalibrations();
     }, [sortField, sortOrder]);
 
     const toggleSort = (field: SortField) => {
@@ -68,7 +70,7 @@ export default function WarehouseEquipmentReport() {
         <div className="container mx-auto py-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Warehouse Equipment Report</CardTitle>
+                    <CardTitle>Expired Calibrations Report</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -94,23 +96,34 @@ export default function WarehouseEquipmentReport() {
                                         <ArrowUpDown className="h-4 w-4" />
                                     </Button>
                                 </TableHead>
-                                <TableHead>Status</TableHead>
                                 <TableHead>Model</TableHead>
                                 <TableHead>Manufacturer</TableHead>
-                                <TableHead>Serial Number</TableHead>
-                                <TableHead>Warehouse</TableHead>
+                                <TableHead>Calibration Date</TableHead>
+                                <TableHead>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => toggleSort('calibrationtodate')}
+                                        className="flex items-center gap-2"
+                                    >
+                                        Valid Until
+                                        <ArrowUpDown className="h-4 w-4" />
+                                    </Button>
+                                </TableHead>
+                                <TableHead>Calibrated By</TableHead>
+                                <TableHead>Certificate No.</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {equipment.map((item, index) => (
+                            {calibrations.map((item, index) => (
                                 <TableRow key={index}>
                                     <TableCell>{item.assetnumber}</TableCell>
                                     <TableCell>{item.assetdescription}</TableCell>
-                                    <TableCell>{item.assetstatus}</TableCell>
                                     <TableCell>{item.assetmodel}</TableCell>
                                     <TableCell>{item.assetmanufacturer}</TableCell>
-                                    <TableCell>{item.assetserialnumber}</TableCell>
-                                    <TableCell>{item.warehouseCity}</TableCell>
+                                    <TableCell>{format(new Date(item.calibrationdate), 'dd/MM/yyyy')}</TableCell>
+                                    <TableCell>{format(new Date(item.calibrationtodate), 'dd/MM/yyyy')}</TableCell>
+                                    <TableCell>{item.calibratedby}</TableCell>
+                                    <TableCell>{item.calibcertificate}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

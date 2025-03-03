@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const sortField = searchParams.get('sortField') || 'assetnumber';
+        const sortOrder = searchParams.get('sortOrder') === 'desc' ? -1 : 1;
+
         const { db } = await connectToDatabase();
 
         // Aggregate pipeline to join collections and get required data
@@ -10,13 +14,14 @@ export async function GET() {
             .aggregate([
                 {
                     $match: {
-                        warehouseCity: { $in: ['Dammam', 'Jubail'] }
+                        warehouseCity: { $in: ['Dammam', 'Jubail'] },
+                        custodyto: null
                     }
                 },
                 {
                     $lookup: {
                         from: 'equipmentandtools',
-                        localField: 'assetnumber',  // Assuming this is the common field
+                        localField: 'assetnumber',
                         foreignField: 'assetnumber',
                         as: 'equipmentDetails'
                     }
@@ -31,8 +36,13 @@ export async function GET() {
                         assetstatus: '$equipmentDetails.assetstatus',
                         assetmodel: '$equipmentDetails.assetmodel',
                         assetmanufacturer: '$equipmentDetails.assetmanufacturer',
-                        assetserialNumber: '$equipmentDetails.assetserialNumber',
+                        assetserialnumber: '$equipmentDetails.assetserialnumber',
                         warehouseCity: 1
+                    }
+                },
+                {
+                    $sort: {
+                        [sortField]: sortOrder
                     }
                 }
             ]).toArray();
