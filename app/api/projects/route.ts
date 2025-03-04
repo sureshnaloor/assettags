@@ -6,8 +6,14 @@ export async function GET() {
     const { db } = await connectToDatabase();
     const projects = await db
       .collection('projects')
-      .find({}).limit(100)
-      .project({ wbs: 1, projectname: 1 })
+      .find({})
+      .sort({ projectname: 1 })
+      .project({
+        _id: 1,
+        projectname: 1,
+        wbs: 1,
+        status: 1
+      })
       .toArray();
 
     return NextResponse.json(projects);
