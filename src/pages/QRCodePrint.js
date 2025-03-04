@@ -6,15 +6,17 @@ const QR_SIZES = {
   small: {
     qrSize: 80,
     gridCols: 6,
+    gridRows: 7,
     perPage: 42,
     fontSize: '14px',
-    containerHeight: '148mm',
-    gap: '8px',  // Smaller gap for small size
-    padding: '2mm', // Smaller padding for small size
+    containerHeight: '297mm',
+    gap: '8px',
+    padding: '2mm',
   },
   medium: {
     qrSize: 120,
     gridCols: 3,
+    gridRows: 7,
     perPage: 21,
     fontSize: '18px',
     containerHeight: '297mm',
@@ -24,6 +26,7 @@ const QR_SIZES = {
   large: {
     qrSize: 180,
     gridCols: 2,
+    gridRows: 7,
     perPage: 14,
     fontSize: '24px',
     containerHeight: '297mm',
@@ -235,21 +238,38 @@ const QRCodePrint = () => {
 
       {/* QR Codes Section - Visible in Print */}
       {qrCodes.length > 0 && (
-        <Box className="qr-sheets" sx={{ pageBreakInside: 'avoid' }}>
+        <Box className="qr-sheets" sx={{ 
+          pageBreakInside: 'avoid',
+          '@media print': {
+            margin: 0,
+            padding: 0,
+            backgroundColor: 'white'
+          }
+        }}>
           {Array.from({ length: Math.ceil(qrCodes.length / QR_SIZES[qrSize].perPage) }).map((_, sheetIndex) => (
             <Box
               key={sheetIndex}
+              className="qr-sheet"
               sx={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(${QR_SIZES[qrSize].gridCols}, 1fr)`,
+                gridTemplateRows: `repeat(${QR_SIZES[qrSize].gridRows}, 1fr)`,
                 gap: QR_SIZES[qrSize].gap,
                 p: QR_SIZES[qrSize].padding,
                 pageBreakAfter: 'always',
                 width: '210mm',
                 height: QR_SIZES[qrSize].containerHeight,
                 margin: '0 auto',
+                backgroundColor: 'white',
                 '@media print': {
                   margin: 0,
+                  padding: QR_SIZES[qrSize].padding,
+                  width: '210mm',
+                  height: QR_SIZES[qrSize].containerHeight,
+                  pageBreakAfter: 'always',
+                  pageBreakInside: 'avoid',
+                  backgroundColor: 'white',
+                  minHeight: '297mm'
                 }
               }}
             >
@@ -262,12 +282,21 @@ const QRCodePrint = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     p: '2px',
+                    height: '100%',
+                    '@media print': {
+                      breakInside: 'avoid',
+                      pageBreakInside: 'avoid',
+                      minHeight: `${QR_SIZES[qrSize].qrSize + 30}px`
+                    }
                   }}
                 >
                   <Typography variant="body2" sx={{ 
                     mb: qrSize === 'small' ? 0.5 : 1,
                     fontSize: QR_SIZES[qrSize].fontSize,
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    '@media print': {
+                      margin: qrSize === 'small' ? '2px 0' : '4px 0'
+                    }
                   }}>
                     {asset.assetnumber}
                   </Typography>
@@ -301,10 +330,24 @@ const QRCodePrint = () => {
           body {
             margin: 0;
             padding: 0;
+            background-color: white;
+            min-height: 297mm;
           }
           .qr-sheets {
             margin: 0;
             padding: 0;
+            background-color: white;
+          }
+          .qr-sheet {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            page-break-after: always;
+            background-color: white;
+            min-height: 297mm;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>
