@@ -9,6 +9,7 @@ import { useState } from 'react';
 export default function Header() {
   const { data: session, status } = useSession();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showReportsMenu, setShowReportsMenu] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
@@ -45,10 +46,53 @@ export default function Header() {
             >
               Fixed Assets
             </Link>
+            {/* Reports Dropdown */}
+            <div className="relative">
+              <button
+                onMouseEnter={() => setShowReportsMenu(true)}
+                onMouseLeave={() => setShowReportsMenu(false)}
+                className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
+              >
+                Reports
+              </button>
+
+              {showReportsMenu && (
+                <div
+                  onMouseEnter={() => setShowReportsMenu(true)}
+                  onMouseLeave={() => setShowReportsMenu(false)}
+                  className="absolute left-0 top-full mt-1 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-slate-800 dark:ring-slate-700"
+                >
+                  <Link
+                    href="/reports/active-calibrations"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+                  >
+                    Active Calibrations
+                  </Link>
+                  <Link
+                    href="/reports/expired-calibrations"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+                  >
+                    Expired Calibrations
+                  </Link>
+                  <Link
+                    href="/reports/project-equipment"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+                  >
+                    Project Equipment
+                  </Link>
+                  <Link
+                    href="/reports/user-equipment"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+                  >
+                    User Equipment
+                  </Link>
+                </div>
+              )}
+            </div>
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center space-x-4">
           <ThemeSwitcher />
           
           {/* Auth Buttons */}
