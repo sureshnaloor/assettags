@@ -301,7 +301,7 @@ const QRCodePrint = () => {
                     {asset.assetnumber}
                   </Typography>
                   <QRCodeSVG 
-                    value={asset.assetnumber}
+                    value={`https://assettags.vercel.app/asset/${asset.assetnumber}`}
                     size={QR_SIZES[qrSize].qrSize}
                     bgColor="#FFFFFF"
                     fgColor="#000000"
@@ -310,8 +310,12 @@ const QRCodePrint = () => {
                       src: '/images/logo.jpg',
                       x: undefined,
                       y: undefined,
-                      height: QR_SIZES[qrSize].qrSize * 0.2,
-                      width: QR_SIZES[qrSize].qrSize * 0.2,
+                      height: qrSize === 'small' ? QR_SIZES[qrSize].qrSize * 0.2 :
+                             qrSize === 'medium' ? QR_SIZES[qrSize].qrSize * 0.3 :
+                             QR_SIZES[qrSize].qrSize * 0.4,
+                      width: qrSize === 'small' ? QR_SIZES[qrSize].qrSize * 0.2 :
+                             qrSize === 'medium' ? QR_SIZES[qrSize].qrSize * 0.3 :
+                             QR_SIZES[qrSize].qrSize * 0.4,
                     }}
                   />
                 </Box>
