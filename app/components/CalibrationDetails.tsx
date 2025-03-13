@@ -122,6 +122,75 @@ interface ArchivedCalibration extends Calibration {
   reason: string;
 }
 
+interface CalibrationAlertProps {
+  calibrationToDate: Date | null;
+  onAcknowledge: () => void;
+  showAlert: boolean;
+}
+
+function CalibrationAlert({ calibrationToDate, onAcknowledge, showAlert }: CalibrationAlertProps) {
+  if (!showAlert) return null;
+  
+  // If there's no calibration record at all
+  if (!calibrationToDate) {
+    return (
+      <div className="animate-pulse bg-red-500/90 text-white p-4 rounded-lg mb-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <ExclamationTriangleIcon className="h-6 w-6" />
+          <span className="font-medium">This equipment is not CALIBRATED, DO NOT USE UNLESS TESTED AND CALIBRATED</span>
+        </div>
+        <button
+          onClick={onAcknowledge}
+          className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
+        >
+          Acknowledge
+        </button>
+      </div>
+    );
+  }
+
+  const today = new Date();
+  const daysUntilExpiry = Math.ceil((calibrationToDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (daysUntilExpiry <= 0) {
+    return (
+      <div className="animate-pulse bg-red-500/90 text-white p-4 rounded-lg mb-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <ExclamationTriangleIcon className="h-6 w-6" />
+          <span className="font-medium">Expired calibration - DO NOT USE unless calibrated</span>
+        </div>
+        <button
+          onClick={onAcknowledge}
+          className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
+        >
+          Acknowledge
+        </button>
+      </div>
+    );
+  }
+
+  if (daysUntilExpiry <= 15) {
+    return (
+      <div className="animate-pulse bg-yellow-500/90 text-white p-4 rounded-lg mb-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <ExclamationTriangleIcon className="h-6 w-6" />
+          <span className="font-medium">
+            Calibration about to expire - Please arrange to renew calibration ({daysUntilExpiry} days remaining)
+          </span>
+        </div>
+        <button
+          onClick={onAcknowledge}
+          className="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm"
+        >
+          Acknowledge
+        </button>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 export default function CalibrationDetails({ currentCalibration, calibrationHistory, onUpdate, assetnumber }: CalibrationDetailsProps) {
   const [showNewCalibrationModal, setShowNewCalibrationModal] = useState(false);
   
@@ -138,6 +207,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   const [showNewConfirmation, setShowNewConfirmation] = useState(false);
   const [pendingNewCalibration, setPendingNewCalibration] = useState<Partial<Calibration> | null>(null);
   const [isNewMode, setIsNewMode] = useState(false);
+  const [showAlert, setShowAlert] = useState(true);
   
   const [editedCalibration, setEditedCalibration] = useState<Calibration>(() => {
     return {
@@ -189,6 +259,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   useEffect(() => {
     fetchCalibrationCompanies();
   }, []);
+
+  useEffect(() => {
+    setShowAlert(true);
+  }, [currentCalibration?.calibrationtodate]);
 
   const fetchCalibrationCompanies = async () => {
     try {
@@ -416,8 +490,18 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   // Add this to get asset number from either current calibration or history
   const assetNumber = currentCalibration?.assetnumber || calibrationHistory[0]?.assetnumber || '';
 
+  const handleAlertAcknowledge = () => {
+    setShowAlert(false);
+  };
+
   return (
     <div className="bg-white dark:bg-slate-800/20 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative">
+      {/* Always show the alert, even if currentCalibration is null */}
+      <CalibrationAlert
+        calibrationToDate={currentCalibration?.calibrationtodate ? new Date(currentCalibration.calibrationtodate) : null}
+        onAcknowledge={handleAlertAcknowledge}
+        showAlert={showAlert}
+      />
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
           {isNewMode ? 'New Calibration' : 'Current Calibration'}
