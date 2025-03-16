@@ -188,7 +188,23 @@ function CalibrationAlert({ calibrationToDate, onAcknowledge, showAlert }: Calib
     );
   }
 
-  return null;
+  // New green alert for properly calibrated equipment
+  return (
+    <div className="animate-pulse bg-green-500/90 text-white p-4 rounded-lg mb-4 flex justify-between items-center">
+      <div className="flex items-center gap-2">
+        <CheckIcon className="h-6 w-6" />
+        <span className="font-medium">
+          Equipment is properly calibrated and fit to use ({daysUntilExpiry} days until next calibration)
+        </span>
+      </div>
+      <button
+        onClick={onAcknowledge}
+        className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
+      >
+        Acknowledge
+      </button>
+    </div>
+  );
 }
 
 export default function CalibrationDetails({ currentCalibration, calibrationHistory, onUpdate, assetnumber }: CalibrationDetailsProps) {
@@ -495,7 +511,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800/20 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative">
+    <div className="bg-gradient-to-r from-zinc-100/90 to-zinc-300/90 dark:from-zinc-800/30 dark:to-zinc-700/40 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative border border-zinc-200 dark:border-zinc-700/50">
       {/* Always show the alert, even if currentCalibration is null */}
       <CalibrationAlert
         calibrationToDate={currentCalibration?.calibrationtodate ? new Date(currentCalibration.calibrationtodate) : null}

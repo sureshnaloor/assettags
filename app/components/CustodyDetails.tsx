@@ -547,7 +547,7 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
   const canCreateNewCustody = !currentCustody || currentCustody.custodyto !== null;
 
   return (
-    <div className="bg-white dark:bg-slate-800/20 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl">
+    <div className="bg-stone-100/90 dark:bg-stone-800/30 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative border border-stone-200 dark:border-stone-700/50 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)]">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Current Custody</h2>
         <div className="flex gap-2">
