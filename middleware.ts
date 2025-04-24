@@ -47,6 +47,6 @@ export const config = {
     '/fixedasset/:path*',
     '/loglocation/:path*',
     '/auth/:path*',
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public|auth).*)',
   ]
 };
