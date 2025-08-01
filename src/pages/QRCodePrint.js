@@ -301,7 +301,7 @@ const QRCodePrint = () => {
                     {asset.assetnumber}
                   </Typography>
                   <QRCodeSVG 
-                    value={`https://assettags.vercel.app/asset/${asset.assetnumber}`}
+                    value={`https://assettags.vercel.app/${collection === 'fixedassets' ? 'fixedasset' : 'asset'}/${asset.assetnumber}`}
                     size={QR_SIZES[qrSize].qrSize}
                     bgColor="#FFFFFF"
                     fgColor="#000000"

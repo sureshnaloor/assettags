@@ -153,7 +153,7 @@ export default function MMEPage() {
     },
     {
       header: 'QR Code',
-      cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} />
+      cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} assetType="mme" />
     }
   ];
 

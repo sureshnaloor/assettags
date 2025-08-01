@@ -3,10 +3,11 @@ import { PrinterIcon } from '@heroicons/react/24/outline';
 
 interface AssetQRCodeProps {
   assetNumber: string;
+  assetType?: 'mme' | 'fixedasset';
 }
 
-export const AssetQRCode = ({ assetNumber }: AssetQRCodeProps) => {
-  const qrUrl = `${window.location.origin}/asset/${assetNumber}`;
+export const AssetQRCode = ({ assetNumber, assetType = 'mme' }: AssetQRCodeProps) => {
+  const qrUrl = `${window.location.origin}/${assetType === 'fixedasset' ? 'fixedasset' : 'asset'}/${assetNumber}`;
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');

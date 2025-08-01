@@ -138,7 +138,7 @@ export default function FixedAssetPage() {
     {
       id: 'qrcode',
       header: 'QR Code',
-      cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} />,
+              cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} assetType="fixedasset" />,
     },
   ];
 
