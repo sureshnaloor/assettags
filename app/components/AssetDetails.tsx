@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { PencilIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { AssetData } from '@/types/asset';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 // Define separate category constants
 const MME_CATEGORIES = [
@@ -162,6 +163,7 @@ interface Subcategory {
 export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
   const pathname = usePathname();
   const isFixedAsset = pathname?.includes('/fixedasset/') ?? false;
+  const { data: session, status } = useSession();
   
   const [isEditing, setIsEditing] = useState(false);
   const [editedAsset, setEditedAsset] = useState<AssetData>(asset);
@@ -420,10 +422,14 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
         <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
           <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Acquisition Value</label>
           <div className="text-[12px] text-gray-900 dark:text-white">
-            {new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD'
-            }).format(asset.acquiredvalue ?? 0)}
+            {session ? (
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'SAR'
+              }).format(asset.acquiredvalue ?? 0)
+            ) : (
+              'SAR *******'
+            )}
           </div>
         </div>
 
