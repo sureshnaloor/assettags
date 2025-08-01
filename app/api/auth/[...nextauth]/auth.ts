@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { compare } from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Email",

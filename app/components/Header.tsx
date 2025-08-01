@@ -135,6 +135,13 @@ export default function Header() {
                     {session.user?.email}
                   </div>
                   <div className="border-t border-gray-100 dark:border-slate-700">
+                    <Link
+                      href="/auth/change-password"
+                      className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-slate-700"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                      Change Password
+                    </Link>
                     <button
                       onClick={() => signOut()}
                       className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-slate-700"

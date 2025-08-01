@@ -34,3 +34,47 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Authentication Features
+
+This application includes a comprehensive authentication system with the following features:
+
+### User Registration
+- Email-based registration (only @jalint.com.sa emails allowed)
+- Admin approval required for new accounts
+- Secure password hashing with bcrypt
+
+### User Authentication
+- Email/password sign-in
+- Session management with NextAuth.js
+- Role-based access control (admin/user)
+
+### Password Management
+- **Change Password**: Authenticated users can change their password
+- **Forgot Password**: Email-based password reset functionality
+- **Password Reset**: Secure token-based password reset via email
+
+### Email Configuration (for password reset)
+
+To enable password reset functionality, configure the following environment variables:
+
+```bash
+# Email Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+SMTP_FROM=noreply@jalint.com.sa
+```
+
+**For Gmail setup:**
+1. Enable 2-factor authentication on your Google account
+2. Generate an App Password (Google Account → Security → App Passwords)
+3. Use the generated App Password as `SMTP_PASS`
+
+### Security Features
+- Password validation (minimum 8 characters)
+- Secure token generation for password reset
+- Token expiration (1 hour)
+- CSRF protection
+- Input validation and sanitization
