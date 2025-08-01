@@ -33,30 +33,62 @@ export async function PUT(
   { params }: { params: { assetnumber: string } }
 ) {
   try {
-    const body = await request.json();
-    const { db } = await connectToDatabase();
-    
-    const result = await db.collection('fixedassets').updateOne(
-      { assetnumber: params.assetnumber },
-      { $set: body }
-    );
+    const { assetnumber } = params;
+    const updateData = await request.json();
 
-    if (result.matchedCount === 0) {
+    console.log('Processing update for fixed asset:', assetnumber);
+
+    const { db } = await connectToDatabase();
+
+    // First check if the asset exists
+    const existingAsset = await db.collection('fixedassets').findOne({ assetnumber });
+
+    if (!existingAsset) {
+      console.error('Fixed asset not found in database:', assetnumber);
       return NextResponse.json(
-        { error: 'Fixed asset not found' },
+        { error: `Fixed asset ${assetnumber} not found` },
         { status: 404 }
       );
     }
 
-    const updatedAsset = await db
-      .collection('fixedassets')
-      .findOne({ assetnumber: params.assetnumber });
+    // Remove immutable and protected fields
+    const {
+      _id,
+      assetnumber: _an,
+      acquireddate,
+      acquiredvalue,
+      assetdescription,
+      ...updateFields
+    } = updateData;
 
+    console.log('Updating fixed asset with fields:', updateFields);
+
+    const updatedAsset = await db.collection('fixedassets').findOneAndUpdate(
+      { assetnumber: assetnumber.toString() }, // Ensure string comparison
+      { $set: updateFields },
+      { 
+        returnDocument: 'after'
+      }
+    );
+
+    if (!updatedAsset) {
+      console.error('Update failed for fixed asset:', assetnumber);
+      return NextResponse.json(
+        { error: 'Failed to update fixed asset' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Fixed asset updated successfully:', updatedAsset);
     return NextResponse.json(updatedAsset);
+
   } catch (error) {
-    console.error('Failed to update fixed asset:', error);
+    console.error('Error in fixed asset update:', error);
     return NextResponse.json(
-      { error: 'Failed to update fixed asset' },
+      { 
+        error: 'Failed to update fixed asset',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

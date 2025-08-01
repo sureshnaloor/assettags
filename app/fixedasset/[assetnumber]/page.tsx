@@ -48,7 +48,59 @@ export default function FixedAssetPage() {
   }, [params?.assetnumber]);
 
   const handleAssetUpdate = async (updatedAsset: Partial<AssetData>): Promise<void> => {
-    setAsset(updatedAsset as AssetData);
+    try {
+      console.log('Updating fixed asset:', params?.assetnumber);
+
+      // Updated payload to include new fields
+      const updatePayload = {
+        assetcategory: updatedAsset.assetcategory,
+        assetsubcategory: updatedAsset.assetsubcategory,
+        assetstatus: updatedAsset.assetstatus,
+        assetnotes: updatedAsset.assetnotes,
+        
+        assetmodel: updatedAsset.assetmodel,
+        assetmanufacturer: updatedAsset.assetmanufacturer,
+        assetserialnumber: updatedAsset.assetserialnumber,
+        accessories: updatedAsset.accessories,
+      };
+
+      const res = await fetch(`/api/fixedassets/${params?.assetnumber}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(updatePayload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error('Update failed:', {
+          status: res.status,
+          statusText: res.statusText,
+          data
+        });
+        throw new Error(data.error || `Failed to update fixed asset: ${res.status}`);
+      }
+
+      // Update local state with new data
+      setAsset(prevAsset => {
+        if (!prevAsset) return data;
+        return { 
+          ...prevAsset, 
+          ...updatePayload
+        };
+      });
+
+      console.log('Fixed asset updated successfully');
+      // for testing only, will be removed later in production
+      console.log('Updated Fixed Asset:', asset);
+
+    } catch (error) {
+      console.error('Error updating fixed asset:', error);
+      throw error;
+    }
   };
 
   const handleLogLocation = () => {
