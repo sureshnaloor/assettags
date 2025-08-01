@@ -366,33 +366,35 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
 
       {/* Edit/Save/Cancel buttons */}
       <div className="absolute top-3 right-3 flex gap-2">
-        {!isEditing ? (
-          <button
-            onClick={handleEdit}
-            className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-            title="Edit Asset Details"
-          >
-            <PencilIcon className="h-5 w-5" />
-          </button>
-        ) : (
-          <>
+        {session && (
+          !isEditing ? (
             <button
-              onClick={handleCancel}
-              className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-              title="Cancel Editing"
-              disabled={isSaving}
+              onClick={handleEdit}
+              className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              title="Edit Asset Details"
             >
-              <XMarkIcon className="h-5 w-5" />
+              <PencilIcon className="h-5 w-5" />
             </button>
-            <button
-              onClick={handleSave}
-              className="p-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
-              title="Save Changes"
-              disabled={isSaving}
-            >
-              <CheckIcon className="h-5 w-5" />
-            </button>
-          </>
+          ) : (
+            <>
+              <button
+                onClick={handleCancel}
+                className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                title="Cancel Editing"
+                disabled={isSaving}
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+              <button
+                onClick={handleSave}
+                className="p-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                title="Save Changes"
+                disabled={isSaving}
+              >
+                <CheckIcon className="h-5 w-5" />
+              </button>
+            </>
+          )
         )}
       </div>
 
