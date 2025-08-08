@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
@@ -108,8 +107,6 @@ export default function NewCustodyPage() {
       <div className="fixed inset-0 z-0 bg-[conic-gradient(at_top_right,_#111111,_#1e40af,_#eeef46)] opacity-50" />
       
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Header />
-        
         <main className="flex-1 container mx-auto p-6">
           <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl mx-auto">
             <h3 className="text-lg font-semibold text-zinc-100 mb-6">New Custody Record</h3>
@@ -373,6 +370,23 @@ export default function NewCustodyPage() {
                   dateFormat="yyyy-MM-dd"
                   isClearable
                   minDate={formData.custodyfrom || undefined}
+                />
+              </div>
+
+              {/* Gatepass Document */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Gatepass Document Number
+                </label>
+                <input
+                  type="text"
+                  value={formData.documentnumber || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    documentnumber: e.target.value
+                  }))}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  placeholder="Enter gatepass document number..."
                 />
               </div>
             </div>

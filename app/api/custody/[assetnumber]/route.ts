@@ -49,7 +49,8 @@ export async function PUT(
         $set: {
           ...body,
           custodyfrom: new Date(body.custodyfrom), // Ensure date is properly formatted
-          custodyto: body.custodyto ? new Date(body.custodyto) : null
+          custodyto: body.custodyto ? new Date(body.custodyto) : null,
+          documentnumber: body.documentnumber || null // Handle gatepass document number
         }
       }
     );
@@ -129,6 +130,7 @@ export async function POST(
       assetnumber: params.assetnumber,
       custodyfrom: new Date(body.custodyfrom),
       custodyto: body.custodyto ? new Date(body.custodyto) : null,
+      documentnumber: body.documentnumber || null, // Handle gatepass document number
       createdat: new Date(),
     });
 

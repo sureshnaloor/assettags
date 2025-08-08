@@ -10,6 +10,7 @@ export interface Custody {
   departmentLocation?: string;  // city for department
   project?: string; // wbs number for project
   projectname?: string; // project name
+  documentnumber?: string; // gatepass document number
   createdat: Date;
   createdby: string;
   custodyfrom: Date;

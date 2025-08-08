@@ -423,6 +423,23 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
                   minDate={formData.custodyfrom || undefined}
                 />
               </div>
+
+              {/* Gatepass Document */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Gatepass Document Number
+                </label>
+                <input
+                  type="text"
+                  value={formData.documentnumber || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    documentnumber: e.target.value
+                  }))}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  placeholder="Enter gatepass document number..."
+                />
+              </div>
             </div>
           </div>
 
@@ -645,6 +662,14 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
               {currentCustody.custodyto ? new Date(currentCustody.custodyto).toLocaleDateString() : 'Current'}
             </div>
           </div>
+
+          {/* Gatepass Document */}
+          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Gatepass Document</label>
+            <div className="text-sm text-gray-900 dark:text-white">
+              {currentCustody.documentnumber || 'Not specified'}
+            </div>
+          </div>
         </div>
       )}
 
@@ -720,6 +745,14 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">To Date</label>
                     <div className="text-sm text-gray-900 dark:text-white">
                       {record.custodyto ? new Date(record.custodyto).toLocaleDateString() : 'Current'}
+                    </div>
+                  </div>
+
+                  {/* Gatepass Document */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Gatepass Document</label>
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      {record.documentnumber || 'Not specified'}
                     </div>
                   </div>
                 </div>

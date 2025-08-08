@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       ...body,
       createdate: new Date(),
       // custodyfrom: new Date(body.custodyfrom) // Ensure date is properly formatted
+      documentnumber: body.documentnumber || null, // Handle gatepass document number
     };
     
     const result = await db.collection('equipmentcustody').insertOne(custodyData);
