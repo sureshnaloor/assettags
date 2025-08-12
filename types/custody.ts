@@ -3,11 +3,12 @@ export interface Custody {
   assetnumber: string;
   employeenumber: string;
   employeename: string;
-  locationType: 'warehouse' | 'department';
+  locationType: 'warehouse' | 'department' | 'camp/office';
   location: string;
   warehouseLocation?: string;  // for room/rack/bin
   warehouseCity?: 'Dammam' | 'Jubail';
   departmentLocation?: string;  // city for department
+  campOfficeLocation?: string;  // for building/room/occupant
   project?: string; // wbs number for project
   projectname?: string; // project name
   documentnumber?: string; // gatepass document number
@@ -22,7 +23,7 @@ export interface CustodyRecord extends Custody {
   assetnumber: string;
   employeenumber: string;
   employeename: string;
-  locationType: 'warehouse' | 'department';
+  locationType: 'warehouse' | 'department' | 'camp/office';
   location: string;
 }
 

@@ -24,7 +24,7 @@ export default function NewCustodyPage() {
   const [error, setError] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [locationType, setLocationType] = useState<'warehouse' | 'department'>('warehouse');
+  const [locationType, setLocationType] = useState<'warehouse' | 'department' | 'camp/office'>('warehouse');
   
   // Keep only one formData declaration
   const [formData, setFormData] = useState<Partial<Custody>>({
@@ -206,11 +206,27 @@ export default function NewCustodyPage() {
                     />
                     Department
                   </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="camp/office"
+                      checked={locationType === 'camp/office'}
+                      onChange={(e) => {
+                        setLocationType('camp/office');
+                        setFormData(prev => ({
+                          ...prev,
+                          locationType: 'camp/office'
+                        }));
+                      }}
+                      className="mr-2"
+                    />
+                    Camp/Office
+                  </label>
                 </div>
               </div>
 
               {/* Conditional Fields based on Location Type */}
-              {locationType === 'warehouse' ? (
+              {locationType === 'warehouse' && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-zinc-300 mb-1">
@@ -260,7 +276,9 @@ export default function NewCustodyPage() {
                     />
                   </div>
                 </>
-              ) : (
+              )}
+
+              {locationType === 'department' && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-zinc-300 mb-1">
@@ -329,6 +347,46 @@ export default function NewCustodyPage() {
                       placeholder="Search by WBS or project name..."
                       isClearable
                       isSearchable
+                    />
+                  </div>
+                </>
+              )}
+
+              {locationType === 'camp/office' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Location
+                    </label>
+                    <select
+                      value={formData.departmentLocation || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        departmentLocation: e.target.value
+                      }))}
+                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                    >
+                      <option value="">Select Location</option>
+                      <option value="Dammam">Dammam</option>
+                      <option value="Jubail">Jubail</option>
+                      <option value="Riyadh">Riyadh</option>
+                      <option value="Abha">Abha</option>
+                      <option value="Mecca">Mecca</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Building/Room/Occupant
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.campOfficeLocation || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        campOfficeLocation: e.target.value
+                      }))}
+                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                      placeholder="Enter building, room, or occupant details..."
                     />
                   </div>
                 </>
