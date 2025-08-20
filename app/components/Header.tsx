@@ -13,13 +13,13 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="relative w-12 h-8">
+            <div className="relative w-36 h-20">
               <Image
-                src="/images/logo.jpg"
-                alt="JAL Logo"
+                src="/images/logosmarttag.png"
+                alt="SmartTags Logo"
                 fill
                 className="object-contain drop-shadow-sm"
                 priority
