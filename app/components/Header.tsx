@@ -15,7 +15,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center">
             <div className="relative w-36 h-20">
               <Image
                 src="/images/logosmarttag.png"
@@ -25,15 +25,16 @@ export default function Header() {
                 priority
               />
             </div>
-            <div className="text-sm sm:text-base font-semibold italic uppercase 
-                          text-slate-800 dark:text-zinc-100 tracking-wider
-                          transform hover:scale-105 transition-transform duration-200">
-              Asset Tags
-            </div>
           </Link>
 
           {/* Navigation Links */}
           <nav className="flex items-center space-x-4">
+            <Link 
+              href="/dashboard" 
+              className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
+            >
+              Dashboard
+            </Link>
             <Link 
               href="/mme" 
               className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
