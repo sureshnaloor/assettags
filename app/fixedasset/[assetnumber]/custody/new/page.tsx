@@ -298,6 +298,15 @@ export default function NewCustodyPage() {
                       <option value="Riyadh">Riyadh</option>
                       <option value="Abha">Abha</option>
                       <option value="Mecca">Mecca</option>
+                      <option value="Al-Qassim">Al-Qassim</option>
+                      <option value="Al-Ahsa">Al-Ahsa</option>
+                      <option value="Al-Baha">Al-Baha</option>
+                      <option value="Al-Jouf">Al-Jouf</option>
+                      <option value="Al-Madinah">Al-Madinah</option>
+                      <option value="Al-Hail">Al-Hail</option>
+                      <option value="Al-Kharj">Al-Kharj</option>
+                      <option value="Yanbu">Yanbu</option>
+                      <option value="Jeddah">Jeddah</option>
                     </select>
                   </div>
                   <div>
