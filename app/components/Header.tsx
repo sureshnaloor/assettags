@@ -30,6 +30,7 @@ export default function Header() {
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
     { name: 'MME', href: '/mme', icon: WrenchScrewdriverIcon },
     { name: 'Fixed Assets', href: '/fixedasset', icon: BuildingOfficeIcon },
+    { name: 'Asset Search', href: '/search', icon: ChartBarIcon },
   ];
 
   const reportsMenu = [
