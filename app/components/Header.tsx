@@ -41,12 +41,12 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center">
-            <div className="relative w-36 h-20">
+            <div className="relative w-32 h-12">
               <Image
                 src="/images/logosmarttag.png"
                 alt="SmartTags Logo"
@@ -59,15 +59,15 @@ export default function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center space-x-6">
+        <nav className="hidden lg:flex items-center space-x-1">
           {navigation.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className="flex items-center space-x-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
             >
-              <item.icon className="h-5 w-5" />
-              <span>{item.name}</span>
+              <item.icon className="h-4 w-4" />
+              <span className="font-light">{item.name}</span>
             </Link>
           ))}
           
@@ -76,24 +76,24 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowReportsMenu(true)}
               onMouseLeave={() => setShowReportsMenu(false)}
-              className="flex items-center space-x-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
             >
-              <DocumentChartBarIcon className="h-5 w-5" />
-              <span>Reports</span>
-              <ChevronDownIcon className="h-4 w-4" />
+              <DocumentChartBarIcon className="h-4 w-4" />
+              <span className="font-light">Reports</span>
+              <ChevronDownIcon className="h-3 w-3" />
             </button>
 
             {showReportsMenu && (
               <div
                 onMouseEnter={() => setShowReportsMenu(true)}
                 onMouseLeave={() => setShowReportsMenu(false)}
-                className="absolute left-0 top-full mt-1 w-56 rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-slate-800 dark:ring-slate-700"
+                className="absolute left-0 top-full mt-1 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 dark:ring-slate-700/50"
               >
                 {reportsMenu.map((report) => (
                   <Link
                     key={report.name}
                     href={report.href}
-                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700 transition-colors"
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
                   >
                     <ChartBarIcon className="h-4 w-4" />
                     <span>{report.name}</span>
@@ -116,7 +116,7 @@ export default function Header() {
           ) : !session ? (
             <button
               onClick={() => signIn()}
-              className="hidden sm:flex items-center space-x-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              className="hidden sm:flex items-center space-x-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-light text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200"
             >
               <UserIcon className="h-4 w-4" />
               <span>Sign In</span>
@@ -144,14 +144,14 @@ export default function Header() {
               </button>
 
               {showProfileMenu && (
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 z-50 dark:bg-slate-800 dark:ring-slate-700">
-                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-slate-700">
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 z-50 dark:ring-slate-700/50">
+                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100/50 dark:border-slate-700/50 font-light">
                     {session.user?.email}
                   </div>
                   <div className="py-1">
                     <Link
                       href="/auth/change-password"
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-slate-700 transition-colors"
+                      className="flex items-center space-x-3 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
                       onClick={() => setShowProfileMenu(false)}
                     >
                       <KeyIcon className="h-4 w-4" />
@@ -159,7 +159,7 @@ export default function Header() {
                     </Link>
                     <button
                       onClick={() => signOut()}
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-slate-700 transition-colors"
+                      className="flex items-center space-x-3 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
                     >
                       <ArrowRightOnRectangleIcon className="h-4 w-4" />
                       <span>Sign Out</span>
@@ -173,7 +173,7 @@ export default function Header() {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-md text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-200"
           >
             {isMobileMenuOpen ? (
               <XMarkIcon className="h-6 w-6" />
@@ -186,13 +186,13 @@ export default function Header() {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="lg:hidden border-t border-slate-200/50 dark:border-slate-800/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md">
           <div className="px-4 py-2 space-y-1">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="flex items-center space-x-3 px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+                className="flex items-center space-x-3 px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 text-sm font-light"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <item.icon className="h-5 w-5" />
@@ -204,7 +204,7 @@ export default function Header() {
             <div>
               <button
                 onClick={() => setIsMobileReportsOpen(!isMobileReportsOpen)}
-                className="flex items-center justify-between w-full px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+                className="flex items-center justify-between w-full px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 text-sm font-light"
               >
                 <div className="flex items-center space-x-3">
                   <DocumentChartBarIcon className="h-5 w-5" />
@@ -219,7 +219,7 @@ export default function Header() {
                     <Link
                       key={report.name}
                       href={report.href}
-                      className="flex items-center space-x-3 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+                      className="flex items-center space-x-3 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 font-light"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
                         setIsMobileReportsOpen(false);
@@ -235,13 +235,13 @@ export default function Header() {
 
             {/* Mobile Auth Section */}
             {!session && (
-              <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div className="pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
                 <button
                   onClick={() => {
                     signIn();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center space-x-3 w-full px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+                  className="flex items-center space-x-3 w-full px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 text-sm font-light"
                 >
                   <UserIcon className="h-5 w-5" />
                   <span>Sign In</span>

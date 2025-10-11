@@ -3,12 +3,54 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+/* Enhanced typography for better readability */
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  /* Enhanced text styling utilities */
+  .text-asset-number {
+    @apply font-mono font-bold text-slate-900 dark:text-slate-100 text-sm tracking-wide;
+  }
+  
+  .text-description {
+    @apply font-medium italic text-slate-700 dark:text-slate-300 text-sm;
+  }
+  
+  .text-status {
+    @apply font-semibold text-xs uppercase tracking-wider;
+  }
+  
+  .text-category {
+    @apply font-light text-slate-600 dark:text-slate-400 text-xs;
+  }
+  
+  .text-value {
+    @apply font-mono font-bold text-green-700 dark:text-green-400 text-sm;
+  }
+  
+  .text-date {
+    @apply font-light text-slate-500 dark:text-slate-500 text-xs;
+  }
+  
+  .text-manufacturer {
+    @apply font-medium text-slate-700 dark:text-slate-300 text-sm;
+  }
+  
+  .text-serial {
+    @apply font-mono font-medium text-slate-600 dark:text-slate-400 text-xs;
+  }
+  
+  .text-location {
+    @apply font-light italic text-slate-500 dark:text-slate-500 text-xs;
   }
 }
 
