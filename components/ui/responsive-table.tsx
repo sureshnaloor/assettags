@@ -17,7 +17,7 @@ interface ResponsiveTableProps {
   data: any[];
   sortField?: string;
   sortOrder?: 'asc' | 'desc';
-  onSort?: (field: string) => void;
+  onSort?: (field: any) => void;
   className?: string;
 }
 
