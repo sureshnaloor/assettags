@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import Loading from '@/app/components/Loading';
 import ResponsiveTable from '@/components/ui/responsive-table';
+import Link from 'next/link';
 
 interface ActiveCalibration {
     assetnumber: string;
@@ -77,6 +78,14 @@ export default function ActiveCalibrationsReport() {
 
     const formattedData = calibrations.map(item => ({
         ...item,
+        assetnumber: (
+            <Link 
+                href={`/asset/${item.assetnumber}`}
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+            >
+                {item.assetnumber}
+            </Link>
+        ),
         calibrationdate: format(new Date(item.calibrationdate), 'dd/MM/yyyy'),
         calibrationtodate: format(new Date(item.calibrationtodate), 'dd/MM/yyyy'),
     }));

@@ -15,6 +15,7 @@ import {
   TableRow,
   Button,
   Container,
+  Link,
 } from '@mui/material';
 
 const UserEquipmentList = () => {
@@ -175,7 +176,18 @@ const UserEquipmentList = () => {
                 <TableBody>
                   {equipmentList.map((item) => (
                     <TableRow key={item._id} hover>
-                      <TableCell>{item.assetnumber}</TableCell>
+                      <TableCell>
+                        <Link 
+                          href={`/asset/${item.assetnumber}`}
+                          sx={{ 
+                            color: 'primary.main', 
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' }
+                          }}
+                        >
+                          {item.assetnumber}
+                        </Link>
+                      </TableCell>
                       <TableCell>{item.project}</TableCell>
                       <TableCell>
                         {new Date(item.custodyfrom).toLocaleDateString()}

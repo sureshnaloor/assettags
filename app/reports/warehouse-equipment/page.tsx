@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ResponsiveTable from '@/components/ui/responsive-table';
+import Link from 'next/link';
 
 interface WarehouseEquipment {
     assetnumber: string;
@@ -65,6 +66,18 @@ export default function WarehouseEquipmentReport() {
         { key: 'warehouseCity', label: 'Warehouse' },
     ];
 
+    const formattedData = equipment.map(item => ({
+        ...item,
+        assetnumber: (
+            <Link 
+                href={`/asset/${item.assetnumber}`}
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+            >
+                {item.assetnumber}
+            </Link>
+        ),
+    }));
+
     return (
         <div className="container mx-auto py-6 min-h-screen px-4">
             <Card>
@@ -74,7 +87,7 @@ export default function WarehouseEquipmentReport() {
                 <CardContent>
                     <ResponsiveTable
                         columns={columns}
-                        data={equipment}
+                        data={formattedData}
                         sortField={sortField}
                         sortOrder={sortOrder}
                         onSort={toggleSort}

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowUpDown, Search, X, MapPin, User, AlertTriangle, Wrench, Building } from 'lucide-react';
 import Loading from '@/app/components/Loading';
 import ResponsiveTable from '@/components/ui/responsive-table';
+import Link from 'next/link';
 
 interface SearchResult {
     assetnumber: string;
@@ -316,6 +317,14 @@ export default function AssetSearchPage() {
                                     ]}
                                     data={results.map(asset => ({
                                         ...asset,
+                                        assetnumber: (
+                                            <Link 
+                                                href={`/asset/${asset.assetnumber}`}
+                                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                                            >
+                                                {asset.assetnumber}
+                                            </Link>
+                                        ),
                                         assetstatus: (
                                             <span className={`px-2 py-1 rounded-full text-xs ${
                                                 asset.assetstatus === 'Active' 
