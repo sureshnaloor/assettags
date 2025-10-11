@@ -10,18 +10,19 @@ import {
   ColumnDef,
   SortingState,
   ColumnFiltersState,
-  flexRender
+  flexRender,
+  OnChangeFn
 } from '@tanstack/react-table';
 
 interface ResponsiveTanStackTableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData>[];
   sorting?: SortingState;
-  setSorting?: (sorting: SortingState) => void;
+  setSorting?: OnChangeFn<SortingState>;
   columnFilters?: ColumnFiltersState;
-  setColumnFilters?: (columnFilters: ColumnFiltersState) => void;
+  setColumnFilters?: OnChangeFn<ColumnFiltersState>;
   globalFilter?: string;
-  setGlobalFilter?: (globalFilter: string) => void;
+  setGlobalFilter?: OnChangeFn<string>;
   className?: string;
   getRowId?: (row: TData) => string;
 }
