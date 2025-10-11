@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import Loading from '@/app/components/Loading';
 
 interface ExpiredCalibration {
     assetnumber: string;
@@ -63,7 +64,13 @@ export default function ExpiredCalibrationsReport() {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return (
+        <div className="container mx-auto py-6 min-h-screen">
+            <div className="flex justify-center items-center h-64">
+                <Loading message="Loading expired calibrations..." />
+            </div>
+        </div>
+    );
     if (error) return <div>Error: {error}</div>;
 
     return (

@@ -47,10 +47,10 @@ export const AssetQRCode = ({ assetNumber, assetType = 'mme' }: AssetQRCodeProps
       </div>
       <button
         onClick={handlePrint}
-        className="p-1 hover:bg-gray-100 rounded-full"
+        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
         title="Print QR Code"
       >
-        <PrinterIcon className="h-5 w-5" />
+        <PrinterIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
       </button>
     </div>
   );

@@ -19,11 +19,11 @@ export default function CollapsibleSection({
     <div className="w-full">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 bg-sky-600/80 hover:bg-sky-600/90 rounded-lg transition-colors"
+        className="w-full flex items-center justify-between p-3 bg-sky-600/80 dark:bg-sky-700/80 hover:bg-sky-600/90 dark:hover:bg-sky-700/90 rounded-lg transition-colors"
       >
-        <h2 className="text-sm font-semibold text-emerald-200">{title}</h2>
+        <h2 className="text-sm font-semibold text-emerald-200 dark:text-emerald-300">{title}</h2>
         <ChevronDownIcon 
-          className={`h-5 w-5 text-emerald-200 transition-transform duration-200 ${
+          className={`h-5 w-5 text-emerald-200 dark:text-emerald-300 transition-transform duration-200 ${
             isExpanded ? 'transform rotate-180' : ''
           }`}
         />

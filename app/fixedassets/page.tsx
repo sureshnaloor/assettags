@@ -150,34 +150,34 @@ export default function FixedAssetsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4 min-h-screen">
+    <div className="container mx-auto p-4 min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="mb-4">
         <input
           type="text"
           value={globalFilter ?? ''}
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder="Search fixed assets..."
-          className="w-full max-w-sm px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full max-w-sm px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border border-gray-300 dark:border-gray-700">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
                       {header.isPlaceholder
                         ? null
@@ -189,13 +189,13 @@ export default function FixedAssetsPage() {
                 </tr>
               ))}
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {table.getRowModel().rows.map((row) => (
                 <tr key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
                     >
                       {typeof cell.column.columnDef.cell === 'function'
                         ? cell.column.columnDef.cell(cell.getContext())

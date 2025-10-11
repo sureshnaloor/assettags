@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowUpDown, Search, X, MapPin, User, AlertTriangle, Wrench, Building } from 'lucide-react';
+import Loading from '@/app/components/Loading';
 
 interface SearchResult {
     assetnumber: string;
@@ -146,9 +147,9 @@ export default function AssetSearchPage() {
                     {/* Filters Section */}
                     <div className="space-y-6">
                         {/* Value and Date Filters */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                             <div>
-                                <label className="block text-sm font-medium mb-2">
+                                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                     Acquisition Value (SAR)
                                 </label>
                                 <div className="flex gap-2">
@@ -170,7 +171,7 @@ export default function AssetSearchPage() {
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium mb-2">
+                                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                     Acquisition Date
                                 </label>
                                 <div className="flex gap-2">
@@ -191,8 +192,8 @@ export default function AssetSearchPage() {
                         </div>
 
                         {/* Search Type Selection */}
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <label className="block text-sm font-medium mb-3">
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
                                 Search Type
                             </label>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -212,13 +213,13 @@ export default function AssetSearchPage() {
                                             }}
                                             className={`p-3 rounded-lg border-2 text-left transition-all ${
                                                 searchType === option.value
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400'
+                                                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700'
                                             }`}
                                         >
                                             <div className="flex items-center gap-2">
                                                 <IconComponent className={`h-5 w-5 ${option.color}`} />
-                                                <span className="text-sm font-medium">{option.label}</span>
+                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{option.label}</span>
                                             </div>
                                         </button>
                                     );
@@ -228,8 +229,8 @@ export default function AssetSearchPage() {
 
                         {/* Asset Type Selection (only show for MME/Fixed Assets) */}
                         {(searchType === 'mme' || searchType === 'fixed_assets') && (
-                            <div className="p-4 bg-gray-50 rounded-lg">
-                                <label className="block text-sm font-medium mb-3">
+                            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
                                     Asset Type
                                 </label>
                                 <div className="flex gap-4">
@@ -237,23 +238,23 @@ export default function AssetSearchPage() {
                                         onClick={() => setAssetType('mme')}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                                             assetType === 'mme'
-                                                ? 'border-orange-500 bg-orange-50'
-                                                : 'border-gray-200 hover:border-gray-300'
+                                                ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-400'
+                                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700'
                                         }`}
                                     >
                                         <Wrench className="h-5 w-5 text-orange-600" />
-                                        <span className="text-sm font-medium">MME</span>
+                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">MME</span>
                                     </button>
                                     <button
                                         onClick={() => setAssetType('fixed_assets')}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                                             assetType === 'fixed_assets'
-                                                ? 'border-indigo-500 bg-indigo-50'
-                                                : 'border-gray-200 hover:border-gray-300'
+                                                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-400'
+                                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700'
                                         }`}
                                     >
                                         <Building className="h-5 w-5 text-indigo-600" />
-                                        <span className="text-sm font-medium">Fixed Assets</span>
+                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Fixed Assets</span>
                                     </button>
                                 </div>
                             </div>
@@ -289,15 +290,17 @@ export default function AssetSearchPage() {
                                         </>
                                     )}
                                 </div>
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
                                     Total Results: <span className="font-semibold">{results.length}</span>
                                 </div>
                             </div>
 
                             {loading ? (
-                                <div className="flex justify-center items-center h-32">Loading...</div>
+                                <div className="flex justify-center items-center h-32">
+                                    <Loading message="Searching assets..." />
+                                </div>
                             ) : error ? (
-                                <div className="text-red-500 text-center p-4 bg-red-50 rounded-lg">
+                                <div className="text-red-500 dark:text-red-400 text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                                     Error: {error}
                                 </div>
                             ) : (
@@ -356,7 +359,7 @@ export default function AssetSearchPage() {
                                         <TableBody>
                                             {results.length === 0 ? (
                                                 <TableRow>
-                                                    <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                                                    <TableCell colSpan={10} className="text-center py-8 text-gray-500 dark:text-gray-400">
                                                         No assets found matching your criteria
                                                     </TableCell>
                                                 </TableRow>

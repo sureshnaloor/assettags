@@ -63,11 +63,11 @@ function LocationContent() {
   };
 
   return (
-    <div className="w-full max-w-2xl bg-white/10 backdrop-blur-sm rounded-lg p-4">
-      <h1 className="text-2xl font-bold mb-4">Log Location for Asset {assetNumber}</h1>
+    <div className="w-full max-w-2xl bg-white dark:bg-gray-800 backdrop-blur-sm rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+      <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Log Location for Asset {assetNumber}</h1>
       
       {error && (
-        <div className="bg-red-500/50 p-4 rounded mb-4">
+        <div className="bg-red-500/10 dark:bg-red-500/20 border border-red-500/20 dark:border-red-500/30 text-red-700 dark:text-red-400 p-4 rounded mb-4">
           {error}
         </div>
       )}
@@ -89,7 +89,7 @@ function LocationContent() {
       <button
         onClick={handleLogLocation}
         disabled={loading || !currentPosition}
-        className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded disabled:opacity-50"
+        className="w-full bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-white py-2 px-4 rounded disabled:opacity-50 transition-colors"
       >
         {loading ? 'Logging...' : 'Log Current Location'}
       </button>
@@ -99,12 +99,10 @@ function LocationContent() {
 
 export default function LogLocationPage() {
   return (
-    <div className="relative flex flex-col min-h-screen text-zinc-100">
-      <div className="fixed inset-0 z-0 bg-[conic-gradient(at_top_right,_#111111,_#1e40af,_#eeef46)] opacity-50" />
+    <div className="relative flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 opacity-50" />
       
       <div className="relative z-10 flex flex-col min-h-screen">
-        
-        
         <main className="flex-1 flex flex-col items-center justify-center p-4">
           <Suspense fallback={
             <div className="flex items-center justify-center">
@@ -114,8 +112,6 @@ export default function LogLocationPage() {
             <LocationContent />
           </Suspense>
         </main>
-        
-        
       </div>
     </div>
   );
