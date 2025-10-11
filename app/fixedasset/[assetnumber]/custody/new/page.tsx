@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Footer from '@/app/components/Footer';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
 import DatePicker from 'react-datepicker';
@@ -477,8 +476,6 @@ export default function NewCustodyPage() {
             </div>
           </div>
         </main>
-        
-        <Footer />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Providers } from './providers';
 import { Inter } from 'next/font/google';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import AuthProvider from './providers/AuthProvider';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
@@ -37,8 +38,11 @@ export default function RootLayout({
       <head />
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased ${inter.className}`}>
         <AuthProvider>
-          <Header />
-          <main>{children}</main>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </AuthProvider>
       </body>
     </html>

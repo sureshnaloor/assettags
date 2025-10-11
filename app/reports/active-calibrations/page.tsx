@@ -67,7 +67,7 @@ export default function ActiveCalibrationsReport() {
     if (error) return <div>Error: {error}</div>;
 
     return (
-        <div className="container mx-auto py-6">
+        <div className="container mx-auto py-6 min-h-screen">
             <Card>
                 <CardHeader>
                     <CardTitle>Active Calibrations Report</CardTitle>

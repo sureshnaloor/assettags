@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 
-import Header from '@/app/components/Header';
 import ThemeSwitcher from '@/app/components/ThemeSwitcher';
 
 interface Category {

@@ -134,7 +134,7 @@ export default function AssetSearchPage() {
     };
 
     return (
-        <div className="container mx-auto py-6 space-y-6">
+        <div className="container mx-auto py-6 space-y-6 min-h-screen">
             <Card>
                 <CardHeader>
                     <CardTitle>Asset Search & Filter</CardTitle>

@@ -35,26 +35,7 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Package className="h-6 w-6" />
-          <span>AssetTrack Pro</span>
-        </Link>
-        <div className="ml-auto flex items-center gap-4">
-          <form className="relative hidden md:flex">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Search assets..." className="w-64 rounded-lg bg-background pl-8" />
-          </form>
-          <Button variant="outline" size="icon" className="rounded-full">
-            <span className="sr-only">Settings</span>
-            <Settings className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" className="rounded-lg">
-            <span>Admin User</span>
-          </Button>
-        </div>
-      </header>
+    <div className="flex flex-col">
       <div className="grid flex-1 md:grid-cols-[220px_1fr]">
         <div className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
@@ -120,7 +101,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
           <div className="flex items-center gap-4">
             <h1 className="flex-1 text-2xl font-semibold">Dashboard</h1>
             <div className="flex items-center gap-2">

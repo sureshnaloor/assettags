@@ -193,26 +193,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex justify-center mb-6">
-              <div className="relative w-32 h-10">
-                <Image
-                  src="/images/smarttags.jpg"
-                  alt="SmartTags Logo"
-                  fill
-                  className="object-contain brightness-0 invert"
-                />
-              </div>
-            </div>
-            <p className="text-slate-400">
-              © 2024 SmartTags. All rights reserved. Asset and Equipment Tagging Solutions.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

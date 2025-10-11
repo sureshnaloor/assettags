@@ -11,8 +11,6 @@ import {
 } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
 
 interface FixedAsset {
   _id: string;
@@ -159,8 +157,7 @@ export default function FixedAssetsPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <Header />
+    <div className="container mx-auto p-4 min-h-screen">
       <div className="mb-4">
         <input
           type="text"
@@ -211,7 +208,6 @@ export default function FixedAssetsPage() {
           </table>
         </div>
       </div>
-      <Footer />
     </div>
   );
 } 
