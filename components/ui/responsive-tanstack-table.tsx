@@ -117,7 +117,7 @@ function ResponsiveTanStackTable<TData>({
                 // Get the header from the table's header groups
                 const headerGroup = table.getHeaderGroups()[0];
                 const header = headerGroup?.headers.find(h => h.column.id === column.id);
-                const headerContent = header ? flexRender(header.column.columnDef.header, header.getContext()) : columnDef.header;
+                const headerContent = header ? flexRender(header.column.columnDef.header, header.getContext()) : (typeof columnDef.header === 'string' ? columnDef.header : '');
                 
                 return (
                   <div
