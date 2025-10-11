@@ -1,19 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowUpDown, Search, X, MapPin, User, AlertTriangle, Wrench, Building } from 'lucide-react';
 import Loading from '@/app/components/Loading';
+import ResponsiveTable from '@/components/ui/responsive-table';
 
 interface SearchResult {
     assetnumber: string;
@@ -303,118 +296,66 @@ export default function AssetSearchPage() {
                                 <div className="text-red-500 dark:text-red-400 text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                                     Error: {error}
                                 </div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>
-                                                    <Button
-                                                        variant="ghost"
-                                                        onClick={() => toggleSort('assetnumber')}
-                                                        className="flex items-center gap-2 p-0 h-auto font-semibold"
-                                                    >
-                                                        Asset Number
-                                                        <ArrowUpDown className="h-4 w-4" />
-                                                    </Button>
-                                                </TableHead>
-                                                <TableHead>
-                                                    <Button
-                                                        variant="ghost"
-                                                        onClick={() => toggleSort('assetdescription')}
-                                                        className="flex items-center gap-2 p-0 h-auto font-semibold"
-                                                    >
-                                                        Description
-                                                        <ArrowUpDown className="h-4 w-4" />
-                                                    </Button>
-                                                </TableHead>
-                                                <TableHead>Status</TableHead>
-                                                <TableHead>Category</TableHead>
-                                                <TableHead>Model</TableHead>
-                                                <TableHead>Manufacturer</TableHead>
-                                                <TableHead>Serial Number</TableHead>
-                                                <TableHead>Location</TableHead>
-                                                <TableHead>
-                                                    <Button
-                                                        variant="ghost"
-                                                        onClick={() => toggleSort('acquireddate')}
-                                                        className="flex items-center gap-2 p-0 h-auto font-semibold"
-                                                    >
-                                                        Acquired Date
-                                                        <ArrowUpDown className="h-4 w-4" />
-                                                    </Button>
-                                                </TableHead>
-                                                <TableHead>
-                                                    <Button
-                                                        variant="ghost"
-                                                        onClick={() => toggleSort('acquiredvalue')}
-                                                        className="flex items-center gap-2 p-0 h-auto font-semibold"
-                                                    >
-                                                        Acquired Value
-                                                        <ArrowUpDown className="h-4 w-4" />
-                                                    </Button>
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {results.length === 0 ? (
-                                                <TableRow>
-                                                    <TableCell colSpan={10} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                                        No assets found matching your criteria
-                                                    </TableCell>
-                                                </TableRow>
-                                            ) : (
-                                                results.map((asset, index) => (
-                                                    <TableRow key={index}>
-                                                        <TableCell className="font-medium">
-                                                            {asset.assetnumber}
-                                                        </TableCell>
-                                                        <TableCell className="max-w-xs truncate">
-                                                            {asset.assetdescription}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <span className={`px-2 py-1 rounded-full text-xs ${
-                                                                asset.assetstatus === 'Active' 
-                                                                    ? 'bg-green-100 text-green-800'
-                                                                    : asset.assetstatus === 'Inactive'
-                                                                    ? 'bg-red-100 text-red-800'
-                                                                    : 'bg-gray-100 text-gray-800'
-                                                            }`}>
-                                                                {asset.assetstatus}
-                                                            </span>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="text-sm">
-                                                                <div className="font-medium">{asset.assetcategory}</div>
-                                                                {asset.assetsubcategory && (
-                                                                    <div className="text-gray-500">{asset.assetsubcategory}</div>
-                                                                )}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>{asset.assetmodel || 'N/A'}</TableCell>
-                                                        <TableCell>{asset.assetmanufacturer || 'N/A'}</TableCell>
-                                                        <TableCell>{asset.assetserialnumber || 'N/A'}</TableCell>
-                                                        <TableCell>
-                                                            <span className={`px-2 py-1 rounded-full text-xs ${
-                                                                asset.location === 'Dammam Warehouse' ? 'bg-blue-100 text-blue-800' :
-                                                                asset.location === 'Jubail Warehouse' ? 'bg-green-100 text-green-800' :
-                                                                asset.location === 'With Users' ? 'bg-purple-100 text-purple-800' :
-                                                                asset.location === 'Not Traced' ? 'bg-red-100 text-red-800' :
-                                                                'bg-gray-100 text-gray-800'
-                                                            }`}>
-                                                                {asset.location}
-                                                            </span>
-                                                        </TableCell>
-                                                        <TableCell>{formatDate(asset.acquireddate)}</TableCell>
-                                                        <TableCell className="text-right">
-                                                            {formatCurrency(asset.acquiredvalue)}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))
-                                            )}
-                                        </TableBody>
-                                    </Table>
+                            ) : results.length === 0 ? (
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    No assets found matching your criteria
                                 </div>
+                            ) : (
+                                <ResponsiveTable
+                                    columns={[
+                                        { key: 'assetnumber', label: 'Asset Number', sortable: true },
+                                        { key: 'assetdescription', label: 'Description', sortable: true },
+                                        { key: 'assetstatus', label: 'Status' },
+                                        { key: 'assetcategory', label: 'Category' },
+                                        { key: 'assetmodel', label: 'Model' },
+                                        { key: 'assetmanufacturer', label: 'Manufacturer' },
+                                        { key: 'assetserialnumber', label: 'Serial Number' },
+                                        { key: 'location', label: 'Location' },
+                                        { key: 'acquireddate', label: 'Acquired Date', sortable: true },
+                                        { key: 'acquiredvalue', label: 'Acquired Value', sortable: true },
+                                    ]}
+                                    data={results.map(asset => ({
+                                        ...asset,
+                                        assetstatus: (
+                                            <span className={`px-2 py-1 rounded-full text-xs ${
+                                                asset.assetstatus === 'Active' 
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : asset.assetstatus === 'Inactive'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {asset.assetstatus}
+                                            </span>
+                                        ),
+                                        assetcategory: (
+                                            <div className="text-sm">
+                                                <div className="font-medium">{asset.assetcategory}</div>
+                                                {asset.assetsubcategory && (
+                                                    <div className="text-gray-500">{asset.assetsubcategory}</div>
+                                                )}
+                                            </div>
+                                        ),
+                                        assetmodel: asset.assetmodel || 'N/A',
+                                        assetmanufacturer: asset.assetmanufacturer || 'N/A',
+                                        assetserialnumber: asset.assetserialnumber || 'N/A',
+                                        location: (
+                                            <span className={`px-2 py-1 rounded-full text-xs ${
+                                                asset.location === 'Dammam Warehouse' ? 'bg-blue-100 text-blue-800' :
+                                                asset.location === 'Jubail Warehouse' ? 'bg-green-100 text-green-800' :
+                                                asset.location === 'With Users' ? 'bg-purple-100 text-purple-800' :
+                                                asset.location === 'Not Traced' ? 'bg-red-100 text-red-800' :
+                                                'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {asset.location}
+                                            </span>
+                                        ),
+                                        acquireddate: formatDate(asset.acquireddate),
+                                        acquiredvalue: formatCurrency(asset.acquiredvalue),
+                                    }))}
+                                    sortField={sortField}
+                                    sortOrder={sortOrder}
+                                    onSort={toggleSort}
+                                />
                             )}
                         </div>
                     )}
