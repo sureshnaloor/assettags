@@ -1,16 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { 
-  useReactTable, 
-  getCoreRowModel, 
-  getSortedRowModel,
-  getFilteredRowModel,
   ColumnDef,
   SortingState,
   ColumnFiltersState
 } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
+import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 
 interface FixedAsset {
   _id: string;
@@ -132,22 +129,6 @@ export default function FixedAssetsPage() {
     },
   ];
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
-    state: {
-      sorting,
-      columnFilters,
-      globalFilter,
-    },
-  });
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -168,45 +149,18 @@ export default function FixedAssetsPage() {
         />
       </div>
 
-      <div className="rounded-md border border-gray-300 dark:border-gray-700">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : typeof header.column.columnDef.header === 'function'
-                          ? header.column.columnDef.header(header.getContext())
-                          : header.column.columnDef.header}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                    >
-                      {typeof cell.column.columnDef.cell === 'function'
-                        ? cell.column.columnDef.cell(cell.getContext())
-                        : cell.getValue() as string}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <ResponsiveTanStackTable
+          data={data}
+          columns={columns}
+          sorting={sorting}
+          setSorting={setSorting}
+          columnFilters={columnFilters}
+          setColumnFilters={setColumnFilters}
+          globalFilter={globalFilter}
+          setGlobalFilter={setGlobalFilter}
+          getRowId={(row) => row._id}
+        />
       </div>
     </div>
   );

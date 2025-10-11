@@ -1,19 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowUpDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import Loading from '@/app/components/Loading';
+import ResponsiveTable from '@/components/ui/responsive-table';
 
 interface ActiveCalibration {
     assetnumber: string;
@@ -73,68 +64,37 @@ export default function ActiveCalibrationsReport() {
     );
     if (error) return <div>Error: {error}</div>;
 
+    const columns = [
+        { key: 'assetnumber', label: 'Asset Number', sortable: true },
+        { key: 'assetdescription', label: 'Description', sortable: true },
+        { key: 'assetmodel', label: 'Model' },
+        { key: 'assetmanufacturer', label: 'Manufacturer' },
+        { key: 'calibrationdate', label: 'Calibration Date' },
+        { key: 'calibrationtodate', label: 'Valid Until', sortable: true },
+        { key: 'calibratedby', label: 'Calibrated By' },
+        { key: 'calibcertificate', label: 'Certificate No.' },
+    ];
+
+    const formattedData = calibrations.map(item => ({
+        ...item,
+        calibrationdate: format(new Date(item.calibrationdate), 'dd/MM/yyyy'),
+        calibrationtodate: format(new Date(item.calibrationtodate), 'dd/MM/yyyy'),
+    }));
+
     return (
-        <div className="container mx-auto py-6 min-h-screen">
+        <div className="container mx-auto py-6 min-h-screen px-4">
             <Card>
                 <CardHeader>
                     <CardTitle>Active Calibrations Report</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => toggleSort('assetnumber')}
-                                        className="flex items-center gap-2"
-                                    >
-                                        Asset Number
-                                        <ArrowUpDown className="h-4 w-4" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => toggleSort('assetdescription')}
-                                        className="flex items-center gap-2"
-                                    >
-                                        Description
-                                        <ArrowUpDown className="h-4 w-4" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead>Model</TableHead>
-                                <TableHead>Manufacturer</TableHead>
-                                <TableHead>Calibration Date</TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => toggleSort('calibrationtodate')}
-                                        className="flex items-center gap-2"
-                                    >
-                                        Valid Until
-                                        <ArrowUpDown className="h-4 w-4" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead>Calibrated By</TableHead>
-                                <TableHead>Certificate No.</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {calibrations.map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{item.assetnumber}</TableCell>
-                                    <TableCell>{item.assetdescription}</TableCell>
-                                    <TableCell>{item.assetmodel}</TableCell>
-                                    <TableCell>{item.assetmanufacturer}</TableCell>
-                                    <TableCell>{format(new Date(item.calibrationdate), 'dd/MM/yyyy')}</TableCell>
-                                    <TableCell>{format(new Date(item.calibrationtodate), 'dd/MM/yyyy')}</TableCell>
-                                    <TableCell>{item.calibratedby}</TableCell>
-                                    <TableCell>{item.calibcertificate}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <ResponsiveTable
+                        columns={columns}
+                        data={formattedData}
+                        sortField={sortField}
+                        sortOrder={sortOrder}
+                        onSort={toggleSort}
+                    />
                 </CardContent>
             </Card>
         </div>

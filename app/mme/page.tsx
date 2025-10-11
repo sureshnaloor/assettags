@@ -1,10 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { 
-  useReactTable, 
-  getCoreRowModel, 
-  getSortedRowModel,
-  getFilteredRowModel,
   ColumnDef,
   SortingState,
   ColumnFiltersState
@@ -13,6 +9,7 @@ import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 
 import { AssetQRCode } from '@/components/AssetQRCode';
+import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 
 interface Equipment {
   _id: string;
@@ -157,20 +154,6 @@ export default function MMEPage() {
     }
   ];
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    state: {
-      sorting,
-      columnFilters,
-    },
-  });
-
   return (
     <div className="container mx-auto p-4">
       
@@ -191,61 +174,26 @@ export default function MMEPage() {
         />
       </div>
 
-      <div className="rounded-md border border-gray-300 dark:border-gray-700">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : typeof header.column.columnDef.header === 'function'
-                          ? header.column.columnDef.header(header.getContext())
-                          : header.column.columnDef.header}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center">
-                    <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                    </div>
-                  </td>
-                </tr>
-              ) : data.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                    Enter search criteria to view assets
-                  </td>
-                </tr>
-              ) : (
-                table.getRowModel().rows.map((row) => (
-                  <tr key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                      >
-                        {typeof cell.column.columnDef.cell === 'function'
-                          ? cell.column.columnDef.cell(cell.getContext())
-                          : cell.getValue() as string}
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
+        {loading ? (
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : data.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            Enter search criteria to view assets
+          </div>
+        ) : (
+          <ResponsiveTanStackTable
+            data={data}
+            columns={columns}
+            sorting={sorting}
+            setSorting={setSorting}
+            columnFilters={columnFilters}
+            setColumnFilters={setColumnFilters}
+            getRowId={(row) => row._id}
+          />
+        )}
       </div>
       
     </div>

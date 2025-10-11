@@ -1,17 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowUpDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import ResponsiveTable from '@/components/ui/responsive-table';
 
 interface WarehouseEquipment {
     assetnumber: string;
@@ -64,57 +55,30 @@ export default function WarehouseEquipmentReport() {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
+    const columns = [
+        { key: 'assetnumber', label: 'Asset Number', sortable: true },
+        { key: 'assetdescription', label: 'Description', sortable: true },
+        { key: 'assetstatus', label: 'Status' },
+        { key: 'assetmodel', label: 'Model' },
+        { key: 'assetmanufacturer', label: 'Manufacturer' },
+        { key: 'assetserialnumber', label: 'Serial Number' },
+        { key: 'warehouseCity', label: 'Warehouse' },
+    ];
+
     return (
-        <div className="container mx-auto py-6 min-h-screen">
+        <div className="container mx-auto py-6 min-h-screen px-4">
             <Card>
                 <CardHeader>
                     <CardTitle>Warehouse Equipment Report</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => toggleSort('assetnumber')}
-                                        className="flex items-center gap-2"
-                                    >
-                                        Asset Number
-                                        <ArrowUpDown className="h-4 w-4" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => toggleSort('assetdescription')}
-                                        className="flex items-center gap-2"
-                                    >
-                                        Description
-                                        <ArrowUpDown className="h-4 w-4" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Model</TableHead>
-                                <TableHead>Manufacturer</TableHead>
-                                <TableHead>Serial Number</TableHead>
-                                <TableHead>Warehouse</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {equipment.map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{item.assetnumber}</TableCell>
-                                    <TableCell>{item.assetdescription}</TableCell>
-                                    <TableCell>{item.assetstatus}</TableCell>
-                                    <TableCell>{item.assetmodel}</TableCell>
-                                    <TableCell>{item.assetmanufacturer}</TableCell>
-                                    <TableCell>{item.assetserialnumber}</TableCell>
-                                    <TableCell>{item.warehouseCity}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <ResponsiveTable
+                        columns={columns}
+                        data={equipment}
+                        sortField={sortField}
+                        sortOrder={sortOrder}
+                        onSort={toggleSort}
+                    />
                 </CardContent>
             </Card>
         </div>
