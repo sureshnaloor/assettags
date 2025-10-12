@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     const collection = db.collection('ppe-master');
 
     // Check if PPE ID already exists
-    const existingPPE = await collection.findOne({ ppeId });
+    const existingPPE = await collection.findOne({ ppeId }) as PPEMaster | null;
     if (existingPPE) {
       return NextResponse.json(
         { success: false, error: 'PPE ID already exists' },

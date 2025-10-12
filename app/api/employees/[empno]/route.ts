@@ -20,7 +20,7 @@ export async function GET(
     const { db } = await connectToDatabase();
     const collection = db.collection('employees');
 
-    const employee = await collection.findOne({ empno });
+    const employee = await collection.findOne({ empno }) as Employee | null;
 
     if (!employee) {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export async function PUT(
     const collection = db.collection('employees');
 
     // Check if employee exists
-    const existingEmployee = await collection.findOne({ empno });
+    const existingEmployee = await collection.findOne({ empno }) as Employee | null;
     if (!existingEmployee) {
       return NextResponse.json(
         { success: false, error: 'Employee not found' },
@@ -103,11 +103,11 @@ export async function PUT(
     }
 
     // Fetch updated employee
-    const updatedEmployee = await collection.findOne({ empno });
+    const updatedEmployee = await collection.findOne({ empno }) as Employee | null;
 
     const response: PPEApiResponse<Employee> = {
       success: true,
-      data: updatedEmployee,
+      data: updatedEmployee!,
       message: 'Employee updated successfully'
     };
 
@@ -138,7 +138,7 @@ export async function DELETE(
     const collection = db.collection('employees');
 
     // Check if employee exists
-    const existingEmployee = await collection.findOne({ empno });
+    const existingEmployee = await collection.findOne({ empno }) as Employee | null;
     if (!existingEmployee) {
       return NextResponse.json(
         { success: false, error: 'Employee not found' },

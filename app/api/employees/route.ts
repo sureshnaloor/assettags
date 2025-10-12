@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     const collection = db.collection('employees');
 
     // Check if employee number already exists
-    const existingEmployee = await collection.findOne({ empno });
+    const existingEmployee = await collection.findOne({ empno }) as Employee | null;
     if (existingEmployee) {
       return NextResponse.json(
         { success: false, error: 'Employee number already exists' },

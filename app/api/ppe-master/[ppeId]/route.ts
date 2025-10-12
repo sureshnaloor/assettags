@@ -21,7 +21,7 @@ export async function GET(
     const { db } = await connectToDatabase();
     const collection = db.collection('ppe-master');
 
-    const ppeRecord = await collection.findOne({ ppeId });
+    const ppeRecord = await collection.findOne({ ppeId }) as PPEMaster | null;
 
     if (!ppeRecord) {
       return NextResponse.json(
@@ -80,7 +80,7 @@ export async function PUT(
     const collection = db.collection('ppe-master');
 
     // Check if PPE record exists
-    const existingPPE = await collection.findOne({ ppeId });
+    const existingPPE = await collection.findOne({ ppeId }) as PPEMaster | null;
     if (!existingPPE) {
       return NextResponse.json(
         { success: false, error: 'PPE record not found' },
@@ -113,11 +113,11 @@ export async function PUT(
     }
 
     // Fetch updated record
-    const updatedPPE = await collection.findOne({ ppeId });
+    const updatedPPE = await collection.findOne({ ppeId }) as PPEMaster | null;
 
     const response: PPEApiResponse<PPEMaster> = {
       success: true,
-      data: updatedPPE,
+      data: updatedPPE!,
       message: 'PPE master record updated successfully'
     };
 
@@ -148,7 +148,7 @@ export async function DELETE(
     const collection = db.collection('ppe-master');
 
     // Check if PPE record exists
-    const existingPPE = await collection.findOne({ ppeId });
+    const existingPPE = await collection.findOne({ ppeId }) as PPEMaster | null;
     if (!existingPPE) {
       return NextResponse.json(
         { success: false, error: 'PPE record not found' },

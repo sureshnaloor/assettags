@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     
     // Verify PPE exists and get details
     const ppeMasterCollection = db.collection('ppe-master');
-    const ppeMaster = await ppeMasterCollection.findOne({ ppeId, isActive: true });
+    const ppeMaster = await ppeMasterCollection.findOne({ ppeId, isActive: true }) as PPEMaster | null;
     
     if (!ppeMaster) {
       return NextResponse.json(
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     const employee = await employeesCollection.findOne({ 
       empno: userEmpNumber,
       active: { $ne: 'N' } // Not resigned/exited
-    });
+    }) as Employee | null;
     
     if (!employee) {
       return NextResponse.json(
@@ -152,14 +152,14 @@ export async function POST(request: NextRequest) {
         .findOne(
           { userEmpNumber, ppeId },
           { sort: { dateOfIssue: -1 } }
-        );
+        ) as PPEIssueRecord | null;
       lastIssueDate = lastIssue?.dateOfIssue;
     }
 
     // Get issuer details (assuming current user is the issuer)
     const issuerEmployee = await employeesCollection.findOne({ 
       email: session.user.email 
-    });
+    }) as Employee | null;
 
     const newIssueRecord: PPEIssueRecord = {
       userEmpNumber,
