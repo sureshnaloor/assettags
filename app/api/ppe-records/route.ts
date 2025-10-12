@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PPEIssueRecord, PPEApiResponse } from '@/types/ppe';
+import { PPEIssueRecord, PPEIssueRecordInsert, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch PPE issue records
 export async function GET(request: NextRequest) {
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
       email: session.user.email 
     }) as Employee | null;
 
-    const newIssueRecord: PPEIssueRecord = {
+    const newIssueRecord: PPEIssueRecordInsert = {
       userEmpNumber,
       userEmpName,
       dateOfIssue: new Date(dateOfIssue),

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { Employee, PPEApiResponse } from '@/types/ppe';
+import { Employee, EmployeeInsert, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch all employees
 export async function GET(request: NextRequest) {
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newEmployee: Employee = {
+    const newEmployee: EmployeeInsert = {
       empno,
       empname,
       department,

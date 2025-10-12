@@ -15,9 +15,43 @@ export interface PPEMaster {
   updatedBy?: string;
 }
 
+// Database version without _id for insertions
+export interface PPEMasterInsert {
+  ppeId: string;
+  ppeName: string;
+  materialCode: string;
+  life: number;
+  lifeUOM: 'week' | 'month' | 'year';
+  description?: string;
+  category?: string;
+  isActive: boolean;
+  createdAt: Date;
+  createdBy: string;
+  updatedAt?: Date;
+  updatedBy?: string;
+}
+
 // PPE Issue Record Types
 export interface PPEIssueRecord {
   _id?: string;
+  userEmpNumber: string;
+  userEmpName: string;
+  dateOfIssue: Date;
+  ppeId: string;
+  ppeName: string; // Denormalized for easier queries
+  quantityIssued: number;
+  isFirstIssue: boolean; // Y/N flag
+  lastIssueDate?: Date; // Only if not first issue
+  issueAgainstDue: boolean; // Y for due, N for damage
+  remarks?: string;
+  issuedBy: string; // Employee number of person who issued
+  issuedByName: string; // Name of person who issued
+  createdAt: Date;
+  createdBy: string;
+}
+
+// Database version without _id for insertions
+export interface PPEIssueRecordInsert {
   userEmpNumber: string;
   userEmpName: string;
   dateOfIssue: Date;
@@ -52,9 +86,41 @@ export interface PPEBulkIssue {
   createdBy: string;
 }
 
+// Database version without _id for insertions
+export interface PPEBulkIssueInsert {
+  departmentOrProjectName: string;
+  location: string;
+  ppeId: string;
+  ppeName: string; // Denormalized for easier queries
+  quantityIssued: number;
+  receiverUserEmpNumber: string;
+  receiverUserEmpName: string; // Denormalized for easier queries
+  issueDate: Date;
+  issuedBy: string; // Employee number of person who issued
+  issuedByName: string; // Name of person who issued
+  remarks?: string;
+  createdAt: Date;
+  createdBy: string;
+}
+
 // Employee Types (Updated with active field)
 export interface Employee {
   _id?: string;
+  empno: string;
+  empname: string;
+  active?: 'Y' | 'N' | null; // Default null or Y, N if resigned/exited
+  department?: string;
+  designation?: string;
+  email?: string;
+  phone?: string;
+  createdAt: Date;
+  createdBy: string;
+  updatedAt?: Date;
+  updatedBy?: string;
+}
+
+// Database version without _id for insertions
+export interface EmployeeInsert {
   empno: string;
   empname: string;
   active?: 'Y' | 'N' | null; // Default null or Y, N if resigned/exited

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PPEBulkIssue, PPEApiResponse } from '@/types/ppe';
+import { PPEBulkIssue, PPEBulkIssueInsert, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch bulk PPE issue records
 export async function GET(request: NextRequest) {
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       email: session.user.email 
     }) as Employee | null;
 
-    const newBulkIssueRecord: PPEBulkIssue = {
+    const newBulkIssueRecord: PPEBulkIssueInsert = {
       departmentOrProjectName,
       location,
       ppeId,

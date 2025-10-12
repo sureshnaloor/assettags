@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PPEMaster, PPEApiResponse } from '@/types/ppe';
+import { PPEMaster, PPEMasterInsert, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch all PPE master records
 export async function GET(request: NextRequest) {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newPPE: PPEMaster = {
+    const newPPE: PPEMasterInsert = {
       ppeId,
       ppeName,
       materialCode,
