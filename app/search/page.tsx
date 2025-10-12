@@ -129,10 +129,14 @@ export default function AssetSearchPage() {
     };
 
     return (
-        <div className="container mx-auto py-6 space-y-6 min-h-screen">
+        <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
+            <div className="flex items-center gap-4">
+                <h1 className="flex-1 text-2xl font-semibold">Asset Search & Filter</h1>
+            </div>
+            
             <Card>
                 <CardHeader>
-                    <CardTitle>Asset Search & Filter</CardTitle>
+                    <CardTitle>Search Assets</CardTitle>
                     <p className="text-sm text-gray-600">
                         Search and filter assets by location, custody status, and acquisition details
                     </p>

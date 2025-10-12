@@ -6,6 +6,7 @@ import { Providers } from './providers';
 import { Inter } from 'next/font/google';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import LayoutWrapper from './components/LayoutWrapper';
 import AuthProvider from './providers/AuthProvider';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
@@ -41,7 +42,9 @@ export default function RootLayout({
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
               <Header />
-              <main className="flex-1">{children}</main>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
               <Footer />
             </div>
           </AuthProvider>

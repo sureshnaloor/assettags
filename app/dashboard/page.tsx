@@ -35,73 +35,7 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col">
-      <div className="grid flex-1 md:grid-cols-[220px_1fr]">
-        <div className="hidden border-r bg-muted/40 md:block">
-          <div className="flex h-full max-h-screen flex-col gap-2">
-            <div className="flex-1 overflow-auto py-2">
-              <nav className="grid items-start px-2 text-sm font-medium">
-                <Link
-                  href="#"
-                  className="flex items-center gap-3 rounded-lg bg-accent px-3 py-2 text-accent-foreground"
-                >
-                  <Home className="h-4 w-4" />
-                  Dashboard
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Box className="h-4 w-4" />
-                  Assets
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Truck className="h-4 w-4" />
-                  Movement
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Wrench className="h-4 w-4" />
-                  Maintenance
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Users className="h-4 w-4" />
-                  Users
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Calendar className="h-4 w-4" />
-                  Schedules
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <FileText className="h-4 w-4" />
-                  Reports
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Settings className="h-4 w-4" />
-                  Settings
-                </Link>
-              </nav>
-            </div>
-          </div>
-        </div>
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
+    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
           <div className="flex items-center gap-4">
             <h1 className="flex-1 text-2xl font-semibold">Dashboard</h1>
             <div className="flex items-center gap-2">
@@ -263,8 +197,6 @@ export default function DashboardPage() {
               </Card>
             </TabsContent>
           </Tabs>
-        </main>
-      </div>
     </div>
   )
 }
