@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PPEBulkIssue, PPEBulkIssueInsert, PPEApiResponse } from '@/types/ppe';
+import { PPEBulkIssue, PPEBulkIssueInsert, PPEMaster, Employee, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch bulk PPE issue records
 export async function GET(request: NextRequest) {

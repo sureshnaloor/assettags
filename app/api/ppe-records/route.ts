@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PPEIssueRecord, PPEIssueRecordInsert, PPEApiResponse } from '@/types/ppe';
+import { PPEIssueRecord, PPEIssueRecordInsert, PPEMaster, Employee, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch PPE issue records
 export async function GET(request: NextRequest) {
