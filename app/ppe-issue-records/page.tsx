@@ -15,6 +15,7 @@ interface PPEIssueFormData {
   userEmpName: string;
   dateOfIssue: string;
   ppeId: string;
+  ppeName: string;
   quantityIssued: number;
   isFirstIssue: boolean;
   issueAgainstDue: boolean;
@@ -31,6 +32,7 @@ export default function PPEIssueRecordsPage() {
     userEmpName: '',
     dateOfIssue: new Date().toISOString().split('T')[0],
     ppeId: '',
+    ppeName: '',
     quantityIssued: 1,
     isFirstIssue: true,
     issueAgainstDue: true,
@@ -91,6 +93,7 @@ export default function PPEIssueRecordsPage() {
           userEmpName: '',
           dateOfIssue: new Date().toISOString().split('T')[0],
           ppeId: '',
+          ppeName: '',
           quantityIssued: 1,
           isFirstIssue: true,
           issueAgainstDue: true,
@@ -330,6 +333,7 @@ export default function PPEIssueRecordsPage() {
                         userEmpName: '',
                         dateOfIssue: new Date().toISOString().split('T')[0],
                         ppeId: '',
+                        ppeName: '',
                         quantityIssued: 1,
                         isFirstIssue: true,
                         issueAgainstDue: true,

@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
       issuedByName: issuerEmployee?.empname || session.user.email,
       remarks,
       createdAt: new Date(),
-      createdBy: session.user.email
+      createdBy: session.user!.email!
     };
 
     // Start a transaction to ensure both bulk issue record and stock transaction are created together
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
           qtyAfterIssue: newStockAfterIssue,
           transactionType: 'bulk_issue',
           remarks: `Bulk issued to ${departmentOrProjectName} at ${location}`,
-          createdBy: session.user.email,
+          createdBy: session.user!.email!,
           createdAt: new Date()
         };
         

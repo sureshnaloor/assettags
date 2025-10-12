@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
       phone,
       active: 'Y', // Default to active
       createdAt: new Date(),
-      createdBy: session.user.email
+      createdBy: session.user!.email!
     };
 
     const result = await collection.insertOne(newEmployee);

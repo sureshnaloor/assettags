@@ -87,7 +87,8 @@ export default function PPEMasterPage() {
           life: 0,
           lifeUOM: 'month',
           description: '',
-          category: ''
+          category: '',
+          initialStock: 0
         });
         fetchPPERecords();
       } else {

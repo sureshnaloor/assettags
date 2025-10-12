@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       category,
       isActive: true,
       createdAt: new Date(),
-      createdBy: session.user.email
+      createdBy: session.user!.email!
     };
 
     // Start a transaction to ensure both PPE master and transaction are created together
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
           qtyAfterIssue: initialStock,
           transactionType: 'initial',
           remarks: 'Initial stock entry',
-          createdBy: session.user.email,
+          createdBy: session.user!.email!,
           createdAt: new Date()
         };
         

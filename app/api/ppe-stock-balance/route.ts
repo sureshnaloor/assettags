@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const stockBalances = await collection
       .find(query)
       .sort({ dateTimeUpdated: -1 })
-      .toArray();
+      .toArray() as unknown as PPEStockBalance[];
 
     const response: PPEApiResponse<PPEStockBalance[]> = {
       success: true,

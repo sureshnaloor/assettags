@@ -14,6 +14,7 @@ interface PPEBulkFormData {
   departmentOrProjectName: string;
   location: string;
   ppeId: string;
+  ppeName: string;
   quantityIssued: number;
   receiverUserEmpNumber: string;
   issueDate: string;
@@ -29,6 +30,7 @@ export default function PPEBulkIssuesPage() {
     departmentOrProjectName: '',
     location: '',
     ppeId: '',
+    ppeName: '',
     quantityIssued: 1,
     receiverUserEmpNumber: '',
     issueDate: new Date().toISOString().split('T')[0],
@@ -118,6 +120,7 @@ export default function PPEBulkIssuesPage() {
           departmentOrProjectName: '',
           location: '',
           ppeId: '',
+          ppeName: '',
           quantityIssued: 1,
           receiverUserEmpNumber: '',
           issueDate: new Date().toISOString().split('T')[0],
@@ -319,6 +322,7 @@ export default function PPEBulkIssuesPage() {
                         departmentOrProjectName: '',
                         location: '',
                         ppeId: '',
+                        ppeName: '',
                         quantityIssued: 1,
                         receiverUserEmpNumber: '',
                         issueDate: new Date().toISOString().split('T')[0],

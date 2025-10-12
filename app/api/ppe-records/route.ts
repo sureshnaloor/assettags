@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
       issuedBy: issuerEmployee?.empno || session.user.email,
       issuedByName: issuerEmployee?.empname || session.user.email,
       createdAt: new Date(),
-      createdBy: session.user.email
+      createdBy: session.user!.email!
     };
 
     // Start a transaction to ensure both issue record and stock transaction are created together
@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
           qtyAfterIssue: newStockAfterIssue,
           transactionType: 'issue',
           remarks: `Issued to ${userEmpName} (${userEmpNumber})`,
-          createdBy: session.user.email,
+          createdBy: session.user!.email!,
           createdAt: new Date()
         };
         
