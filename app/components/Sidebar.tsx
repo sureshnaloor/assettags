@@ -37,7 +37,7 @@ export default function Sidebar() {
           <nav className="grid items-start px-3 text-sm font-medium space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href || 
-                (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                (pathname && item.href !== '/dashboard' && pathname.startsWith(item.href));
               
               return (
                 <Link
