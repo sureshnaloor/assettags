@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { db } = await connectToDatabase();
+    const { client, db } = await connectToDatabase();
     
     // Verify PPE exists and get details
     const ppeMasterCollection = db.collection('ppe-master');
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Start a transaction to ensure both issue record and stock transaction are created together
-    const dbSession = await db.client.startSession();
+    const dbSession = await client.startSession();
     
     try {
       await dbSession.withTransaction(async () => {

@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { db } = await connectToDatabase();
+    const { client, db } = await connectToDatabase();
     const collection = db.collection('ppe-master');
 
     // Check if PPE ID already exists
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Start a transaction to ensure both PPE master and transaction are created together
-    const dbSession = await db.client.startSession();
+    const dbSession = await client.startSession();
     
     try {
       await dbSession.withTransaction(async () => {
