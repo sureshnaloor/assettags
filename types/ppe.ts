@@ -86,6 +86,33 @@ export interface PPEBulkIssue {
   createdBy: string;
 }
 
+// PPE Receipt Record
+export interface PPEReceipt {
+  _id?: string;
+  ppeId: string;
+  ppeName: string; // Denormalized for easier queries
+  dateOfReceipt: Date;
+  quantityReceived: number;
+  remarks?: string;
+  receivedBy: string; // Employee number of person who received
+  receivedByName: string; // Name of person who received
+  createdAt: Date;
+  createdBy: string;
+}
+
+// Database version without _id for insertions
+export interface PPEReceiptInsert {
+  ppeId: string;
+  ppeName: string;
+  dateOfReceipt: Date;
+  quantityReceived: number;
+  remarks?: string;
+  receivedBy: string;
+  receivedByName: string;
+  createdAt: Date;
+  createdBy: string;
+}
+
 // Database version without _id for insertions
 export interface PPEBulkIssueInsert {
   departmentOrProjectName: string;
@@ -142,10 +169,10 @@ export interface PPETransaction {
   dateInitialQty?: Date; // Only for initial stock entry
   dateTransaction: Date;
   relatedRecordId?: string; // _id of ppe-records or ppe-bulk-issues
-  relatedRecordType?: 'issue' | 'bulk'; // Type of related record
+  relatedRecordType?: 'issue' | 'bulk' | 'receipt'; // Type of related record
   qtyIssued?: number; // Quantity issued (negative for issues)
   qtyAfterIssue: number; // Current stock after this transaction
-  transactionType: 'initial' | 'issue' | 'bulk_issue'; // Type of transaction
+  transactionType: 'initial' | 'issue' | 'bulk_issue' | 'receipt'; // Type of transaction
   remarks?: string;
   createdBy: string;
   createdAt: Date;
@@ -158,10 +185,10 @@ export interface PPETransactionInsert {
   dateInitialQty?: Date;
   dateTransaction: Date;
   relatedRecordId?: string;
-  relatedRecordType?: 'issue' | 'bulk';
+  relatedRecordType?: 'issue' | 'bulk' | 'receipt';
   qtyIssued?: number;
   qtyAfterIssue: number;
-  transactionType: 'initial' | 'issue' | 'bulk_issue';
+  transactionType: 'initial' | 'issue' | 'bulk_issue' | 'receipt';
   remarks?: string;
   createdBy: string;
   createdAt: Date;

@@ -22,7 +22,8 @@ import {
   UserGroupIcon,
   ExclamationTriangleIcon,
   ClipboardDocumentCheckIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  TruckIcon
 } from '@heroicons/react/24/outline';
 
 export default function Header() {
@@ -55,6 +56,7 @@ export default function Header() {
         { name: 'PPE Master', href: '/ppe-master', icon: ClipboardDocumentListIcon },
         { name: 'Issue Records', href: '/ppe-issue-records', icon: ClipboardDocumentCheckIcon },
         { name: 'Bulk Issues', href: '/ppe-bulk-issues', icon: DocumentChartBarIcon },
+        { name: 'Receipts', href: '/ppe-receipts', icon: TruckIcon },
         { name: 'Stock Management', href: '/ppe-stock', icon: ArchiveBoxIcon },
         { name: 'Due for Reissue', href: '/ppe-due-for-reissue', icon: ExclamationTriangleIcon },
       ];
