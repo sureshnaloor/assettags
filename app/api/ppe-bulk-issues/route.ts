@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PPEBulkIssue, PPEBulkIssueInsert, PPEMaster, Employee, PPEApiResponse } from '@/types/ppe';
+import { PPEBulkIssue, PPEBulkIssueInsert, PPEMaster, Employee, PPETransactionInsert, PPEStockBalanceInsert, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch bulk PPE issue records
 export async function GET(request: NextRequest) {
@@ -166,16 +166,81 @@ export async function POST(request: NextRequest) {
       createdBy: session.user.email
     };
 
-    const collection = db.collection('ppe-bulk-issues');
-    const result = await collection.insertOne(newBulkIssueRecord);
+    // Start a transaction to ensure both bulk issue record and stock transaction are created together
+    const dbSession = await db.client.startSession();
+    
+    try {
+      await dbSession.withTransaction(async () => {
+        // Check current stock balance before issuing
+        const stockBalanceCollection = db.collection('ppe-stock-balance');
+        const currentStockBalance = await stockBalanceCollection.findOne(
+          { ppeId },
+          { session: dbSession }
+        ) as any;
+        
+        const currentStock = currentStockBalance?.balQty || 0;
+        
+        if (currentStock < quantityIssued) {
+          throw new Error(`Insufficient stock. Available: ${currentStock}, Requested: ${quantityIssued}`);
+        }
+        
+        // Insert PPE bulk issue record
+        const collection = db.collection('ppe-bulk-issues');
+        const result = await collection.insertOne(newBulkIssueRecord, { session: dbSession });
+        
+        // Create stock transaction record
+        const newStockAfterIssue = currentStock - quantityIssued;
+        const transactionsCollection = db.collection('ppe-transactions');
+        const stockTransaction: PPETransactionInsert = {
+          ppeId,
+          dateTransaction: new Date(issueDate),
+          relatedRecordId: result.insertedId.toString(),
+          relatedRecordType: 'bulk',
+          qtyIssued: -quantityIssued, // Negative for issues
+          qtyAfterIssue: newStockAfterIssue,
+          transactionType: 'bulk_issue',
+          remarks: `Bulk issued to ${departmentOrProjectName} at ${location}`,
+          createdBy: session.user.email,
+          createdAt: new Date()
+        };
+        
+        const transactionResult = await transactionsCollection.insertOne(stockTransaction, { session: dbSession });
+        
+        // Update stock balance record
+        const newStockBalance: PPEStockBalanceInsert = {
+          ppeId,
+          balQty: newStockAfterIssue,
+          dateTimeUpdated: new Date(),
+          transactionId: transactionResult.insertedId.toString(),
+          createdAt: currentStockBalance?.createdAt || new Date(),
+          updatedAt: new Date()
+        };
+        
+        await stockBalanceCollection.replaceOne(
+          { ppeId },
+          newStockBalance,
+          { session: dbSession, upsert: true }
+        );
+      });
+      
+      const response: PPEApiResponse<PPEBulkIssue> = {
+        success: true,
+        data: { ...newBulkIssueRecord, _id: 'generated' },
+        message: 'Bulk PPE issue record and stock transaction created successfully'
+      };
 
-    const response: PPEApiResponse<PPEBulkIssue> = {
-      success: true,
-      data: { ...newBulkIssueRecord, _id: result.insertedId.toString() },
-      message: 'Bulk PPE issue record created successfully'
-    };
-
-    return NextResponse.json(response, { status: 201 });
+      return NextResponse.json(response, { status: 201 });
+    } catch (error: any) {
+      if (error.message.includes('Insufficient stock')) {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 400 }
+        );
+      }
+      throw error;
+    } finally {
+      await dbSession.endSession();
+    }
   } catch (error) {
     console.error('Error creating bulk PPE issue record:', error);
     return NextResponse.json(

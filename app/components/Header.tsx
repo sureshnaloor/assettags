@@ -21,7 +21,8 @@ import {
   ClipboardDocumentListIcon,
   UserGroupIcon,
   ExclamationTriangleIcon,
-  ClipboardDocumentCheckIcon
+  ClipboardDocumentCheckIcon,
+  ArchiveBoxIcon
 } from '@heroicons/react/24/outline';
 
 export default function Header() {
@@ -49,13 +50,14 @@ export default function Header() {
     { name: 'Warehouse Equipment', href: '/reports/warehouse-equipment' },
   ];
 
-  const ppeMenu = [
-    { name: 'PPE Dashboard', href: '/ppe-dashboard', icon: ShieldCheckIcon },
-    { name: 'PPE Master', href: '/ppe-master', icon: ClipboardDocumentListIcon },
-    { name: 'Issue Records', href: '/ppe-issue-records', icon: ClipboardDocumentCheckIcon },
-    { name: 'Bulk Issues', href: '/ppe-bulk-issues', icon: DocumentChartBarIcon },
-    { name: 'Due for Reissue', href: '/ppe-due-for-reissue', icon: ExclamationTriangleIcon },
-  ];
+      const ppeMenu = [
+        { name: 'PPE Dashboard', href: '/ppe-dashboard', icon: ShieldCheckIcon },
+        { name: 'PPE Master', href: '/ppe-master', icon: ClipboardDocumentListIcon },
+        { name: 'Issue Records', href: '/ppe-issue-records', icon: ClipboardDocumentCheckIcon },
+        { name: 'Bulk Issues', href: '/ppe-bulk-issues', icon: DocumentChartBarIcon },
+        { name: 'Stock Management', href: '/ppe-stock', icon: ArchiveBoxIcon },
+        { name: 'Due for Reissue', href: '/ppe-due-for-reissue', icon: ExclamationTriangleIcon },
+      ];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm">

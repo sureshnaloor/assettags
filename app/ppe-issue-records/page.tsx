@@ -36,6 +36,8 @@ export default function PPEIssueRecordsPage() {
     issueAgainstDue: true,
     remarks: ''
   });
+  const [currentStock, setCurrentStock] = useState<number | null>(null);
+  const [stockLoading, setStockLoading] = useState(false);
 
   // Fetch data
   const fetchData = async () => {
@@ -65,6 +67,12 @@ export default function PPEIssueRecordsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check stock availability
+    if (currentStock !== null && formData.quantityIssued > currentStock) {
+      alert(`Insufficient stock! Available: ${currentStock}, Requested: ${formData.quantityIssued}`);
+      return;
+    }
+    
     try {
       const response = await fetch('/api/ppe-records', {
         method: 'POST',
@@ -88,6 +96,7 @@ export default function PPEIssueRecordsPage() {
           issueAgainstDue: true,
           remarks: ''
         });
+        setCurrentStock(null);
         fetchData();
       } else {
         alert(`Error: ${result.error}`);
@@ -96,6 +105,37 @@ export default function PPEIssueRecordsPage() {
       console.error('Error creating PPE issue record:', error);
       alert('Failed to create PPE issue record');
     }
+  };
+
+  // Fetch current stock for selected PPE
+  const fetchCurrentStock = async (ppeId: string) => {
+    if (!ppeId) {
+      setCurrentStock(null);
+      return;
+    }
+    
+    try {
+      setStockLoading(true);
+      const response = await fetch(`/api/ppe-current-stock/${ppeId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        setCurrentStock(result.data.currentStock);
+      } else {
+        setCurrentStock(0);
+      }
+    } catch (error) {
+      console.error('Error fetching current stock:', error);
+      setCurrentStock(0);
+    } finally {
+      setStockLoading(false);
+    }
+  };
+
+  // Handle PPE selection change
+  const handlePPESelection = (ppeId: string, ppeName: string) => {
+    setFormData({ ...formData, ppeId, ppeName });
+    fetchCurrentStock(ppeId);
   };
 
   // Table columns
@@ -188,15 +228,27 @@ export default function PPEIssueRecordsPage() {
                     </label>
                     <SearchablePPESelect
                       value={formData.ppeId}
-                      onChange={(ppeId, ppeName) => {
-                        setFormData({
-                          ...formData,
-                          ppeId: ppeId
-                        });
-                      }}
+                      onChange={handlePPESelection}
                       placeholder="Search PPE by name or ID..."
                       required
                     />
+                    {currentStock !== null && (
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-sm text-blue-800">
+                          <strong>Current Stock:</strong> {stockLoading ? 'Loading...' : currentStock} units
+                        </p>
+                        {currentStock === 0 && (
+                          <p className="text-sm text-red-600 mt-1">
+                            ⚠️ This PPE item is out of stock!
+                          </p>
+                        )}
+                        {currentStock > 0 && currentStock <= 10 && (
+                          <p className="text-sm text-orange-600 mt-1">
+                            ⚠️ Low stock warning (≤10 units)
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                   
                   <div>

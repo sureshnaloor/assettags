@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PPEIssueRecord, PPEIssueRecordInsert, PPEMaster, Employee, PPEApiResponse } from '@/types/ppe';
+import { PPEIssueRecord, PPEIssueRecordInsert, PPEMaster, Employee, PPETransactionInsert, PPEStockBalanceInsert, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch PPE issue records
 export async function GET(request: NextRequest) {
@@ -178,16 +178,81 @@ export async function POST(request: NextRequest) {
       createdBy: session.user.email
     };
 
-    const collection = db.collection('ppe-records');
-    const result = await collection.insertOne(newIssueRecord);
+    // Start a transaction to ensure both issue record and stock transaction are created together
+    const dbSession = await db.client.startSession();
+    
+    try {
+      await dbSession.withTransaction(async () => {
+        // Check current stock balance before issuing
+        const stockBalanceCollection = db.collection('ppe-stock-balance');
+        const currentStockBalance = await stockBalanceCollection.findOne(
+          { ppeId },
+          { session: dbSession }
+        ) as any;
+        
+        const currentStock = currentStockBalance?.balQty || 0;
+        
+        if (currentStock < quantityIssued) {
+          throw new Error(`Insufficient stock. Available: ${currentStock}, Requested: ${quantityIssued}`);
+        }
+        
+        // Insert PPE issue record
+        const collection = db.collection('ppe-records');
+        const result = await collection.insertOne(newIssueRecord, { session: dbSession });
+        
+        // Create stock transaction record
+        const newStockAfterIssue = currentStock - quantityIssued;
+        const transactionsCollection = db.collection('ppe-transactions');
+        const stockTransaction: PPETransactionInsert = {
+          ppeId,
+          dateTransaction: new Date(dateOfIssue),
+          relatedRecordId: result.insertedId.toString(),
+          relatedRecordType: 'issue',
+          qtyIssued: -quantityIssued, // Negative for issues
+          qtyAfterIssue: newStockAfterIssue,
+          transactionType: 'issue',
+          remarks: `Issued to ${userEmpName} (${userEmpNumber})`,
+          createdBy: session.user.email,
+          createdAt: new Date()
+        };
+        
+        const transactionResult = await transactionsCollection.insertOne(stockTransaction, { session: dbSession });
+        
+        // Update stock balance record
+        const newStockBalance: PPEStockBalanceInsert = {
+          ppeId,
+          balQty: newStockAfterIssue,
+          dateTimeUpdated: new Date(),
+          transactionId: transactionResult.insertedId.toString(),
+          createdAt: currentStockBalance?.createdAt || new Date(),
+          updatedAt: new Date()
+        };
+        
+        await stockBalanceCollection.replaceOne(
+          { ppeId },
+          newStockBalance,
+          { session: dbSession, upsert: true }
+        );
+      });
+      
+      const response: PPEApiResponse<PPEIssueRecord> = {
+        success: true,
+        data: { ...newIssueRecord, _id: 'generated' },
+        message: 'PPE issue record and stock transaction created successfully'
+      };
 
-    const response: PPEApiResponse<PPEIssueRecord> = {
-      success: true,
-      data: { ...newIssueRecord, _id: result.insertedId.toString() },
-      message: 'PPE issue record created successfully'
-    };
-
-    return NextResponse.json(response, { status: 201 });
+      return NextResponse.json(response, { status: 201 });
+    } catch (error: any) {
+      if (error.message.includes('Insufficient stock')) {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 400 }
+        );
+      }
+      throw error;
+    } finally {
+      await dbSession.endSession();
+    }
   } catch (error) {
     console.error('Error creating PPE issue record:', error);
     return NextResponse.json(

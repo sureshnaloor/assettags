@@ -134,6 +134,71 @@ export interface EmployeeInsert {
   updatedBy?: string;
 }
 
+// PPE Transaction Types
+export interface PPETransaction {
+  _id?: string;
+  ppeId: string;
+  initialQty?: number; // Only for initial stock entry
+  dateInitialQty?: Date; // Only for initial stock entry
+  dateTransaction: Date;
+  relatedRecordId?: string; // _id of ppe-records or ppe-bulk-issues
+  relatedRecordType?: 'issue' | 'bulk'; // Type of related record
+  qtyIssued?: number; // Quantity issued (negative for issues)
+  qtyAfterIssue: number; // Current stock after this transaction
+  transactionType: 'initial' | 'issue' | 'bulk_issue'; // Type of transaction
+  remarks?: string;
+  createdBy: string;
+  createdAt: Date;
+}
+
+// Database version without _id for insertions
+export interface PPETransactionInsert {
+  ppeId: string;
+  initialQty?: number;
+  dateInitialQty?: Date;
+  dateTransaction: Date;
+  relatedRecordId?: string;
+  relatedRecordType?: 'issue' | 'bulk';
+  qtyIssued?: number;
+  qtyAfterIssue: number;
+  transactionType: 'initial' | 'issue' | 'bulk_issue';
+  remarks?: string;
+  createdBy: string;
+  createdAt: Date;
+}
+
+// PPE Stock Balance Types (New collection for accurate stock tracking)
+export interface PPEStockBalance {
+  _id?: string;
+  ppeId: string;
+  balQty: number; // Current balance quantity
+  dateTimeUpdated: Date; // Date and time of last update
+  transactionId: string; // ID of the transaction that caused this update
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Database version without _id for insertions
+export interface PPEStockBalanceInsert {
+  ppeId: string;
+  balQty: number;
+  dateTimeUpdated: Date;
+  transactionId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// PPE Stock Summary Types
+export interface PPEStockSummary {
+  ppeId: string;
+  ppeName: string;
+  currentStock: number;
+  initialStock: number;
+  totalIssued: number;
+  lastTransactionDate: Date;
+  lastIssueDate?: Date;
+}
+
 // PPE Issue Summary Types
 export interface PPEIssueSummary {
   ppeId: string;

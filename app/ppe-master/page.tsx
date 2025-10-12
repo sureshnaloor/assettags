@@ -16,6 +16,7 @@ interface PPEFormData {
   lifeUOM: 'week' | 'month' | 'year';
   description: string;
   category: string;
+  initialStock: number;
 }
 
 export default function PPEMasterPage() {
@@ -31,7 +32,8 @@ export default function PPEMasterPage() {
     life: 0,
     lifeUOM: 'month',
     description: '',
-    category: ''
+    category: '',
+    initialStock: 0
   });
 
   // Fetch PPE records
@@ -107,7 +109,8 @@ export default function PPEMasterPage() {
       life: ppe.life,
       lifeUOM: ppe.lifeUOM,
       description: ppe.description || '',
-      category: ppe.category || ''
+      category: ppe.category || '',
+      initialStock: 0 // Don't show initial stock when editing
     });
     setActiveTab('form');
   };
@@ -291,6 +294,22 @@ export default function PPEMasterPage() {
                       <option value="year">Year</option>
                     </select>
                   </div>
+                  
+                  {!editingPPE && (
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Initial Stock *
+                      </label>
+                      <Input
+                        type="number"
+                        value={formData.initialStock}
+                        onChange={(e) => setFormData({ ...formData, initialStock: parseInt(e.target.value) || 0 })}
+                        required
+                        min="0"
+                        placeholder="Enter initial stock quantity"
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 <div>
@@ -322,7 +341,8 @@ export default function PPEMasterPage() {
                         life: 0,
                         lifeUOM: 'month',
                         description: '',
-                        category: ''
+                        category: '',
+                        initialStock: 0
                       });
                     }}
                   >

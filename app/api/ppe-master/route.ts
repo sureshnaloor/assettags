@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { PPEMaster, PPEMasterInsert, PPEApiResponse } from '@/types/ppe';
+import { PPEMaster, PPEMasterInsert, PPETransactionInsert, PPEStockBalanceInsert, PPEApiResponse } from '@/types/ppe';
 
 // GET - Fetch all PPE master records
 export async function GET(request: NextRequest) {
@@ -78,12 +78,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { ppeId, ppeName, materialCode, life, lifeUOM, description, category } = body;
+    const { ppeId, ppeName, materialCode, life, lifeUOM, description, category, initialStock } = body;
 
     // Validate required fields
     if (!ppeId || !ppeName || !materialCode || !life || !lifeUOM) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate initial stock
+    if (!initialStock || initialStock < 0) {
+      return NextResponse.json(
+        { success: false, error: 'Initial stock is required and must be non-negative' },
         { status: 400 }
       );
     }
@@ -121,15 +129,54 @@ export async function POST(request: NextRequest) {
       createdBy: session.user.email
     };
 
-    const result = await collection.insertOne(newPPE);
+    // Start a transaction to ensure both PPE master and transaction are created together
+    const dbSession = await db.client.startSession();
+    
+    try {
+      await dbSession.withTransaction(async () => {
+        // Insert PPE master record
+        const result = await collection.insertOne(newPPE, { session: dbSession });
+        
+        // Create initial stock transaction
+        const transactionCollection = db.collection('ppe-transactions');
+        const initialTransaction: PPETransactionInsert = {
+          ppeId,
+          initialQty: initialStock,
+          dateInitialQty: new Date(),
+          dateTransaction: new Date(),
+          qtyAfterIssue: initialStock,
+          transactionType: 'initial',
+          remarks: 'Initial stock entry',
+          createdBy: session.user.email,
+          createdAt: new Date()
+        };
+        
+        const transactionResult = await transactionCollection.insertOne(initialTransaction, { session: dbSession });
+        
+        // Create initial stock balance record
+        const stockBalanceCollection = db.collection('ppe-stock-balance');
+        const initialStockBalance: PPEStockBalanceInsert = {
+          ppeId,
+          balQty: initialStock,
+          dateTimeUpdated: new Date(),
+          transactionId: transactionResult.insertedId.toString(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        await stockBalanceCollection.insertOne(initialStockBalance, { session: dbSession });
+      });
+      
+      const response: PPEApiResponse<PPEMaster> = {
+        success: true,
+        data: { ...newPPE, _id: 'generated' },
+        message: 'PPE master record and initial stock created successfully'
+      };
 
-    const response: PPEApiResponse<PPEMaster> = {
-      success: true,
-      data: { ...newPPE, _id: result.insertedId.toString() },
-      message: 'PPE master record created successfully'
-    };
-
-    return NextResponse.json(response, { status: 201 });
+      return NextResponse.json(response, { status: 201 });
+    } finally {
+      await dbSession.endSession();
+    }
   } catch (error) {
     console.error('Error creating PPE master record:', error);
     return NextResponse.json(

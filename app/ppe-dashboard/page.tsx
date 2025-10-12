@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import PPEStockDisplay from '@/components/PPEStockDisplay';
 
 interface PPEDashboardStats {
   totalPPEItems: number;
@@ -263,6 +264,19 @@ export default function PPEDashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Stock Overview Section */}
+      <div className="mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Stock Overview</CardTitle>
+            <p className="text-sm text-gray-600">Current PPE inventory levels</p>
+          </CardHeader>
+          <CardContent>
+            <PPEStockDisplay showLowStock={false} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
