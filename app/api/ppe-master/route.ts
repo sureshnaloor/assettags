@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { Employee, PPEApiResponse } from '@/types/ppe';
+import { PPEMaster, PPEApiResponse } from '@/types/ppe';
 
-// GET - Fetch all employees
+// GET - Fetch all PPE master records
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,24 +19,19 @@ export async function GET(request: NextRequest) {
     const active = searchParams.get('active');
 
     const { db } = await connectToDatabase();
-    const collection = db.collection('employees');
+    const collection = db.collection('ppe-master');
 
     // Build query
     let query: any = {};
     if (search) {
       query.$or = [
-        { empname: { $regex: search, $options: 'i' } },
-        { empno: { $regex: search, $options: 'i' } },
-        { department: { $regex: search, $options: 'i' } },
-        { designation: { $regex: search, $options: 'i' } }
+        { ppeName: { $regex: search, $options: 'i' } },
+        { ppeId: { $regex: search, $options: 'i' } },
+        { materialCode: { $regex: search, $options: 'i' } }
       ];
     }
     if (active !== null && active !== undefined) {
-      if (active === 'true') {
-        query.active = { $ne: 'N' }; // Active employees (Y or null)
-      } else if (active === 'false') {
-        query.active = 'N'; // Inactive employees
-      }
+      query.isActive = active === 'true';
     }
 
     // Get total count
@@ -44,9 +39,9 @@ export async function GET(request: NextRequest) {
 
     // Get paginated results
     const skip = (page - 1) * limit;
-    const employees = await collection
+    const ppeRecords = await collection
       .find(query)
-      .sort({ empname: 1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .toArray();
@@ -54,7 +49,7 @@ export async function GET(request: NextRequest) {
     const response: PPEApiResponse<any> = {
       success: true,
       data: {
-        records: employees,
+        records: ppeRecords,
         pagination: {
           total,
           page,
@@ -66,15 +61,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching employees:', error);
+    console.error('Error fetching PPE master records:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch employees' },
+      { success: false, error: 'Failed to fetch PPE master records' },
       { status: 500 }
     );
   }
 }
 
-// POST - Create new employee
+// POST - Create new PPE master record
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -83,53 +78,62 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { empno, empname, department, designation, email, phone } = body;
+    const { ppeId, ppeName, materialCode, life, lifeUOM, description, category } = body;
 
     // Validate required fields
-    if (!empno || !empname) {
+    if (!ppeId || !ppeName || !materialCode || !life || !lifeUOM) {
       return NextResponse.json(
-        { success: false, error: 'Employee number and name are required' },
+        { success: false, error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate life UOM
+    if (!['week', 'month', 'year'].includes(lifeUOM)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid life UOM. Must be week, month, or year' },
         { status: 400 }
       );
     }
 
     const { db } = await connectToDatabase();
-    const collection = db.collection('employees');
+    const collection = db.collection('ppe-master');
 
-    // Check if employee number already exists
-    const existingEmployee = await collection.findOne({ empno });
-    if (existingEmployee) {
+    // Check if PPE ID already exists
+    const existingPPE = await collection.findOne({ ppeId });
+    if (existingPPE) {
       return NextResponse.json(
-        { success: false, error: 'Employee number already exists' },
+        { success: false, error: 'PPE ID already exists' },
         { status: 400 }
       );
     }
 
-    const newEmployee: Employee = {
-      empno,
-      empname,
-      department,
-      designation,
-      email,
-      phone,
-      active: 'Y', // Default to active
+    const newPPE: PPEMaster = {
+      ppeId,
+      ppeName,
+      materialCode,
+      life,
+      lifeUOM,
+      description,
+      category,
+      isActive: true,
       createdAt: new Date(),
       createdBy: session.user.email
     };
 
-    const result = await collection.insertOne(newEmployee);
+    const result = await collection.insertOne(newPPE);
 
-    const response: PPEApiResponse<Employee> = {
+    const response: PPEApiResponse<PPEMaster> = {
       success: true,
-      data: { ...newEmployee, _id: result.insertedId.toString() },
-      message: 'Employee created successfully'
+      data: { ...newPPE, _id: result.insertedId.toString() },
+      message: 'PPE master record created successfully'
     };
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error('Error creating employee:', error);
+    console.error('Error creating PPE master record:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create employee' },
+      { success: false, error: 'Failed to create PPE master record' },
       { status: 500 }
     );
   }

@@ -16,21 +16,29 @@ import {
   ChevronDownIcon,
   UserIcon,
   KeyIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  ShieldCheckIcon,
+  ClipboardDocumentListIcon,
+  UserGroupIcon,
+  ExclamationTriangleIcon,
+  ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline';
 
 export default function Header() {
   const { data: session, status } = useSession();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReportsMenu, setShowReportsMenu] = useState(false);
+  const [showPPEMenu, setShowPPEMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileReportsOpen, setIsMobileReportsOpen] = useState(false);
+  const [isMobilePPEOpen, setIsMobilePPEOpen] = useState(false);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
     { name: 'MME', href: '/mme', icon: WrenchScrewdriverIcon },
     { name: 'Fixed Assets', href: '/fixedasset', icon: BuildingOfficeIcon },
     { name: 'Asset Search', href: '/search', icon: ChartBarIcon },
+    { name: 'Employee Management', href: '/employee-management', icon: UserGroupIcon },
   ];
 
   const reportsMenu = [
@@ -38,6 +46,15 @@ export default function Header() {
     { name: 'Expired Calibrations', href: '/reports/expired-calibrations' },
     { name: 'Project Equipment', href: '/reports/project-equipment' },
     { name: 'User Equipment', href: '/reports/user-equipment' },
+    { name: 'Warehouse Equipment', href: '/reports/warehouse-equipment' },
+  ];
+
+  const ppeMenu = [
+    { name: 'PPE Dashboard', href: '/ppe-dashboard', icon: ShieldCheckIcon },
+    { name: 'PPE Master', href: '/ppe-master', icon: ClipboardDocumentListIcon },
+    { name: 'Issue Records', href: '/ppe-issue-records', icon: ClipboardDocumentCheckIcon },
+    { name: 'Bulk Issues', href: '/ppe-bulk-issues', icon: DocumentChartBarIcon },
+    { name: 'Due for Reissue', href: '/ppe-due-for-reissue', icon: ExclamationTriangleIcon },
   ];
 
   return (
@@ -97,6 +114,38 @@ export default function Header() {
                   >
                     <ChartBarIcon className="h-4 w-4" />
                     <span>{report.name}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* PPE Dropdown */}
+          <div className="relative">
+            <button
+              onMouseEnter={() => setShowPPEMenu(true)}
+              onMouseLeave={() => setShowPPEMenu(false)}
+              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
+            >
+              <ShieldCheckIcon className="h-4 w-4" />
+              <span className="font-light">PPE</span>
+              <ChevronDownIcon className="h-3 w-3" />
+            </button>
+
+            {showPPEMenu && (
+              <div
+                onMouseEnter={() => setShowPPEMenu(true)}
+                onMouseLeave={() => setShowPPEMenu(false)}
+                className="absolute left-0 top-full mt-1 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 dark:ring-slate-700/50"
+              >
+                {ppeMenu.map((ppe) => (
+                  <Link
+                    key={ppe.name}
+                    href={ppe.href}
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
+                  >
+                    <ppe.icon className="h-4 w-4" />
+                    <span>{ppe.name}</span>
                   </Link>
                 ))}
               </div>
@@ -227,6 +276,39 @@ export default function Header() {
                     >
                       <ChartBarIcon className="h-4 w-4" />
                       <span>{report.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile PPE Section */}
+            <div>
+              <button
+                onClick={() => setIsMobilePPEOpen(!isMobilePPEOpen)}
+                className="flex items-center justify-between w-full px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 text-sm font-light"
+              >
+                <div className="flex items-center space-x-3">
+                  <ShieldCheckIcon className="h-5 w-5" />
+                  <span>PPE</span>
+                </div>
+                <ChevronDownIcon className={`h-4 w-4 transition-transform ${isMobilePPEOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {isMobilePPEOpen && (
+                <div className="ml-8 mt-1 space-y-1">
+                  {ppeMenu.map((ppe) => (
+                    <Link
+                      key={ppe.name}
+                      href={ppe.href}
+                      className="flex items-center space-x-3 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 font-light"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setIsMobilePPEOpen(false);
+                      }}
+                    >
+                      <ppe.icon className="h-4 w-4" />
+                      <span>{ppe.name}</span>
                     </Link>
                   ))}
                 </div>
