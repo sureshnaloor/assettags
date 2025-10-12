@@ -11,7 +11,8 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
   
   // Don't show sidebar on asset detail pages (pages with asset numbers)
-  const shouldShowSidebar = !pathname.match(/^\/asset\/[^\/]+$/) && 
+  const shouldShowSidebar = pathname && 
+                           !pathname.match(/^\/asset\/[^\/]+$/) && 
                            !pathname.match(/^\/fixedasset\/[^\/]+$/);
 
   if (!shouldShowSidebar) {
