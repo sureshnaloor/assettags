@@ -3,11 +3,12 @@ import { PrinterIcon } from '@heroicons/react/24/outline';
 
 interface AssetQRCodeProps {
   assetNumber: string;
-  assetType?: 'mme' | 'fixedasset';
+  assetDescription?: string;
+  assetType?: 'mme' | 'fixedasset' | 'Tool';
 }
 
-export const AssetQRCode = ({ assetNumber, assetType = 'mme' }: AssetQRCodeProps) => {
-  const qrUrl = `${window.location.origin}/${assetType === 'fixedasset' ? 'fixedasset' : 'asset'}/${assetNumber}`;
+export const AssetQRCode = ({ assetNumber, assetDescription, assetType = 'mme' }: AssetQRCodeProps) => {
+  const qrUrl = `${window.location.origin}/${assetType === 'fixedasset' ? 'fixedasset' : assetType === 'Tool' ? 'tools' : 'asset'}/${assetNumber}`;
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -19,7 +20,7 @@ export const AssetQRCode = ({ assetNumber, assetType = 'mme' }: AssetQRCodeProps
           </head>
           <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
             <div style="text-align: center;">
-              <h2 style="font-size: 2em;">Asset: ${assetNumber}</h2>
+              <h2 style="font-size: 2em;">${assetDescription || 'Asset'}: ${assetNumber}</h2>
               <svg width="400" height="400">
                 ${document.getElementById(`qr-${assetNumber}`)?.innerHTML
                     .replace(/width="32"/, 'width="400"')
@@ -55,3 +56,5 @@ export const AssetQRCode = ({ assetNumber, assetType = 'mme' }: AssetQRCodeProps
     </div>
   );
 };
+
+export default AssetQRCode;

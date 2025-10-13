@@ -23,7 +23,10 @@ import {
   ExclamationTriangleIcon,
   ClipboardDocumentCheckIcon,
   ArchiveBoxIcon,
-  TruckIcon
+  TruckIcon,
+  CogIcon,
+  QrCodeIcon,
+  ClipboardDocumentIcon
 } from '@heroicons/react/24/outline';
 
 export default function Header() {
@@ -31,9 +34,11 @@ export default function Header() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReportsMenu, setShowReportsMenu] = useState(false);
   const [showPPEMenu, setShowPPEMenu] = useState(false);
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileReportsOpen, setIsMobileReportsOpen] = useState(false);
   const [isMobilePPEOpen, setIsMobilePPEOpen] = useState(false);
+  const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -59,6 +64,11 @@ export default function Header() {
         { name: 'Receipts', href: '/ppe-receipts', icon: TruckIcon },
         { name: 'Stock Management', href: '/ppe-stock', icon: ArchiveBoxIcon },
         { name: 'Due for Reissue', href: '/ppe-due-for-reissue', icon: ExclamationTriangleIcon },
+      ];
+
+      const toolsMenu = [
+        { name: 'Tools Management', href: '/tools', icon: CogIcon },
+        { name: 'Tools Reports', href: '/tools/reports', icon: ClipboardDocumentIcon },
       ];
 
   return (
@@ -150,6 +160,38 @@ export default function Header() {
                   >
                     <ppe.icon className="h-4 w-4" />
                     <span>{ppe.name}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Tools Dropdown */}
+          <div className="relative">
+            <button
+              onMouseEnter={() => setShowToolsMenu(true)}
+              onMouseLeave={() => setShowToolsMenu(false)}
+              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
+            >
+              <CogIcon className="h-4 w-4" />
+              <span className="font-light">Tools</span>
+              <ChevronDownIcon className="h-3 w-3" />
+            </button>
+
+            {showToolsMenu && (
+              <div
+                onMouseEnter={() => setShowToolsMenu(true)}
+                onMouseLeave={() => setShowToolsMenu(false)}
+                className="absolute left-0 top-full mt-1 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 dark:ring-slate-700/50"
+              >
+                {toolsMenu.map((tool) => (
+                  <Link
+                    key={tool.name}
+                    href={tool.href}
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
+                  >
+                    <tool.icon className="h-4 w-4" />
+                    <span>{tool.name}</span>
                   </Link>
                 ))}
               </div>
@@ -313,6 +355,39 @@ export default function Header() {
                     >
                       <ppe.icon className="h-4 w-4" />
                       <span>{ppe.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Tools Section */}
+            <div>
+              <button
+                onClick={() => setIsMobileToolsOpen(!isMobileToolsOpen)}
+                className="flex items-center justify-between w-full px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 text-sm font-light"
+              >
+                <div className="flex items-center space-x-3">
+                  <CogIcon className="h-5 w-5" />
+                  <span>Tools</span>
+                </div>
+                <ChevronDownIcon className={`h-4 w-4 transition-transform ${isMobileToolsOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {isMobileToolsOpen && (
+                <div className="ml-8 mt-1 space-y-1">
+                  {toolsMenu.map((tool) => (
+                    <Link
+                      key={tool.name}
+                      href={tool.href}
+                      className="flex items-center space-x-3 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 font-light"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setIsMobileToolsOpen(false);
+                      }}
+                    >
+                      <tool.icon className="h-4 w-4" />
+                      <span>{tool.name}</span>
                     </Link>
                   ))}
                 </div>

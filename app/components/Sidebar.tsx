@@ -15,12 +15,14 @@ import {
   Building,
   Search,
   BarChart3,
+  Hammer,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'MME', href: '/mme', icon: Wrench },
   { name: 'Fixed Assets', href: '/fixedasset', icon: Building },
+  { name: 'Tools', href: '/tools', icon: Hammer },
   { name: 'Asset Search', href: '/search', icon: Search },
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Users', href: '/admin/users', icon: Users },
