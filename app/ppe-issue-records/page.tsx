@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PPEIssueRecord, PPEMaster, Employee } from '@/types/ppe';
+import { PPEIssueRecord } from '@/types/ppe';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toaster';
 import { Input } from '@/components/ui/input';
@@ -15,12 +15,15 @@ interface PPEIssueFormData {
   userEmpNumber: string;
   userEmpName: string;
   dateOfIssue: string;
+  remarks: string;
+}
+
+interface ItemRow {
   ppeId: string;
   ppeName: string;
   quantityIssued: number;
   isFirstIssue: boolean;
   issueAgainstDue: boolean;
-  remarks: string;
 }
 
 export default function PPEIssueRecordsPage() {
@@ -33,15 +36,13 @@ export default function PPEIssueRecordsPage() {
     userEmpNumber: '',
     userEmpName: '',
     dateOfIssue: new Date().toISOString().split('T')[0],
-    ppeId: '',
-    ppeName: '',
-    quantityIssued: 1,
-    isFirstIssue: true,
-    issueAgainstDue: true,
     remarks: ''
   });
-  const [currentStock, setCurrentStock] = useState<number | null>(null);
-  const [stockLoading, setStockLoading] = useState(false);
+  const [itemRows, setItemRows] = useState<ItemRow[]>([
+    { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+    { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+    { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+  ]);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
   const { show } = useToast();
@@ -73,48 +74,74 @@ export default function PPEIssueRecordsPage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Check stock availability
-    if (currentStock !== null && formData.quantityIssued > currentStock) {
-      show({ title: 'Insufficient stock', description: `Available: ${currentStock}, Requested: ${formData.quantityIssued}`, variant: 'destructive' });
+    const validRows = itemRows.filter(r => r.ppeId && r.quantityIssued > 0);
+    if (validRows.length === 0) {
+      show({ title: 'No items', description: 'Add at least one PPE item row', variant: 'destructive' });
       return;
     }
-    
+
     try {
       setSubmitLoading(true);
       const isEditing = Boolean(editingRecordId);
-      const url = isEditing ? `/api/ppe-records/${editingRecordId}` : '/api/ppe-records';
-      const method = isEditing ? 'PUT' : 'POST';
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setActiveTab('list');
-        setEditingRecordId(null);
-        show({ title: isEditing ? 'PPE issue updated' : 'PPE issued', description: isEditing ? 'Record updated successfully' : 'Issue record created successfully', variant: 'success' });
-        setFormData({
-          userEmpNumber: '',
-          userEmpName: '',
-          dateOfIssue: new Date().toISOString().split('T')[0],
-          ppeId: '',
-          ppeName: '',
-          quantityIssued: 1,
-          isFirstIssue: true,
-          issueAgainstDue: true,
-          remarks: ''
+      if (isEditing) {
+        const r = validRows[0];
+        const response = await fetch(`/api/ppe-records/${editingRecordId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userEmpNumber: formData.userEmpNumber,
+            userEmpName: formData.userEmpName,
+            dateOfIssue: formData.dateOfIssue,
+            ppeId: r.ppeId,
+            ppeName: r.ppeName,
+            quantityIssued: r.quantityIssued,
+            isFirstIssue: r.isFirstIssue,
+            issueAgainstDue: r.issueAgainstDue,
+            remarks: formData.remarks,
+          }),
         });
-        setCurrentStock(null);
-        fetchData();
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Failed to update record');
+        show({ title: 'PPE issue updated', description: 'Record updated successfully', variant: 'success' });
       } else {
-        show({ title: 'Error', description: result.error || 'Operation failed', variant: 'destructive' });
+        let created = 0;
+        for (const r of validRows) {
+          const res = await fetch('/api/ppe-records', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userEmpNumber: formData.userEmpNumber,
+              userEmpName: formData.userEmpName,
+              dateOfIssue: formData.dateOfIssue,
+              ppeId: r.ppeId,
+              ppeName: r.ppeName,
+              quantityIssued: r.quantityIssued,
+              isFirstIssue: r.isFirstIssue,
+              issueAgainstDue: r.issueAgainstDue,
+              remarks: formData.remarks,
+            }),
+          });
+          const js = await res.json();
+          if (!js.success) throw new Error(js.error || 'Failed to create some records');
+          created += 1;
+        }
+        show({ title: 'PPE issued', description: `Created ${created} issue record(s)`, variant: 'success' });
       }
+
+      setActiveTab('list');
+      setEditingRecordId(null);
+      setFormData({
+        userEmpNumber: '',
+        userEmpName: '',
+        dateOfIssue: new Date().toISOString().split('T')[0],
+        remarks: ''
+      });
+      setItemRows([
+        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+      ]);
+      fetchData();
     } catch (error) {
       console.error('Error creating PPE issue record:', error);
       show({ title: 'Request failed', description: 'Could not complete the request', variant: 'destructive' });
@@ -129,14 +156,15 @@ export default function PPEIssueRecordsPage() {
       userEmpNumber: record.userEmpNumber,
       userEmpName: record.userEmpName,
       dateOfIssue: new Date(record.dateOfIssue).toISOString().split('T')[0],
+      remarks: record.remarks || ''
+    });
+    setItemRows([{
       ppeId: record.ppeId,
       ppeName: record.ppeName,
       quantityIssued: record.quantityIssued,
       isFirstIssue: record.isFirstIssue,
       issueAgainstDue: record.issueAgainstDue,
-      remarks: record.remarks || ''
-    });
-    await fetchCurrentStock(record.ppeId);
+    }]);
     setActiveTab('form');
   };
 
@@ -161,35 +189,21 @@ export default function PPEIssueRecordsPage() {
     }
   };
 
-  // Fetch current stock for selected PPE
-  const fetchCurrentStock = async (ppeId: string) => {
-    if (!ppeId) {
-      setCurrentStock(null);
-      return;
-    }
-    
-    try {
-      setStockLoading(true);
-      const response = await fetch(`/api/ppe-current-stock/${ppeId}`);
-      const result = await response.json();
-      
-      if (result.success) {
-        setCurrentStock(result.data.currentStock);
-      } else {
-        setCurrentStock(0);
-      }
-    } catch (error) {
-      console.error('Error fetching current stock:', error);
-      setCurrentStock(0);
-    } finally {
-      setStockLoading(false);
-    }
+  // Row handlers
+  const updateRowPPE = (index: number, ppeId: string, ppeName: string) => {
+    setItemRows(prev => prev.map((r, i) => i === index ? { ...r, ppeId, ppeName } : r));
   };
-
-  // Handle PPE selection change
-  const handlePPESelection = (ppeId: string, ppeName: string) => {
-    setFormData({ ...formData, ppeId, ppeName });
-    fetchCurrentStock(ppeId);
+  const updateRowQty = (index: number, qty: number) => {
+    setItemRows(prev => prev.map((r, i) => i === index ? { ...r, quantityIssued: qty } : r));
+  };
+  const updateRowFlag = (index: number, key: 'isFirstIssue' | 'issueAgainstDue', value: boolean) => {
+    setItemRows(prev => prev.map((r, i) => i === index ? { ...r, [key]: value } as ItemRow : r));
+  };
+  const addRow = () => {
+    setItemRows(prev => [...prev, { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true }]);
+  };
+  const removeRow = (index: number) => {
+    setItemRows(prev => prev.length <= 1 ? prev : prev.filter((_, i) => i !== index));
   };
 
   // Table columns
@@ -286,38 +300,7 @@ export default function PPEIssueRecordsPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">
-                      PPE Item *
-                    </label>
-                    <SearchablePPESelect
-                      value={formData.ppeId}
-                      onChange={handlePPESelection}
-                      placeholder="Search PPE by name or ID..."
-                      required
-                    />
-                    {currentStock !== null && (
-                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-                        <p className="text-sm text-blue-800">
-                          <strong>Current Stock:</strong> {stockLoading ? 'Loading...' : currentStock} units
-                        </p>
-                        {currentStock === 0 && (
-                          <p className="text-sm text-red-600 mt-1">
-                            ⚠️ This PPE item is out of stock!
-                          </p>
-                        )}
-                        {currentStock > 0 && currentStock <= 10 && (
-                          <p className="text-sm text-orange-600 mt-1">
-                            ⚠️ Low stock warning (≤10 units)
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Issue Date *
-                    </label>
+                    <label className="block text-sm font-medium mb-1">Issue Date *</label>
                     <Input
                       type="date"
                       value={formData.dateOfIssue}
@@ -325,44 +308,59 @@ export default function PPEIssueRecordsPage() {
                       required
                     />
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Quantity *
-                    </label>
-                    <Input
-                      type="number"
-                      value={formData.quantityIssued}
-                      onChange={(e) => setFormData({ ...formData, quantityIssued: parseInt(e.target.value) })}
-                      required
-                      min="1"
-                    />
-                  </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.isFirstIssue}
-                        onChange={(e) => setFormData({ ...formData, isFirstIssue: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm font-medium">First Issue</span>
-                    </label>
+                <div className="mt-2">
+                  <div className="overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b bg-slate-50/50">
+                          <th className="text-left p-2">PPE Item</th>
+                          <th className="text-left p-2">Quantity</th>
+                          <th className="text-left p-2">First Issue</th>
+                          <th className="text-left p-2">Issue Against Due</th>
+                          <th className="text-left p-2">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {itemRows.map((row, idx) => (
+                          <tr key={idx} className="border-b">
+                            <td className="p-2 min-w-[260px]">
+                              <SearchablePPESelect
+                                value={row.ppeId}
+                                onChange={(id, name) => updateRowPPE(idx, id, name)}
+                                placeholder="Search PPE by name or ID..."
+                                required
+                              />
+                            </td>
+                            <td className="p-2 w-[140px]">
+                              <Input type="number" min="1" value={row.quantityIssued}
+                                onChange={(e) => updateRowQty(idx, parseInt(e.target.value || '0'))} />
+                            </td>
+                            <td className="p-2 w-[160px]">
+                              <label className="inline-flex items-center gap-2">
+                                <input type="checkbox" className="rounded" checked={row.isFirstIssue}
+                                  onChange={(e) => updateRowFlag(idx, 'isFirstIssue', e.target.checked)} />
+                                <span>Yes</span>
+                              </label>
+                            </td>
+                            <td className="p-2 w-[220px]">
+                              <label className="inline-flex items-center gap-2">
+                                <input type="checkbox" className="rounded" checked={row.issueAgainstDue}
+                                  onChange={(e) => updateRowFlag(idx, 'issueAgainstDue', e.target.checked)} />
+                                <span>Due (uncheck for damage)</span>
+                              </label>
+                            </td>
+                            <td className="p-2 w-[140px]">
+                              <Button type="button" variant="outline" onClick={() => removeRow(idx)} disabled={itemRows.length <= 1}>Remove</Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  
-                  <div>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.issueAgainstDue}
-                        onChange={(e) => setFormData({ ...formData, issueAgainstDue: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm font-medium">Issue Against Due (uncheck for damage)</span>
-                    </label>
+                  <div className="mt-3">
+                    <Button type="button" variant="outline" onClick={addRow}>+ Add row</Button>
                   </div>
                 </div>
                 
@@ -393,13 +391,13 @@ export default function PPEIssueRecordsPage() {
                         userEmpNumber: '',
                         userEmpName: '',
                         dateOfIssue: new Date().toISOString().split('T')[0],
-                        ppeId: '',
-                        ppeName: '',
-                        quantityIssued: 1,
-                        isFirstIssue: true,
-                        issueAgainstDue: true,
                         remarks: ''
                       });
+                      setItemRows([
+                        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+                        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+                        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+                      ]);
                     }}
                   >
                     Cancel
