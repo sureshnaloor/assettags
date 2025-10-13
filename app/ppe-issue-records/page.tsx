@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { PPEIssueRecord, PPEMaster, Employee } from '@/types/ppe';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toaster';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,6 +28,7 @@ export default function PPEIssueRecordsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('list');
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [formData, setFormData] = useState<PPEIssueFormData>({
     userEmpNumber: '',
     userEmpName: '',
@@ -40,6 +42,9 @@ export default function PPEIssueRecordsPage() {
   });
   const [currentStock, setCurrentStock] = useState<number | null>(null);
   const [stockLoading, setStockLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
+  const { show } = useToast();
 
   // Fetch data
   const fetchData = async () => {
@@ -71,13 +76,17 @@ export default function PPEIssueRecordsPage() {
     
     // Check stock availability
     if (currentStock !== null && formData.quantityIssued > currentStock) {
-      alert(`Insufficient stock! Available: ${currentStock}, Requested: ${formData.quantityIssued}`);
+      show({ title: 'Insufficient stock', description: `Available: ${currentStock}, Requested: ${formData.quantityIssued}`, variant: 'destructive' });
       return;
     }
     
     try {
-      const response = await fetch('/api/ppe-records', {
-        method: 'POST',
+      setSubmitLoading(true);
+      const isEditing = Boolean(editingRecordId);
+      const url = isEditing ? `/api/ppe-records/${editingRecordId}` : '/api/ppe-records';
+      const method = isEditing ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -88,6 +97,8 @@ export default function PPEIssueRecordsPage() {
       
       if (result.success) {
         setActiveTab('list');
+        setEditingRecordId(null);
+        show({ title: isEditing ? 'PPE issue updated' : 'PPE issued', description: isEditing ? 'Record updated successfully' : 'Issue record created successfully', variant: 'success' });
         setFormData({
           userEmpNumber: '',
           userEmpName: '',
@@ -102,11 +113,51 @@ export default function PPEIssueRecordsPage() {
         setCurrentStock(null);
         fetchData();
       } else {
-        alert(`Error: ${result.error}`);
+        show({ title: 'Error', description: result.error || 'Operation failed', variant: 'destructive' });
       }
     } catch (error) {
       console.error('Error creating PPE issue record:', error);
-      alert('Failed to create PPE issue record');
+      show({ title: 'Request failed', description: 'Could not complete the request', variant: 'destructive' });
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  const handleEdit = async (record: PPEIssueRecord) => {
+    setEditingRecordId(record._id || null);
+    setFormData({
+      userEmpNumber: record.userEmpNumber,
+      userEmpName: record.userEmpName,
+      dateOfIssue: new Date(record.dateOfIssue).toISOString().split('T')[0],
+      ppeId: record.ppeId,
+      ppeName: record.ppeName,
+      quantityIssued: record.quantityIssued,
+      isFirstIssue: record.isFirstIssue,
+      issueAgainstDue: record.issueAgainstDue,
+      remarks: record.remarks || ''
+    });
+    await fetchCurrentStock(record.ppeId);
+    setActiveTab('form');
+  };
+
+  const handleDelete = async (record: PPEIssueRecord) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this issue record? This will revert stock.');
+    if (!confirmDelete || !record._id) return;
+    try {
+      setDeleteLoadingId(record._id);
+      const response = await fetch(`/api/ppe-records/${record._id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (result.success) {
+        show({ title: 'Record deleted', description: 'Issue record deleted and stock reverted', variant: 'success' });
+        fetchData();
+      } else {
+        show({ title: 'Delete failed', description: result.error || 'Unknown error', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error('Error deleting PPE issue record:', error);
+      show({ title: 'Request failed', description: 'Failed to delete PPE issue record', variant: 'destructive' });
+    } finally {
+      setDeleteLoadingId(null);
     }
   };
 
@@ -150,14 +201,23 @@ export default function PPEIssueRecordsPage() {
     { key: 'quantityIssued', label: 'Quantity' },
     { key: 'isFirstIssue', label: 'First Issue' },
     { key: 'issueAgainstDue', label: 'Issue Type' },
-    { key: 'issuedByName', label: 'Issued By' }
+    { key: 'issuedByName', label: 'Issued By' },
+    { key: 'actions', label: 'Actions' }
   ];
 
   const tableData = issueRecords.map(record => ({
     ...record,
     dateOfIssue: new Date(record.dateOfIssue).toLocaleDateString(),
     isFirstIssue: record.isFirstIssue ? 'Yes' : 'No',
-    issueAgainstDue: record.issueAgainstDue ? 'Due' : 'Damage'
+    issueAgainstDue: record.issueAgainstDue ? 'Due' : 'Damage',
+    actions: (
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={() => handleEdit(record)}>Edit</Button>
+        <Button variant="destructive" onClick={() => handleDelete(record)} disabled={deleteLoadingId === record._id}>
+          {deleteLoadingId === record._id ? 'Deleting...' : 'Delete'}
+        </Button>
+      </div>
+    )
   }));
 
   return (
@@ -320,14 +380,15 @@ export default function PPEIssueRecordsPage() {
                 </div>
                 
                 <div className="flex gap-4">
-                  <Button type="submit">
-                    Issue PPE
+                  <Button type="submit" disabled={submitLoading}>
+                    {submitLoading ? (editingRecordId ? 'Updating...' : 'Submitting...') : (editingRecordId ? 'Update Issue' : 'Issue PPE')}
                   </Button>
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={() => {
                       setActiveTab('list');
+                      setEditingRecordId(null);
                       setFormData({
                         userEmpNumber: '',
                         userEmpName: '',
