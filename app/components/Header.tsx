@@ -64,6 +64,8 @@ export default function Header() {
         { name: 'Receipts', href: '/ppe-receipts', icon: TruckIcon },
         { name: 'Stock Management', href: '/ppe-stock', icon: ArchiveBoxIcon },
         { name: 'Due for Reissue', href: '/ppe-due-for-reissue', icon: ExclamationTriangleIcon },
+        { name: 'Issues (Date Range)', href: '/ppe-issues', icon: ClipboardDocumentIcon },
+        { name: 'Issues by Employee', href: '/ppe-issues-employee', icon: UserIcon },
       ];
 
       const toolsMenu = [
