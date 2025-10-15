@@ -8,7 +8,7 @@ import { Edit, Trash2, Download, Upload, FileText } from 'lucide-react';
 export default function ZeroValMaterialDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const materialId = params.materialId as string;
+  const materialId = params?.materialId as string;
   
   const [material, setMaterial] = useState<ZeroValMaterialData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,6 +20,18 @@ export default function ZeroValMaterialDetailPage() {
       fetchMaterial();
     }
   }, [materialId]);
+
+  // Early return if no materialId
+  if (!materialId) {
+    return (
+      <div className="container mx-auto p-4 min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Invalid Material ID</h1>
+          <p className="text-gray-600 dark:text-gray-400">The material ID is missing or invalid.</p>
+        </div>
+      </div>
+    );
+  }
 
   const fetchMaterial = async () => {
     try {
