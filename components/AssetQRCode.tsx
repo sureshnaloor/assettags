@@ -4,11 +4,11 @@ import { PrinterIcon } from '@heroicons/react/24/outline';
 interface AssetQRCodeProps {
   assetNumber: string;
   assetDescription?: string;
-  assetType?: 'mme' | 'fixedasset' | 'Tool';
+  assetType?: 'mme' | 'fixedasset' | 'Tool' | 'Zero-Value Material';
 }
 
 export const AssetQRCode = ({ assetNumber, assetDescription, assetType = 'mme' }: AssetQRCodeProps) => {
-  const qrUrl = `${window.location.origin}/${assetType === 'fixedasset' ? 'fixedasset' : assetType === 'Tool' ? 'tools' : 'asset'}/${assetNumber}`;
+  const qrUrl = `${window.location.origin}/${assetType === 'fixedasset' ? 'fixedasset' : assetType === 'Tool' ? 'tools' : assetType === 'Zero-Value Material' ? 'zerovalmaterials' : 'asset'}/${assetNumber}`;
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
