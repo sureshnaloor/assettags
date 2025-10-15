@@ -235,54 +235,56 @@ export default function PPEIssueRecordsPage() {
   }));
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 text-sm bg-teal-50 dark:bg-slate-900">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">PPE Issue Records</h1>
-        <p className="text-gray-600">Manage Personal Protective Equipment issue records</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">PPE Issue Records</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-xs">Manage Personal Protective Equipment issue records</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="list">Issue Records</TabsTrigger>
-          <TabsTrigger value="form">Issue New PPE</TabsTrigger>
+        <TabsList className="bg-slate-100/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 rounded-lg p-1 shadow-sm">
+          <TabsTrigger className="rounded-md px-3 py-1 text-xs data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow data-[state=active]:border data-[state=active]:border-slate-200 dark:data-[state=active]:border-slate-500 text-slate-700 dark:text-slate-300" value="list">Issue Records</TabsTrigger>
+          <TabsTrigger className="rounded-md px-3 py-1 text-xs data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow data-[state=active]:border data-[state=active]:border-slate-200 dark:data-[state=active]:border-slate-500 text-slate-700 dark:text-slate-300" value="form">Issue New PPE</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list">
-          <Card>
-            <CardHeader>
-              <CardTitle>PPE Issue Records</CardTitle>
+          <Card className="bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-600 shadow-xl dark:shadow-2xl">
+            <CardHeader className="bg-gradient-to-b from-slate-50/90 to-transparent dark:from-slate-700/90 dark:to-transparent rounded-t-md border-b border-slate-200/50 dark:border-slate-600/50">
+              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100">PPE Issue Records</CardTitle>
               <div className="flex gap-4">
                 <Input
                   placeholder="Search issue records..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="max-w-sm"
+                  className="max-w-sm text-xs bg-white/80 dark:bg-slate-700/80 border-slate-300 dark:border-slate-500 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 shadow-inner"
                 />
-                <Button onClick={() => setActiveTab('form')}>
+                <Button className="text-xs shadow-md hover:shadow-lg transition-shadow" onClick={() => setActiveTab('form')}>
                   Issue New PPE
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="bg-white/60 dark:bg-slate-800/60">
               {loading ? (
-                <div className="text-center py-8">Loading...</div>
+                <div className="text-center py-8 text-slate-600 dark:text-slate-300 text-sm">Loading...</div>
               ) : (
-                <ResponsiveTable columns={columns} data={tableData} />
+                <div className="rounded-lg border border-slate-200 dark:border-slate-600 shadow-inner bg-white/80 dark:bg-slate-700/80">
+                  <ResponsiveTable columns={columns} data={tableData} />
+                </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="form">
-          <Card>
-            <CardHeader>
-              <CardTitle>Issue PPE to Employee</CardTitle>
+          <Card className="bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-600 shadow-xl dark:shadow-2xl">
+            <CardHeader className="bg-gradient-to-b from-slate-50/90 to-transparent dark:from-slate-700/90 dark:to-transparent rounded-t-md border-b border-slate-200/50 dark:border-slate-600/50">
+              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100">Issue PPE to Employee</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="bg-white/60 dark:bg-slate-800/60">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">
                       Employee *
                     </label>
                     <SearchableEmployeeSelect
@@ -300,31 +302,32 @@ export default function PPEIssueRecordsPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">Issue Date *</label>
+                    <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">Issue Date *</label>
                     <Input
                       type="date"
                       value={formData.dateOfIssue}
                       onChange={(e) => setFormData({ ...formData, dateOfIssue: e.target.value })}
                       required
+                      className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100"
                     />
                   </div>
                 </div>
                 
                 <div className="mt-2">
-                  <div className="overflow-auto">
-                    <table className="w-full text-sm">
+                  <div className="overflow-auto rounded-md border border-slate-200 dark:border-slate-600 shadow-sm bg-white/60 dark:bg-slate-700/60">
+                    <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b bg-slate-50/50">
-                          <th className="text-left p-2">PPE Item</th>
-                          <th className="text-left p-2">Quantity</th>
-                          <th className="text-left p-2">First Issue</th>
-                          <th className="text-left p-2">Issue Against Due</th>
-                          <th className="text-left p-2">Actions</th>
+                        <tr className="border-b bg-slate-50 dark:bg-slate-600">
+                          <th className="text-left p-2 text-slate-700 dark:text-slate-200">PPE Item</th>
+                          <th className="text-left p-2 text-slate-700 dark:text-slate-200">Quantity</th>
+                          <th className="text-left p-2 text-slate-700 dark:text-slate-200">First Issue</th>
+                          <th className="text-left p-2 text-slate-700 dark:text-slate-200">Issue Against Due</th>
+                          <th className="text-left p-2 text-slate-700 dark:text-slate-200">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {itemRows.map((row, idx) => (
-                          <tr key={idx} className="border-b">
+                          <tr key={idx} className="border-b hover:bg-slate-50/60 dark:hover:bg-slate-600/60">
                             <td className="p-2 min-w-[260px]">
                               <SearchablePPESelect
                                 value={row.ppeId}
@@ -334,25 +337,25 @@ export default function PPEIssueRecordsPage() {
                               />
                             </td>
                             <td className="p-2 w-[140px]">
-                              <Input type="number" min="1" value={row.quantityIssued}
+                              <Input className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100" type="number" min="1" value={row.quantityIssued}
                                 onChange={(e) => updateRowQty(idx, parseInt(e.target.value || '0'))} />
                             </td>
                             <td className="p-2 w-[160px]">
-                              <label className="inline-flex items-center gap-2">
+                              <label className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-300">
                                 <input type="checkbox" className="rounded" checked={row.isFirstIssue}
                                   onChange={(e) => updateRowFlag(idx, 'isFirstIssue', e.target.checked)} />
                                 <span>Yes</span>
                               </label>
                             </td>
                             <td className="p-2 w-[220px]">
-                              <label className="inline-flex items-center gap-2">
+                              <label className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-300">
                                 <input type="checkbox" className="rounded" checked={row.issueAgainstDue}
                                   onChange={(e) => updateRowFlag(idx, 'issueAgainstDue', e.target.checked)} />
                                 <span>Due (uncheck for damage)</span>
                               </label>
                             </td>
                             <td className="p-2 w-[140px]">
-                              <Button type="button" variant="outline" onClick={() => removeRow(idx)} disabled={itemRows.length <= 1}>Remove</Button>
+                              <Button className="text-sm" type="button" variant="outline" onClick={() => removeRow(idx)} disabled={itemRows.length <= 1}>Remove</Button>
                             </td>
                           </tr>
                         ))}
@@ -360,30 +363,31 @@ export default function PPEIssueRecordsPage() {
                     </table>
                   </div>
                   <div className="mt-3">
-                    <Button type="button" variant="outline" onClick={addRow}>+ Add row</Button>
+                    <Button className="text-sm" type="button" variant="outline" onClick={addRow}>+ Add row</Button>
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">
                     Remarks
                   </label>
                   <textarea
                     value={formData.remarks}
                     onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-slate-300 dark:border-slate-500 rounded-md text-sm shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
                     rows={3}
                     placeholder="Enter any remarks or notes..."
                   />
                 </div>
                 
                 <div className="flex gap-4">
-                  <Button type="submit" disabled={submitLoading}>
+                  <Button className="text-sm" type="submit" disabled={submitLoading}>
                     {submitLoading ? (editingRecordId ? 'Updating...' : 'Submitting...') : (editingRecordId ? 'Update Issue' : 'Issue PPE')}
                   </Button>
                   <Button 
                     type="button" 
                     variant="outline" 
+                    className="text-sm"
                     onClick={() => {
                       setActiveTab('list');
                       setEditingRecordId(null);

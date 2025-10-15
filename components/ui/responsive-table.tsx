@@ -40,14 +40,17 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
       {/* Desktop Table View */}
       <div className="hidden lg:block">
         <div className="relative w-full overflow-auto">
-          <table className="w-full caption-bottom text-sm">
+          <table className="w-full caption-bottom text-xs">
             <thead className="[&_tr]:border-b">
               <tr className="border-b bg-slate-50/50 dark:bg-slate-800/50 transition-colors">
-                {columns.map((column) => (
+                {columns.map((column, colIndex) => (
                   <th
                     key={column.key}
                     className={cn(
-                      "h-12 px-4 text-left align-middle font-medium text-slate-700 dark:text-slate-300 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+                      "h-10 px-3 text-left align-middle font-medium text-slate-700 dark:text-slate-300 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-xs",
+                      colIndex % 2 === 0 
+                        ? "bg-slate-100/60 dark:bg-slate-700/60" 
+                        : "bg-slate-50/80 dark:bg-slate-800/80",
                       column.className
                     )}
                   >
@@ -55,10 +58,10 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                       <Button
                         variant="ghost"
                         onClick={() => toggleSort(column.key)}
-                        className="flex items-center gap-2 h-auto p-0 font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                        className="flex items-center gap-1 h-auto p-0 font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs"
                       >
                         {column.label}
-                        <ArrowUpDown className="h-4 w-4" />
+                        <ArrowUpDown className="h-3 w-3" />
                       </Button>
                     ) : (
                       column.label
@@ -78,7 +81,7 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                       : "bg-slate-50/30 dark:bg-slate-800/30"
                   )}
                 >
-                  {columns.map((column) => {
+                  {columns.map((column, colIndex) => {
                     const columnId = column.key;
                     const cellValue = item[column.key];
                     
@@ -86,11 +89,11 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                     const getCellStyling = () => {
                       // Asset Number - Bold, monospace font
                       if (columnId.includes('assetnumber') || columnId.includes('number')) {
-                        return "font-mono font-bold text-slate-900 dark:text-slate-100 text-sm";
+                        return "font-mono font-bold text-slate-900 dark:text-slate-100 text-xs";
                       }
                       // Description - Italic, slightly larger
                       if (columnId.includes('description') || columnId.includes('name')) {
-                        return "font-medium italic text-slate-700 dark:text-slate-300 text-sm";
+                        return "font-medium italic text-slate-700 dark:text-slate-300 text-xs";
                       }
                       // Status - Colored badge style
                       if (columnId.includes('status') || columnId.includes('condition')) {
@@ -102,7 +105,7 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                       }
                       // Value/Price - Bold, monospace, colored
                       if (columnId.includes('value') || columnId.includes('price') || columnId.includes('cost')) {
-                        return "font-mono font-bold text-green-700 dark:text-green-400 text-sm";
+                        return "font-mono font-bold text-green-700 dark:text-green-400 text-xs";
                       }
                       // Date - Light weight, smaller
                       if (columnId.includes('date') || columnId.includes('time')) {
@@ -110,7 +113,7 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                       }
                       // Manufacturer/Model - Medium weight
                       if (columnId.includes('manufacturer') || columnId.includes('model') || columnId.includes('brand')) {
-                        return "font-medium text-slate-700 dark:text-slate-300 text-sm";
+                        return "font-medium text-slate-700 dark:text-slate-300 text-xs";
                       }
                       // Serial Number - Monospace, smaller
                       if (columnId.includes('serial') || columnId.includes('id')) {
@@ -121,13 +124,18 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                         return "font-light italic text-slate-500 dark:text-slate-500 text-xs";
                       }
                       // Default styling
-                      return "font-normal text-slate-700 dark:text-slate-300 text-sm";
+                      return "font-normal text-slate-700 dark:text-slate-300 text-xs";
                     };
 
                     return (
                       <td
                         key={column.key}
-                        className="px-4 py-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+                        className={cn(
+                          "px-3 py-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+                          colIndex % 2 === 0 
+                            ? "bg-slate-50/40 dark:bg-slate-800/40" 
+                            : "bg-white/60 dark:bg-slate-900/60"
+                        )}
                       >
                         <div className={getCellStyling()}>
                           {cellValue}
@@ -163,11 +171,11 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                     colIndex === 0 && "border-b pb-2 mb-2"
                   )}
                 >
-                  <div className="text-sm font-medium text-muted-foreground sm:w-1/3 sm:pr-4">
+                  <div className="text-xs font-medium text-muted-foreground sm:w-1/3 sm:pr-4">
                     {column.label}:
                   </div>
                   <div className={cn(
-                    "text-sm sm:w-2/3 sm:pl-4",
+                    "text-xs sm:w-2/3 sm:pl-4",
                     // Apply similar styling logic for mobile cards
                     column.key.includes('assetnumber') || column.key.includes('number') 
                       ? "font-mono font-bold text-slate-900 dark:text-slate-100" 
