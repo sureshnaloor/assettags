@@ -81,17 +81,17 @@ export default function Header() {
       ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-slate-50/98 via-white/98 to-slate-50/98 dark:from-slate-900/98 dark:via-slate-800/98 dark:to-slate-900/98 backdrop-blur-lg border-b border-slate-200/60 dark:border-slate-700/60 shadow-lg shadow-slate-200/20 dark:shadow-slate-900/20">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
-          <Link href="/" className="flex items-center">
-            <div className="relative w-32 h-12">
+          <Link href="/" className="flex items-center group">
+            <div className="relative w-32 h-12 transition-transform duration-300 group-hover:scale-105">
               <Image
                 src="/images/logosmarttag.png"
                 alt="SmartTags Logo"
                 fill
-                className="object-contain drop-shadow-sm"
+                className="object-contain drop-shadow-md filter brightness-110"
                 priority
               />
             </div>
@@ -100,14 +100,18 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center space-x-1">
-          {navigation.map((item) => (
+          {navigation.map((item, idx) => (
             <Link
               key={item.name}
               href={item.href}
-              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
+              className={`group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium hover:shadow-md hover:shadow-slate-200/40 dark:hover:shadow-slate-800/40 border ${
+                idx < 4
+                  ? 'bg-gradient-to-r from-cyan-400/50 to-blue-500/50 text-slate-900 dark:text-white hover:from-cyan-400/70 hover:to-blue-500/70 border-slate-200/40 dark:border-slate-600/40'
+                  : 'bg-gradient-to-r from-slate-300/50 to-slate-400/50 text-slate-900 dark:text-white hover:from-slate-300/70 hover:to-slate-500/70 border-slate-200/40 dark:border-slate-600/40'
+              }`}
             >
-              <item.icon className="h-4 w-4" />
-              <span className="font-light">{item.name}</span>
+              <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span className="font-medium tracking-wide">{item.name}</span>
             </Link>
           ))}
           
@@ -116,27 +120,27 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowReportsMenu(true)}
               onMouseLeave={() => setShowReportsMenu(false)}
-              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
+              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-400/50 to-fuchsia-500/50 text-slate-900 dark:text-white hover:from-violet-400/70 hover:to-fuchsia-500/70 hover:shadow-violet-200/30 border border-slate-200/40 dark:border-slate-600/40"
             >
-              <DocumentChartBarIcon className="h-4 w-4" />
-              <span className="font-light">Reports</span>
-              <ChevronDownIcon className="h-3 w-3" />
+              <DocumentChartBarIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span className="font-medium tracking-wide">Reports</span>
+              <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
             </button>
 
             {showReportsMenu && (
               <div
                 onMouseEnter={() => setShowReportsMenu(true)}
                 onMouseLeave={() => setShowReportsMenu(false)}
-                className="absolute left-0 top-full mt-1 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 dark:ring-slate-700/50"
+                className="absolute left-0 top-full mt-2 w-64 rounded-xl z-50 bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl backdrop-saturate-150 py-3 shadow-2xl shadow-slate-200/30 dark:shadow-slate-900/30 ring-1 ring-white/30 dark:ring-slate-600/50 border border-white/30 dark:border-slate-600/50"
               >
                 {reportsMenu.map((report) => (
                   <Link
                     key={report.name}
                     href={report.href}
-                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
+                    className="group flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-800 hover:text-slate-900 dark:text-slate-100 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all duration-300 font-medium hover:shadow-sm hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 mx-2 rounded-lg"
                   >
-                    <ChartBarIcon className="h-4 w-4" />
-                    <span>{report.name}</span>
+                    <ChartBarIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                    <span className="tracking-wide">{report.name}</span>
                   </Link>
                 ))}
               </div>
@@ -148,27 +152,27 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowPPEMenu(true)}
               onMouseLeave={() => setShowPPEMenu(false)}
-              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
+              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-emerald-400/50 to-green-500/50 text-slate-900 dark:text-white hover:from-emerald-400/70 hover:to-green-500/70 hover:shadow-emerald-200/30 border border-slate-200/40 dark:border-slate-600/40"
             >
-              <ShieldCheckIcon className="h-4 w-4" />
-              <span className="font-light">PPE</span>
-              <ChevronDownIcon className="h-3 w-3" />
+              <ShieldCheckIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span className="font-medium tracking-wide">PPE</span>
+              <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
             </button>
 
             {showPPEMenu && (
               <div
                 onMouseEnter={() => setShowPPEMenu(true)}
                 onMouseLeave={() => setShowPPEMenu(false)}
-                className="absolute left-0 top-full mt-1 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 dark:ring-slate-700/50"
+                className="absolute left-0 top-full mt-2 w-64 rounded-xl z-50 bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl backdrop-saturate-150 py-3 shadow-2xl shadow-slate-200/30 dark:shadow-slate-900/30 ring-1 ring-white/30 dark:ring-slate-600/50 border border-white/30 dark:border-slate-600/50"
               >
                 {ppeMenu.map((ppe) => (
                   <Link
                     key={ppe.name}
                     href={ppe.href}
-                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
+                    className="group flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-800 hover:text-slate-900 dark:text-slate-100 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all duration-300 font-medium hover:shadow-sm hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 mx-2 rounded-lg"
                   >
-                    <ppe.icon className="h-4 w-4" />
-                    <span>{ppe.name}</span>
+                    <ppe.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                    <span className="tracking-wide">{ppe.name}</span>
                   </Link>
                 ))}
               </div>
@@ -180,27 +184,27 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowToolsMenu(true)}
               onMouseLeave={() => setShowToolsMenu(false)}
-              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
+              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-amber-400/50 to-orange-500/50 text-slate-900 dark:text-white hover:from-amber-400/70 hover:to-orange-500/70 hover:shadow-amber-200/30 border border-slate-200/40 dark:border-slate-600/40"
             >
-              <CogIcon className="h-4 w-4" />
-              <span className="font-light">Tools</span>
-              <ChevronDownIcon className="h-3 w-3" />
+              <CogIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span className="font-medium tracking-wide">Tools</span>
+              <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
             </button>
 
             {showToolsMenu && (
               <div
                 onMouseEnter={() => setShowToolsMenu(true)}
                 onMouseLeave={() => setShowToolsMenu(false)}
-                className="absolute left-0 top-full mt-1 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 dark:ring-slate-700/50"
+                className="absolute left-0 top-full mt-2 w-64 rounded-xl z-50 bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl backdrop-saturate-150 py-3 shadow-2xl shadow-slate-200/30 dark:shadow-slate-900/30 ring-1 ring-white/30 dark:ring-slate-600/50 border border-white/30 dark:border-slate-600/50"
               >
                 {toolsMenu.map((tool) => (
                   <Link
                     key={tool.name}
                     href={tool.href}
-                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
+                    className="group flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-800 hover:text-slate-900 dark:text-slate-100 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all duration-300 font-medium hover:shadow-sm hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 mx-2 rounded-lg"
                   >
-                    <tool.icon className="h-4 w-4" />
-                    <span>{tool.name}</span>
+                    <tool.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                    <span className="tracking-wide">{tool.name}</span>
                   </Link>
                 ))}
               </div>
@@ -212,27 +216,27 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowZeroValMenu(true)}
               onMouseLeave={() => setShowZeroValMenu(false)}
-              className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200 px-3 py-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm font-light"
+              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-cyan-400/50 to-sky-500/50 text-slate-900 dark:text-white hover:from-cyan-400/70 hover:to-sky-500/70 hover:shadow-cyan-200/30 border border-slate-200/40 dark:border-slate-600/40"
             >
-              <CubeIcon className="h-4 w-4" />
-              <span className="font-light">Zero-Value</span>
-              <ChevronDownIcon className="h-3 w-3" />
+              <CubeIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span className="font-medium tracking-wide">Zero-Value</span>
+              <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
             </button>
 
             {showZeroValMenu && (
               <div
                 onMouseEnter={() => setShowZeroValMenu(true)}
                 onMouseLeave={() => setShowZeroValMenu(false)}
-                className="absolute left-0 top-full mt-1 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 dark:ring-slate-700/50"
+                className="absolute left-0 top-full mt-2 w-64 rounded-xl z-50 bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl backdrop-saturate-150 py-3 shadow-2xl shadow-slate-200/30 dark:shadow-slate-900/30 ring-1 ring-white/30 dark:ring-slate-600/50 border border-white/30 dark:border-slate-600/50"
               >
                 {zeroValMenu.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
+                    className="group flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-800 hover:text-slate-900 dark:text-slate-100 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all duration-300 font-medium hover:shadow-sm hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 mx-2 rounded-lg"
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.name}</span>
+                    <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                    <span className="tracking-wide">{item.name}</span>
                   </Link>
                 ))}
               </div>
@@ -252,10 +256,10 @@ export default function Header() {
           ) : !session ? (
             <button
               onClick={() => signIn()}
-              className="hidden sm:flex items-center space-x-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-light text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200"
+              className="hidden sm:flex items-center space-x-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-sm font-medium text-white hover:from-blue-500 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:shadow-blue-300/50 border border-blue-500/20 hover:border-blue-400/30"
             >
-              <UserIcon className="h-4 w-4" />
-              <span>Sign In</span>
+              <UserIcon className="h-4 w-4 transition-transform duration-300 hover:scale-110" />
+              <span className="tracking-wide">Sign In</span>
             </button>
           ) : (
             <div className="relative">
@@ -280,25 +284,25 @@ export default function Header() {
               </button>
 
               {showProfileMenu && (
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md py-2 shadow-xl ring-1 ring-black/5 z-50 dark:ring-slate-700/50">
-                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100/50 dark:border-slate-700/50 font-light">
+                <div className="absolute right-0 top-full mt-2 w-64 rounded-xl bg-gradient-to-br from-white/98 to-slate-50/98 dark:from-slate-800/98 dark:to-slate-700/98 backdrop-blur-lg py-3 shadow-2xl shadow-slate-200/30 dark:shadow-slate-900/30 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50 z-50">
+                  <div className="px-4 py-2 text-sm text-slate-700 dark:text-slate-200 border-b border-slate-200/50 dark:border-slate-600/50 font-medium">
                     {session.user?.email}
                   </div>
                   <div className="py-1">
                     <Link
                       href="/auth/change-password"
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
+                      className="group flex items-center space-x-3 w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-gradient-to-r hover:from-slate-100/90 hover:to-slate-50/90 dark:hover:from-slate-700/90 dark:hover:to-slate-600/90 transition-all duration-300 font-medium hover:shadow-sm hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 mx-2 rounded-lg"
                       onClick={() => setShowProfileMenu(false)}
                     >
-                      <KeyIcon className="h-4 w-4" />
-                      <span>Change Password</span>
+                      <KeyIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                      <span className="tracking-wide">Change Password</span>
                     </Link>
                     <button
                       onClick={() => signOut()}
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50/80 dark:text-gray-200 dark:hover:bg-slate-700/80 transition-all duration-200 font-light"
+                      className="group flex items-center space-x-3 w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-gradient-to-r hover:from-slate-100/90 hover:to-slate-50/90 dark:hover:from-slate-700/90 dark:hover:to-slate-600/90 transition-all duration-300 font-medium hover:shadow-sm hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 mx-2 rounded-lg"
                     >
-                      <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                      <span>Sign Out</span>
+                      <ArrowRightOnRectangleIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                      <span className="tracking-wide">Sign Out</span>
                     </button>
                   </div>
                 </div>
@@ -309,12 +313,12 @@ export default function Header() {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-200"
+            className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-gradient-to-r hover:from-slate-100/90 hover:to-slate-50/90 dark:hover:from-slate-700/90 dark:hover:to-slate-600/90 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border border-transparent hover:border-slate-200/50 dark:hover:border-slate-600/50"
           >
             {isMobileMenuOpen ? (
-              <XMarkIcon className="h-6 w-6" />
+              <XMarkIcon className="h-6 w-6 transition-transform duration-300 rotate-180" />
             ) : (
-              <Bars3Icon className="h-6 w-6" />
+              <Bars3Icon className="h-6 w-6 transition-transform duration-300" />
             )}
           </button>
         </div>
@@ -322,17 +326,17 @@ export default function Header() {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200/50 dark:border-slate-800/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md">
-          <div className="px-4 py-2 space-y-1">
+        <div className="lg:hidden border-t border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-b from-white/98 to-slate-50/98 dark:from-slate-900/98 dark:to-slate-800/98 backdrop-blur-lg shadow-lg shadow-slate-200/20 dark:shadow-slate-900/20">
+          <div className="px-4 py-3 space-y-1">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="flex items-center space-x-3 px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 text-sm font-light"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-gradient-to-r hover:from-slate-100/90 hover:to-slate-50/90 dark:hover:from-slate-700/90 dark:hover:to-slate-600/90 rounded-xl transition-all duration-300 text-sm font-medium hover:shadow-sm hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <item.icon className="h-5 w-5" />
-                <span>{item.name}</span>
+                <item.icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span className="tracking-wide">{item.name}</span>
               </Link>
             ))}
             

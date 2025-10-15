@@ -33,11 +33,11 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="hidden border-r bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm md:block md:w-64 sticky top-16 h-[calc(100vh-4rem)]">
+    <div className="hidden border-r border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-t from-blue-300/40 via-indigo-100/40 to-blue-50/70 dark:from-slate-900/90 dark:via-slate-900/85 dark:to-slate-800/85 backdrop-blur-lg shadow-lg shadow-blue-200/15 dark:shadow-slate-900/25 md:block md:w-64 sticky top-16 h-[calc(100vh-4rem)]">
       <div className="flex h-full flex-col gap-2">
-        <div className="flex-1 overflow-auto py-4">
-          <nav className="grid items-start px-3 text-sm font-medium space-y-1">
-            {navigation.map((item) => {
+        <div className="flex-1 overflow-auto py-5">
+          <nav className="grid items-start px-3 text-xs font-medium space-y-1.5">
+            {navigation.map((item, idx) => {
               const isActive = pathname === item.href || 
                 (pathname && item.href !== '/dashboard' && pathname.startsWith(item.href));
               
@@ -46,16 +46,32 @@ export default function Sidebar() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 dark:text-slate-300 transition-all duration-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/50",
-                    isActive && "bg-slate-200/80 dark:bg-slate-700/50 text-slate-900 dark:text-white"
+                    // Base (smaller than header)
+                    "group flex items-center gap-3 rounded-xl px-3 py-2 text-xs transition-all duration-300 border",
+                    // Color sets by position
+                    idx < 4
+                      ? "bg-gradient-to-r from-cyan-400/50 to-blue-500/50 text-slate-900 dark:text-white hover:from-cyan-400/70 hover:to-blue-500/70 hover:shadow-cyan-200/30 border-slate-200/40 dark:border-slate-600/40"
+                      : idx >= navigation.length - 3
+                      ? "bg-gradient-to-r from-slate-300/90 to-slate-400/90 text-slate-900 dark:text-white hover:from-slate-300 hover:to-slate-500 hover:shadow-slate-300/30 border-slate-200/40 dark:border-slate-600/40"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-gradient-to-r hover:from-slate-100/90 hover:to-slate-50/90 dark:hover:from-slate-700/90 dark:hover:to-slate-600/90 hover:shadow-md hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border-transparent hover:border-slate-200/50 dark:hover:border-slate-600/50",
+                    // Active state overlays
+                    isActive && (
+                      idx < 4
+                        ? "ring-2 ring-white/30 shadow-lg"
+                        : idx >= navigation.length - 3
+                        ? "ring-1 ring-slate-300/60 dark:ring-slate-600/60 shadow-md"
+                        : "bg-gradient-to-r from-slate-200/90 to-slate-100/90 dark:from-slate-700/90 dark:to-slate-600/90 text-slate-900 dark:text-white shadow-md shadow-slate-200/50 dark:shadow-slate-800/50 border-slate-200/50 dark:border-slate-600/50"
+                    )
                   )}
                 >
-                  <item.icon className="h-4 w-4" />
-                  <span className="font-light">{item.name}</span>
+                  <item.icon className="h-3.5 w-3.5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                  <span className="font-medium tracking-wide">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
+          {/* Divider below last link */}
+          <div className="mt-2 border-b border-blue-200/60 dark:border-slate-700/70 mx-3" />
         </div>
       </div>
     </div>

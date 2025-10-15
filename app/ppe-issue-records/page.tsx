@@ -15,6 +15,8 @@ interface PPEIssueFormData {
   userEmpNumber: string;
   userEmpName: string;
   dateOfIssue: string;
+  gatePassNumber: string;
+  fileReferenceNumber: string;
   remarks: string;
 }
 
@@ -22,6 +24,7 @@ interface ItemRow {
   ppeId: string;
   ppeName: string;
   quantityIssued: number;
+  size: string;
   isFirstIssue: boolean;
   issueAgainstDue: boolean;
 }
@@ -36,12 +39,14 @@ export default function PPEIssueRecordsPage() {
     userEmpNumber: '',
     userEmpName: '',
     dateOfIssue: new Date().toISOString().split('T')[0],
+    gatePassNumber: '',
+    fileReferenceNumber: '',
     remarks: ''
   });
   const [itemRows, setItemRows] = useState<ItemRow[]>([
-    { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
-    { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
-    { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+    { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
+    { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
+    { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
   ]);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
@@ -92,9 +97,12 @@ export default function PPEIssueRecordsPage() {
             userEmpNumber: formData.userEmpNumber,
             userEmpName: formData.userEmpName,
             dateOfIssue: formData.dateOfIssue,
+            gatePassNumber: formData.gatePassNumber,
+            fileReferenceNumber: formData.fileReferenceNumber,
             ppeId: r.ppeId,
             ppeName: r.ppeName,
             quantityIssued: r.quantityIssued,
+            size: r.size,
             isFirstIssue: r.isFirstIssue,
             issueAgainstDue: r.issueAgainstDue,
             remarks: formData.remarks,
@@ -113,9 +121,12 @@ export default function PPEIssueRecordsPage() {
               userEmpNumber: formData.userEmpNumber,
               userEmpName: formData.userEmpName,
               dateOfIssue: formData.dateOfIssue,
+              gatePassNumber: formData.gatePassNumber,
+              fileReferenceNumber: formData.fileReferenceNumber,
               ppeId: r.ppeId,
               ppeName: r.ppeName,
               quantityIssued: r.quantityIssued,
+              size: r.size,
               isFirstIssue: r.isFirstIssue,
               issueAgainstDue: r.issueAgainstDue,
               remarks: formData.remarks,
@@ -134,12 +145,14 @@ export default function PPEIssueRecordsPage() {
         userEmpNumber: '',
         userEmpName: '',
         dateOfIssue: new Date().toISOString().split('T')[0],
+        gatePassNumber: '',
+        fileReferenceNumber: '',
         remarks: ''
       });
       setItemRows([
-        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
-        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
-        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+        { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
+        { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
+        { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
       ]);
       fetchData();
     } catch (error) {
@@ -156,12 +169,15 @@ export default function PPEIssueRecordsPage() {
       userEmpNumber: record.userEmpNumber,
       userEmpName: record.userEmpName,
       dateOfIssue: new Date(record.dateOfIssue).toISOString().split('T')[0],
+      gatePassNumber: (record as any).gatePassNumber || '',
+      fileReferenceNumber: (record as any).fileReferenceNumber || '',
       remarks: record.remarks || ''
     });
     setItemRows([{
       ppeId: record.ppeId,
       ppeName: record.ppeName,
       quantityIssued: record.quantityIssued,
+      size: (record as any).size || '',
       isFirstIssue: record.isFirstIssue,
       issueAgainstDue: record.issueAgainstDue,
     }]);
@@ -196,11 +212,14 @@ export default function PPEIssueRecordsPage() {
   const updateRowQty = (index: number, qty: number) => {
     setItemRows(prev => prev.map((r, i) => i === index ? { ...r, quantityIssued: qty } : r));
   };
+  const updateRowSize = (index: number, size: string) => {
+    setItemRows(prev => prev.map((r, i) => i === index ? { ...r, size } : r));
+  };
   const updateRowFlag = (index: number, key: 'isFirstIssue' | 'issueAgainstDue', value: boolean) => {
     setItemRows(prev => prev.map((r, i) => i === index ? { ...r, [key]: value } as ItemRow : r));
   };
   const addRow = () => {
-    setItemRows(prev => [...prev, { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true }]);
+    setItemRows(prev => [...prev, { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true }]);
   };
   const removeRow = (index: number) => {
     setItemRows(prev => prev.length <= 1 ? prev : prev.filter((_, i) => i !== index));
@@ -313,6 +332,34 @@ export default function PPEIssueRecordsPage() {
                   </div>
                 </div>
                 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">
+                      Gate Pass Number
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.gatePassNumber}
+                      onChange={(e) => setFormData({ ...formData, gatePassNumber: e.target.value })}
+                      placeholder="Enter gate pass number..."
+                      className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">
+                      File Reference Number
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.fileReferenceNumber}
+                      onChange={(e) => setFormData({ ...formData, fileReferenceNumber: e.target.value })}
+                      placeholder="Enter file reference number..."
+                      className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100"
+                    />
+                  </div>
+                </div>
+                
                 <div className="mt-2">
                   <div className="overflow-auto rounded-md border border-slate-200 dark:border-slate-600 shadow-sm bg-white/60 dark:bg-slate-700/60">
                     <table className="w-full text-xs">
@@ -320,6 +367,7 @@ export default function PPEIssueRecordsPage() {
                         <tr className="border-b bg-slate-50 dark:bg-slate-600">
                           <th className="text-left p-2 text-slate-700 dark:text-slate-200">PPE Item</th>
                           <th className="text-left p-2 text-slate-700 dark:text-slate-200">Quantity</th>
+                          <th className="text-left p-2 text-slate-700 dark:text-slate-200">Size</th>
                           <th className="text-left p-2 text-slate-700 dark:text-slate-200">First Issue</th>
                           <th className="text-left p-2 text-slate-700 dark:text-slate-200">Issue Against Due</th>
                           <th className="text-left p-2 text-slate-700 dark:text-slate-200">Actions</th>
@@ -339,6 +387,10 @@ export default function PPEIssueRecordsPage() {
                             <td className="p-2 w-[140px]">
                               <Input className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100" type="number" min="1" value={row.quantityIssued}
                                 onChange={(e) => updateRowQty(idx, parseInt(e.target.value || '0'))} />
+                            </td>
+                            <td className="p-2 w-[120px]">
+                              <Input className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100" type="text" value={row.size}
+                                onChange={(e) => updateRowSize(idx, e.target.value)} placeholder="Size..." />
                             </td>
                             <td className="p-2 w-[160px]">
                               <label className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-300">
@@ -395,12 +447,14 @@ export default function PPEIssueRecordsPage() {
                         userEmpNumber: '',
                         userEmpName: '',
                         dateOfIssue: new Date().toISOString().split('T')[0],
+                        gatePassNumber: '',
+                        fileReferenceNumber: '',
                         remarks: ''
                       });
                       setItemRows([
-                        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
-                        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
-                        { ppeId: '', ppeName: '', quantityIssued: 1, isFirstIssue: true, issueAgainstDue: true },
+                        { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
+                        { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
+                        { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
                       ]);
                     }}
                   >
