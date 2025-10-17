@@ -12,12 +12,53 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Asset number and type are required' }, { status: 400 });
     }
 
-    // Fetch asset details from your existing API
+    // Fetch asset details from your existing API, with fallback via DB aggregation
     const assetResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/assets/${assetNumber}`);
-    if (!assetResponse.ok) {
-      return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
+    let asset: any;
+    if (assetResponse.ok) {
+      asset = await assetResponse.json();
+    } else {
+      // Fallback: try to construct asset details by joining custody and equipment collections
+      try {
+        const { db } = await connectToDatabase();
+        // Prefer starting from custody to ensure we can find asset even if details are missing
+        const agg = await db.collection('equipmentcustody')
+          .aggregate([
+            { $match: { assetnumber: assetNumber, custodyto: null } },
+            {
+              $lookup: {
+                from: 'equipmentandtools',
+                let: { asset: '$assetnumber' },
+                pipeline: [
+                  { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
+                ],
+                as: 'equipmentDetails'
+              }
+            },
+            { $unwind: { path: '$equipmentDetails', preserveNullAndEmptyArrays: true } },
+            { $sort: { custodyfrom: -1 } },
+            { $limit: 1 },
+            {
+              $project: {
+                assetnumber: { $ifNull: ['$equipmentDetails.assetnumber', '$assetnumber'] },
+                assetdescription: '$equipmentDetails.assetdescription',
+                assetmodel: '$equipmentDetails.assetmodel',
+                assetmanufacturer: '$equipmentDetails.assetmanufacturer',
+                assetserialnumber: '$equipmentDetails.assetserialnumber',
+                assetstatus: '$equipmentDetails.assetstatus',
+                employeenumber: 1,
+                warehouseCity: 1
+              }
+            }
+          ]).toArray();
+        if (!agg || agg.length === 0) {
+          return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
+        }
+        asset = agg[0];
+      } catch (e) {
+        return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
+      }
     }
-    const asset = await assetResponse.json();
 
     // Fetch employee details if it's user equipment
     let employeeInfo = null;
@@ -28,12 +69,12 @@ export async function GET(request: NextRequest) {
         
         const employeeResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/users`);
         if (employeeResponse.ok) {
-          const employees = await employeeResponse.json();
+          const employees: Array<{ employeenumber: string; employeename: string }> = await employeeResponse.json();
           console.log('Available employees:', employees.length);
           
           // Try to find employee by employeenumber from asset or from custody records
           if (asset.employeenumber) {
-            employeeInfo = employees.find(emp => emp.employeenumber === asset.employeenumber);
+            employeeInfo = employees.find((emp: { employeenumber: string }) => emp.employeenumber === asset.employeenumber);
           } else {
             // If asset doesn't have employeenumber, try to get it from custody records
             const { db } = await connectToDatabase();
@@ -45,7 +86,7 @@ export async function GET(request: NextRequest) {
             
             if (custodyRecord && custodyRecord.employeenumber) {
               console.log('Found custody record with employee:', custodyRecord.employeenumber);
-              employeeInfo = employees.find(emp => emp.employeenumber === custodyRecord.employeenumber);
+              employeeInfo = employees.find((emp: { employeenumber: string }) => emp.employeenumber === custodyRecord.employeenumber);
             }
           }
           
@@ -215,16 +256,15 @@ export async function GET(request: NextRequest) {
     yPosition += 8;
     doc.text(footerText2, pageWidth / 2, yPosition, { align: 'center' });
 
-    // Generate PDF buffer
-    const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
+    // Generate PDF and return as Response
+    const pdfArrayBuffer = doc.output('arraybuffer') as ArrayBuffer;
     const filename = `Undertaking_Letter_${assetNumber}_${type}.pdf`;
     
-    return new NextResponse(pdfBuffer, {
+    return new Response(pdfArrayBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': pdfBuffer.length.toString(),
       },
     });
 

@@ -37,17 +37,17 @@ export async function GET(request: NextRequest) {
         {
           $lookup: {
             from: 'equipmentandtools',
-            localField: 'assetnumber',
-            foreignField: 'assetnumber',
+            let: { asset: '$assetnumber' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
+            ],
             as: 'equipmentDetails'
           }
         },
-        {
-          $unwind: '$equipmentDetails'
-        },
+        { $unwind: { path: '$equipmentDetails', preserveNullAndEmptyArrays: true } },
         {
           $project: {
-            assetnumber: '$equipmentDetails.assetnumber',
+            assetnumber: { $ifNull: ['$equipmentDetails.assetnumber', '$assetnumber'] },
             assetdescription: '$equipmentDetails.assetdescription',
             assetstatus: '$equipmentDetails.assetstatus',
             assetmodel: '$equipmentDetails.assetmodel',
