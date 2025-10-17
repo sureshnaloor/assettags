@@ -50,17 +50,17 @@ export default function Sidebar() {
                     "group flex items-center gap-3 rounded-xl px-3 py-2 text-xs transition-all duration-300 border",
                     // Color sets by position
                     idx < 4
-                      ? "bg-gradient-to-r from-cyan-400/50 to-blue-500/50 text-slate-900 dark:text-white hover:from-cyan-400/70 hover:to-blue-500/70 hover:shadow-cyan-200/30 border-slate-200/40 dark:border-slate-600/40"
+                      ? "bg-gradient-to-r from-slate-200/25 to-slate-300/25 text-slate-600 dark:text-slate-300 hover:from-slate-200/45 hover:to-slate-300/45 hover:shadow-slate-200/20 border-slate-200/25 dark:border-slate-600/25"
                       : idx >= navigation.length - 3
-                      ? "bg-gradient-to-r from-slate-300/90 to-slate-400/90 text-slate-900 dark:text-white hover:from-slate-300 hover:to-slate-500 hover:shadow-slate-300/30 border-slate-200/40 dark:border-slate-600/40"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-gradient-to-r hover:from-slate-100/90 hover:to-slate-50/90 dark:hover:from-slate-700/90 dark:hover:to-slate-600/90 hover:shadow-md hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border-transparent hover:border-slate-200/50 dark:hover:border-slate-600/50",
+                      ? "bg-gradient-to-r from-slate-200/20 to-slate-300/20 text-slate-500 dark:text-slate-400 hover:from-slate-200/35 hover:to-slate-300/35 hover:shadow-slate-200/15 border-slate-200/20 dark:border-slate-600/20"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-gradient-to-r hover:from-slate-100/60 hover:to-slate-50/60 dark:hover:from-slate-700/60 dark:hover:to-slate-600/60 hover:shadow-sm hover:shadow-slate-200/30 dark:hover:shadow-slate-800/30 border-transparent hover:border-slate-200/30 dark:hover:border-slate-600/30",
                     // Active state overlays
                     isActive && (
                       idx < 4
-                        ? "ring-2 ring-white/30 shadow-lg"
+                        ? "ring-1 ring-slate-300/40 dark:ring-slate-600/40 shadow-md"
                         : idx >= navigation.length - 3
-                        ? "ring-1 ring-slate-300/60 dark:ring-slate-600/60 shadow-md"
-                        : "bg-gradient-to-r from-slate-200/90 to-slate-100/90 dark:from-slate-700/90 dark:to-slate-600/90 text-slate-900 dark:text-white shadow-md shadow-slate-200/50 dark:shadow-slate-800/50 border-slate-200/50 dark:border-slate-600/50"
+                        ? "ring-1 ring-slate-300/30 dark:ring-slate-600/30 shadow-sm"
+                        : "bg-gradient-to-r from-slate-200/70 to-slate-100/70 dark:from-slate-700/70 dark:to-slate-600/70 text-slate-700 dark:text-slate-200 shadow-sm shadow-slate-200/30 dark:shadow-slate-800/30 border-slate-200/40 dark:border-slate-600/40"
                     )
                   )}
                 >

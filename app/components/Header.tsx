@@ -106,8 +106,8 @@ export default function Header() {
               href={item.href}
               className={`group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium hover:shadow-md hover:shadow-slate-200/40 dark:hover:shadow-slate-800/40 border ${
                 idx < 4
-                  ? 'bg-gradient-to-r from-cyan-400/50 to-blue-500/50 text-slate-900 dark:text-white hover:from-cyan-400/70 hover:to-blue-500/70 border-slate-200/40 dark:border-slate-600/40'
-                  : 'bg-gradient-to-r from-slate-300/50 to-slate-400/50 text-slate-900 dark:text-white hover:from-slate-300/70 hover:to-slate-500/70 border-slate-200/40 dark:border-slate-600/40'
+                  ? 'bg-gradient-to-r from-slate-200/30 to-slate-300/30 text-slate-700 dark:text-slate-200 hover:from-slate-200/50 hover:to-slate-300/50 border-slate-200/30 dark:border-slate-600/30'
+                  : 'bg-gradient-to-r from-slate-200/20 to-slate-300/20 text-slate-600 dark:text-slate-300 hover:from-slate-200/40 hover:to-slate-300/40 border-slate-200/20 dark:border-slate-600/20'
               }`}
             >
               <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
@@ -120,7 +120,7 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowReportsMenu(true)}
               onMouseLeave={() => setShowReportsMenu(false)}
-              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-400/50 to-fuchsia-500/50 text-slate-900 dark:text-white hover:from-violet-400/70 hover:to-fuchsia-500/70 hover:shadow-violet-200/30 border border-slate-200/40 dark:border-slate-600/40"
+              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-slate-200/25 to-slate-300/25 text-slate-600 dark:text-slate-300 hover:from-slate-200/45 hover:to-slate-300/45 hover:shadow-slate-200/20 border border-slate-200/25 dark:border-slate-600/25"
             >
               <DocumentChartBarIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span className="font-medium tracking-wide">Reports</span>
@@ -152,7 +152,7 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowPPEMenu(true)}
               onMouseLeave={() => setShowPPEMenu(false)}
-              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-emerald-400/50 to-green-500/50 text-slate-900 dark:text-white hover:from-emerald-400/70 hover:to-green-500/70 hover:shadow-emerald-200/30 border border-slate-200/40 dark:border-slate-600/40"
+              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-slate-200/25 to-slate-300/25 text-slate-600 dark:text-slate-300 hover:from-slate-200/45 hover:to-slate-300/45 hover:shadow-slate-200/20 border border-slate-200/25 dark:border-slate-600/25"
             >
               <ShieldCheckIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span className="font-medium tracking-wide">PPE</span>
@@ -184,7 +184,7 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowToolsMenu(true)}
               onMouseLeave={() => setShowToolsMenu(false)}
-              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-amber-400/50 to-orange-500/50 text-slate-900 dark:text-white hover:from-amber-400/70 hover:to-orange-500/70 hover:shadow-amber-200/30 border border-slate-200/40 dark:border-slate-600/40"
+              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-slate-200/25 to-slate-300/25 text-slate-600 dark:text-slate-300 hover:from-slate-200/45 hover:to-slate-300/45 hover:shadow-slate-200/20 border border-slate-200/25 dark:border-slate-600/25"
             >
               <CogIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span className="font-medium tracking-wide">Tools</span>
@@ -216,7 +216,7 @@ export default function Header() {
             <button
               onMouseEnter={() => setShowZeroValMenu(true)}
               onMouseLeave={() => setShowZeroValMenu(false)}
-              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-cyan-400/50 to-sky-500/50 text-slate-900 dark:text-white hover:from-cyan-400/70 hover:to-sky-500/70 hover:shadow-cyan-200/30 border border-slate-200/40 dark:border-slate-600/40"
+              className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-slate-200/25 to-slate-300/25 text-slate-600 dark:text-slate-300 hover:from-slate-200/45 hover:to-slate-300/45 hover:shadow-slate-200/20 border border-slate-200/25 dark:border-slate-600/25"
             >
               <CubeIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span className="font-medium tracking-wide">Zero-Value</span>

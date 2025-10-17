@@ -88,8 +88,16 @@ export default function FixedAssetPage() {
     },
     {
       accessorKey: 'assetdescription',
-      header: 'Description',
-      cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue('assetdescription')}</div>,
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Description
+          <ArrowUpDown className="h-4 w-4" />
+        </button>
+      ),
+      cell: ({ row }) => <div className="max-w-[300px] truncate text-[12px] text-slate-800 dark:text-slate-400">{row.getValue('assetdescription')}</div>,
     },
     {
       accessorKey: 'assetcategory',
@@ -139,35 +147,39 @@ export default function FixedAssetPage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
+    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
       <div className="flex items-center gap-4">
-        <h1 className="flex-1 text-2xl font-semibold">Fixed Assets</h1>
+        <h1 className="flex-1 text-xl font-semibold text-slate-800 dark:text-slate-200">Fixed Assets</h1>
       </div>
       
-      <div className="mb-4 flex gap-4">
-        <input
-          type="text"
-          value={assetNumberSearch}
-          onChange={(e) => setAssetNumberSearch(e.target.value)}
-          placeholder="Search by asset number..."
-          className="w-full max-w-sm px-4 py-2 rounded-lg border border-gray-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <input
-          type="text"
-          value={assetNameSearch}
-          onChange={(e) => setAssetNameSearch(e.target.value)}
-          placeholder="Search by asset description..."
-          className="w-full max-w-sm px-4 py-2 rounded-lg border border-gray-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      {/* Search Section with Enhanced Styling */}
+      <div className="mb-6 p-6 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg">
+        <div className="flex gap-4">
+          <input
+            type="text"
+            value={assetNumberSearch}
+            onChange={(e) => setAssetNumberSearch(e.target.value)}
+            placeholder="Search by asset number..."
+            className="w-full max-w-sm px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/90 dark:bg-slate-700/90 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md"
+          />
+          <input
+            type="text"
+            value={assetNameSearch}
+            onChange={(e) => setAssetNameSearch(e.target.value)}
+            placeholder="Search by asset description..."
+            className="w-full max-w-sm px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/90 dark:bg-slate-700/90 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md"
+          />
+        </div>
       </div>
 
-      <div className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
+      {/* Results Section with Gradient Background */}
+      <div className="rounded-xl border border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm shadow-xl">
         {loading ? (
           <div className="flex justify-center items-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : data.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
             Enter search criteria to view fixed assets
           </div>
         ) : (

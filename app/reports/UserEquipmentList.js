@@ -109,17 +109,19 @@ const UserEquipmentList = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-        <Typography variant="h4" gutterBottom color="primary" sx={{ mb: 3 }}>
-          User Equipment List
-        </Typography>
+    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="flex items-center gap-4">
+        <h1 className="flex-1 text-xl font-semibold text-slate-800 dark:text-slate-200">User Equipment List</h1>
+      </div>
+      
+      <div className="rounded-xl border border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm shadow-xl">
+        <div className="p-6">
         
-        <Typography variant="subtitle1" sx={{ mb: 4, color: 'text.secondary' }}>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
           Select a user to view their equipment list
-        </Typography>
+        </p>
 
-        <Box sx={{ mb: 4 }}>
+        <div className="mb-4">
           <Autocomplete
             options={users}
             getOptionLabel={(option) => `${option.employeenumber} - ${option.employeename}` || ''}
@@ -131,76 +133,103 @@ const UserEquipmentList = () => {
                 label="Select User"
                 variant="outlined"
                 fullWidth
+                size="small"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                    '& fieldset': {
+                      borderColor: 'rgb(203 213 225)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgb(148 163 184)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'rgb(59 130 246)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    fontSize: '0.875rem',
+                  },
+                }}
               />
             )}
+            sx={{
+              '& .MuiAutocomplete-input': {
+                fontSize: '0.875rem',
+              },
+            }}
           />
-        </Box>
+        </div>
 
         {loading && (
-          <Typography sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
-            Loading equipment list...
-          </Typography>
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
         )}
 
         {!loading && selectedUser && equipmentList.length === 0 && (
-          <Typography sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
+          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
             No equipment found for this user.
-          </Typography>
+          </div>
         )}
 
         {equipmentList.length > 0 && (
           <>
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" color="primary">
+            <div className="mb-4 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
                 Equipment List for {selectedUser?.employeename} ({selectedUser?.employeenumber})
-              </Typography>
+              </h2>
               <Button
                 variant="contained"
-                color="primary"
                 onClick={handleExport}
-                sx={{ px: 4 }}
+                sx={{ 
+                  px: 3,
+                  py: 1,
+                  fontSize: '0.875rem',
+                  backgroundColor: 'rgb(59 130 246)',
+                  '&:hover': {
+                    backgroundColor: 'rgb(37 99 235)',
+                  },
+                }}
               >
                 Export to Excel
               </Button>
-            </Box>
+            </div>
 
-            <TableContainer component={Paper} elevation={1} sx={{ mb: 3 }}>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
               <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.100' }}>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Asset Number</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Project</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Custody From</TableCell>
+                  <TableRow sx={{ backgroundColor: 'rgb(248 250 252)', '& .MuiTableCell-root': { borderColor: 'rgb(226 232 240)' } }}>
+                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem', color: 'rgb(71 85 105)' }}>Asset Number</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem', color: 'rgb(71 85 105)' }}>Project</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem', color: 'rgb(71 85 105)' }}>Custody From</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {equipmentList.map((item) => (
-                    <TableRow key={item._id} hover>
+                    <TableRow key={item._id} hover sx={{ '& .MuiTableCell-root': { borderColor: 'rgb(226 232 240)', fontSize: '0.875rem' } }}>
                       <TableCell>
                         <Link 
                           href={`/asset/${item.assetnumber}`}
-                          sx={{ 
-                            color: 'primary.main', 
-                            textDecoration: 'none',
-                            '&:hover': { textDecoration: 'underline' }
-                          }}
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium no-underline hover:underline"
                         >
                           {item.assetnumber}
                         </Link>
                       </TableCell>
-                      <TableCell>{item.project}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-slate-700 dark:text-slate-300">{item.project}</TableCell>
+                      <TableCell className="text-slate-700 dark:text-slate-300">
                         {new Date(item.custodyfrom).toLocaleDateString()}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </TableContainer>
+            </div>
           </>
         )}
-      </Paper>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
 
