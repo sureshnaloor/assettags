@@ -110,6 +110,31 @@ const ProjectEquipmentList = () => {
     document.body.removeChild(link);
   };
 
+  const handleDownloadConsolidatedUndertaking = async () => {
+    if (!selectedProject) return;
+    
+    try {
+      const fullProjectIdentifier = `${selectedProject.wbs} - ${selectedProject.projectname}`;
+      const response = await fetch(`/api/undertaking-letter-project?projectId=${encodeURIComponent(fullProjectIdentifier)}`);
+      if (!response.ok) {
+        throw new Error('Failed to generate consolidated project undertaking letter');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Consolidated_Project_Undertaking_Letter_${selectedProject.projectname}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading consolidated project undertaking letter:', error);
+      alert('Failed to download consolidated project undertaking letter. Please try again.');
+    }
+  };
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
       <div className="flex items-center gap-4">
@@ -181,21 +206,38 @@ const ProjectEquipmentList = () => {
               <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
                 Equipment List for {selectedProject?.projectname}
               </h2>
-              <Button
-                variant="contained"
-                onClick={handleExport}
-                sx={{ 
-                  px: 3,
-                  py: 1,
-                  fontSize: '0.875rem',
-                  backgroundColor: 'rgb(59 130 246)',
-                  '&:hover': {
-                    backgroundColor: 'rgb(37 99 235)',
-                  },
-                }}
-              >
-                Export to Excel
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="contained"
+                  onClick={handleDownloadConsolidatedUndertaking}
+                  sx={{ 
+                    px: 3,
+                    py: 1,
+                    fontSize: '0.875rem',
+                    backgroundColor: 'rgb(34 197 94)',
+                    '&:hover': {
+                      backgroundColor: 'rgb(22 163 74)',
+                    },
+                  }}
+                >
+                  Download Consolidated Undertaking
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleExport}
+                  sx={{ 
+                    px: 3,
+                    py: 1,
+                    fontSize: '0.875rem',
+                    backgroundColor: 'rgb(59 130 246)',
+                    '&:hover': {
+                      backgroundColor: 'rgb(37 99 235)',
+                    },
+                  }}
+                >
+                  Export to Excel
+                </Button>
+              </div>
             </div>
 
             <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">

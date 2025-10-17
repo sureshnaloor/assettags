@@ -16,7 +16,10 @@ import {
   Button,
   Container,
   Link,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import { Download } from 'lucide-react';
 
 const UserEquipmentList = () => {
   const [users, setUsers] = useState([]);
@@ -108,6 +111,52 @@ const UserEquipmentList = () => {
     document.body.removeChild(link);
   };
 
+  const handleDownloadUndertaking = async (assetNumber) => {
+    try {
+      const response = await fetch(`/api/undertaking-letter?assetNumber=${assetNumber}&type=user`);
+      if (!response.ok) {
+        throw new Error('Failed to generate undertaking letter');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Undertaking_Letter_${assetNumber}_user.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading undertaking letter:', error);
+      alert('Failed to download undertaking letter. Please try again.');
+    }
+  };
+
+  const handleDownloadConsolidatedUndertaking = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      const response = await fetch(`/api/undertaking-letter-consolidated?employeeNumber=${selectedUser.employeenumber}`);
+      if (!response.ok) {
+        throw new Error('Failed to generate consolidated undertaking letter');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Consolidated_Undertaking_Letter_${selectedUser.employeenumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading consolidated undertaking letter:', error);
+      alert('Failed to download consolidated undertaking letter. Please try again.');
+    }
+  };
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
       <div className="flex items-center gap-4">
@@ -179,21 +228,38 @@ const UserEquipmentList = () => {
               <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
                 Equipment List for {selectedUser?.employeename} ({selectedUser?.employeenumber})
               </h2>
-              <Button
-                variant="contained"
-                onClick={handleExport}
-                sx={{ 
-                  px: 3,
-                  py: 1,
-                  fontSize: '0.875rem',
-                  backgroundColor: 'rgb(59 130 246)',
-                  '&:hover': {
-                    backgroundColor: 'rgb(37 99 235)',
-                  },
-                }}
-              >
-                Export to Excel
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="contained"
+                  onClick={handleDownloadConsolidatedUndertaking}
+                  sx={{ 
+                    px: 3,
+                    py: 1,
+                    fontSize: '0.875rem',
+                    backgroundColor: 'rgb(34 197 94)',
+                    '&:hover': {
+                      backgroundColor: 'rgb(22 163 74)',
+                    },
+                  }}
+                >
+                  Download Consolidated Undertaking
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleExport}
+                  sx={{ 
+                    px: 3,
+                    py: 1,
+                    fontSize: '0.875rem',
+                    backgroundColor: 'rgb(59 130 246)',
+                    '&:hover': {
+                      backgroundColor: 'rgb(37 99 235)',
+                    },
+                  }}
+                >
+                  Export to Excel
+                </Button>
+              </div>
             </div>
 
             <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
@@ -203,6 +269,7 @@ const UserEquipmentList = () => {
                     <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem', color: 'rgb(71 85 105)' }}>Asset Number</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem', color: 'rgb(71 85 105)' }}>Project</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem', color: 'rgb(71 85 105)' }}>Custody From</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem', color: 'rgb(71 85 105)', textAlign: 'center' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -219,6 +286,23 @@ const UserEquipmentList = () => {
                       <TableCell className="text-slate-700 dark:text-slate-300">{item.project}</TableCell>
                       <TableCell className="text-slate-700 dark:text-slate-300">
                         {new Date(item.custodyfrom).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <Tooltip title="Download Undertaking Letter">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDownloadUndertaking(item.assetnumber)}
+                            sx={{
+                              color: 'rgb(59 130 246)',
+                              '&:hover': {
+                                backgroundColor: 'rgb(59 130 246)',
+                                color: 'white',
+                              },
+                            }}
+                          >
+                            <Download fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
                   ))}

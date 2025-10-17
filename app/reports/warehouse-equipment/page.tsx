@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ResponsiveTable from '@/components/ui/responsive-table';
 import Link from 'next/link';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Download } from 'lucide-react';
 
 interface WarehouseEquipment {
     assetnumber: string;
@@ -54,6 +54,28 @@ export default function WarehouseEquipmentReport() {
         }
     };
 
+    const handleDownloadUndertaking = async (assetNumber: string) => {
+        try {
+            const response = await fetch(`/api/undertaking-letter?assetNumber=${assetNumber}&type=warehouse`);
+            if (!response.ok) {
+                throw new Error('Failed to generate undertaking letter');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Undertaking_Letter_${assetNumber}_warehouse.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading undertaking letter:', error);
+            alert('Failed to download undertaking letter. Please try again.');
+        }
+    };
+
     if (loading) return (
         <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
             <div className="flex justify-center items-center h-64">
@@ -77,6 +99,7 @@ export default function WarehouseEquipmentReport() {
         { key: 'assetmanufacturer', label: 'Manufacturer' },
         { key: 'assetserialnumber', label: 'Serial Number' },
         { key: 'warehouseCity', label: 'Warehouse', sortable: true },
+        { key: 'actions', label: 'Actions' },
     ];
 
     const formattedData = equipment.map(item => ({
@@ -108,6 +131,15 @@ export default function WarehouseEquipmentReport() {
             }`}>
                 {item.assetstatus}
             </span>
+        ),
+        actions: (
+            <button
+                onClick={() => handleDownloadUndertaking(item.assetnumber)}
+                className="inline-flex items-center justify-center p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                title="Download Undertaking Letter"
+            >
+                <Download className="h-4 w-4" />
+            </button>
         ),
     }));
 
