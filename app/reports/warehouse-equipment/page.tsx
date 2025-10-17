@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ResponsiveTable from '@/components/ui/responsive-table';
 import Link from 'next/link';
+import { ArrowUpDown } from 'lucide-react';
 
 interface WarehouseEquipment {
     assetnumber: string;
@@ -15,7 +16,7 @@ interface WarehouseEquipment {
     warehouseCity: string;
 }
 
-type SortField = 'assetnumber' | 'assetdescription';
+type SortField = 'assetnumber' | 'assetdescription' | 'assetstatus' | 'warehouseCity';
 type SortOrder = 'asc' | 'desc';
 
 export default function WarehouseEquipmentReport() {
@@ -71,11 +72,11 @@ export default function WarehouseEquipmentReport() {
     const columns = [
         { key: 'assetnumber', label: 'Asset Number', sortable: true },
         { key: 'assetdescription', label: 'Description', sortable: true },
-        { key: 'assetstatus', label: 'Status' },
+        { key: 'assetstatus', label: 'Status', sortable: true },
         { key: 'assetmodel', label: 'Model' },
         { key: 'assetmanufacturer', label: 'Manufacturer' },
         { key: 'assetserialnumber', label: 'Serial Number' },
-        { key: 'warehouseCity', label: 'Warehouse' },
+        { key: 'warehouseCity', label: 'Warehouse', sortable: true },
     ];
 
     const formattedData = equipment.map(item => ({
