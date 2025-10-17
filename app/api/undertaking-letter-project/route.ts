@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       if (!projectResponse.ok) {
         return NextResponse.json({ error: 'Failed to fetch project data' }, { status: 500 });
       }
-      const projects = await projectResponse.json();
+      const projects: Array<{ _id: string; wbs: string; projectname: string; status?: string }> = await projectResponse.json();
       const foundProject = projects.find(proj => proj._id === projectIdentifier);
       
       if (!foundProject) {
