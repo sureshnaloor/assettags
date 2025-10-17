@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (!employeeResponse.ok) {
       return NextResponse.json({ error: 'Failed to fetch employee data' }, { status: 500 });
     }
-    const employees = await employeeResponse.json();
+    const employees: Array<{ employeenumber: string; employeename: string; department?: string; position?: string }> = await employeeResponse.json();
     const employee = employees.find(emp => emp.employeenumber === employeeNumber);
     
     if (!employee) {
