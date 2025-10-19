@@ -57,8 +57,12 @@ export default function SearchablePPESelect({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchTerm) {
-        fetchPPEItems(searchTerm);
-        setIsOpen(true);
+        // Only search if we don't have a selected PPE or if the search term is different from the selected PPE's display text
+        const selectedDisplayText = selectedPPE ? `${selectedPPE.ppeId} - ${selectedPPE.ppeName}` : '';
+        if (!selectedPPE || searchTerm !== selectedDisplayText) {
+          fetchPPEItems(searchTerm);
+          setIsOpen(true);
+        }
       } else {
         setPPEItems([]);
         setIsOpen(false);
@@ -66,7 +70,7 @@ export default function SearchablePPESelect({
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, selectedPPE]);
 
   // Handle PPE selection
   const handlePPESelect = (ppe: PPEMaster) => {
@@ -85,6 +89,13 @@ export default function SearchablePPESelect({
     if (!newValue) {
       setSelectedPPE(null);
       onChange('', '');
+    } else {
+      // If user starts typing and it's different from the selected PPE's display text, clear selection
+      const selectedDisplayText = selectedPPE ? `${selectedPPE.ppeId} - ${selectedPPE.ppeName}` : '';
+      if (selectedPPE && newValue !== selectedDisplayText) {
+        setSelectedPPE(null);
+        onChange('', '');
+      }
     }
   };
 
@@ -186,15 +197,15 @@ export default function SearchablePPESelect({
                 </button>
               ))}
             </div>
-          ) : searchTerm.length >= 2 ? (
+          ) : searchTerm.length >= 2 && !selectedPPE ? (
             <div className="p-3 text-center text-gray-500">
               No PPE items found
             </div>
-          ) : (
+          ) : searchTerm.length < 2 ? (
             <div className="p-3 text-center text-gray-500">
               Type at least 2 characters to search
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>

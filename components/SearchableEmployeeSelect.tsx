@@ -57,8 +57,12 @@ export default function SearchableEmployeeSelect({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchTerm) {
-        fetchEmployees(searchTerm);
-        setIsOpen(true);
+        // Only search if we don't have a selected employee or if the search term is different from the selected employee's display text
+        const selectedDisplayText = selectedEmployee ? `${selectedEmployee.empno} - ${selectedEmployee.empname}` : '';
+        if (!selectedEmployee || searchTerm !== selectedDisplayText) {
+          fetchEmployees(searchTerm);
+          setIsOpen(true);
+        }
       } else {
         setEmployees([]);
         setIsOpen(false);
@@ -66,7 +70,7 @@ export default function SearchableEmployeeSelect({
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, selectedEmployee]);
 
   // Handle employee selection
   const handleEmployeeSelect = (employee: Employee) => {
@@ -85,6 +89,13 @@ export default function SearchableEmployeeSelect({
     if (!newValue) {
       setSelectedEmployee(null);
       onChange('', '');
+    } else {
+      // If user starts typing and it's different from the selected employee's display text, clear selection
+      const selectedDisplayText = selectedEmployee ? `${selectedEmployee.empno} - ${selectedEmployee.empname}` : '';
+      if (selectedEmployee && newValue !== selectedDisplayText) {
+        setSelectedEmployee(null);
+        onChange('', '');
+      }
     }
   };
 
@@ -187,15 +198,15 @@ export default function SearchableEmployeeSelect({
                 </button>
               ))}
             </div>
-          ) : searchTerm.length >= 2 ? (
+          ) : searchTerm.length >= 2 && !selectedEmployee ? (
             <div className="p-3 text-center text-gray-500">
               No employees found
             </div>
-          ) : (
+          ) : searchTerm.length < 2 ? (
             <div className="p-3 text-center text-gray-500">
               Type at least 2 characters to search
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>

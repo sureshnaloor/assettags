@@ -44,6 +44,9 @@ export interface PPEIssueRecord {
   lastIssueDate?: Date; // Only if not first issue
   issueAgainstDue: boolean; // Y for due, N for damage
   remarks?: string;
+  reservationNumber?: string; // Reservation number
+  fileReferenceNumber?: string; // File reference number
+  size?: string; // Size of the PPE item
   issuedBy: string; // Employee number of person who issued
   issuedByName: string; // Name of person who issued
   createdAt: Date;
@@ -62,6 +65,9 @@ export interface PPEIssueRecordInsert {
   lastIssueDate?: Date; // Only if not first issue
   issueAgainstDue: boolean; // Y for due, N for damage
   remarks?: string;
+  reservationNumber?: string; // Reservation number
+  fileReferenceNumber?: string; // File reference number
+  size?: string; // Size of the PPE item
   issuedBy: string; // Employee number of person who issued
   issuedByName: string; // Name of person who issued
   createdAt: Date;

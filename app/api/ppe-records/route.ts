@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '100');
     const search = searchParams.get('search') || '';
     const userEmpNumber = searchParams.get('userEmpNumber');
     const ppeId = searchParams.get('ppeId');
@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
         { userEmpName: { $regex: search, $options: 'i' } },
         { userEmpNumber: { $regex: search, $options: 'i' } },
         { ppeName: { $regex: search, $options: 'i' } },
-        { ppeId: { $regex: search, $options: 'i' } }
+        { ppeId: { $regex: search, $options: 'i' } },
+        { reservationNumber: { $regex: search, $options: 'i' } },
+        { fileReferenceNumber: { $regex: search, $options: 'i' } },
+        { size: { $regex: search, $options: 'i' } }
       ];
     }
     
@@ -106,7 +109,10 @@ export async function POST(request: NextRequest) {
       quantityIssued,
       isFirstIssue,
       issueAgainstDue,
-      remarks
+      remarks,
+      reservationNumber,
+      fileReferenceNumber,
+      size
     } = body;
 
     // Validate required fields
@@ -172,6 +178,9 @@ export async function POST(request: NextRequest) {
       lastIssueDate,
       issueAgainstDue: issueAgainstDue !== undefined ? issueAgainstDue : true,
       remarks,
+      reservationNumber,
+      fileReferenceNumber,
+      size,
       issuedBy: issuerEmployee?.empno || session.user.email,
       issuedByName: issuerEmployee?.empname || session.user.email,
       createdAt: new Date(),

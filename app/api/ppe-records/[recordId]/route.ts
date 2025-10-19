@@ -28,6 +28,9 @@ export async function PUT(
       isFirstIssue,
       issueAgainstDue,
       remarks,
+      reservationNumber,
+      fileReferenceNumber,
+      size,
     } = body;
 
     const { client, db } = await connectToDatabase();
@@ -48,6 +51,9 @@ export async function PUT(
     const updatedIsFirstIssue = typeof isFirstIssue === 'boolean' ? isFirstIssue : existing.isFirstIssue;
     const updatedIssueAgainstDue = typeof issueAgainstDue === 'boolean' ? issueAgainstDue : existing.issueAgainstDue;
     const updatedRemarks = remarks !== undefined ? remarks : existing.remarks;
+    const updatedReservationNumber = reservationNumber !== undefined ? reservationNumber : (existing as any).reservationNumber;
+    const updatedFileReferenceNumber = fileReferenceNumber !== undefined ? fileReferenceNumber : (existing as any).fileReferenceNumber;
+    const updatedSize = size !== undefined ? size : (existing as any).size;
     const updatedUserEmpNumber = userEmpNumber || existing.userEmpNumber;
     const updatedUserEmpName = userEmpName || existing.userEmpName;
 
@@ -161,6 +167,9 @@ export async function PUT(
               isFirstIssue: updatedIsFirstIssue,
               issueAgainstDue: updatedIssueAgainstDue,
               remarks: updatedRemarks,
+              reservationNumber: updatedReservationNumber,
+              fileReferenceNumber: updatedFileReferenceNumber,
+              size: updatedSize,
               updatedAt: new Date(),
               updatedBy: session.user!.email!,
             },

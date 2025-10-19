@@ -15,7 +15,7 @@ interface PPEIssueFormData {
   userEmpNumber: string;
   userEmpName: string;
   dateOfIssue: string;
-  gatePassNumber: string;
+  reservationNumber: string;
   fileReferenceNumber: string;
   remarks: string;
 }
@@ -39,7 +39,7 @@ export default function PPEIssueRecordsPage() {
     userEmpNumber: '',
     userEmpName: '',
     dateOfIssue: new Date().toISOString().split('T')[0],
-    gatePassNumber: '',
+    reservationNumber: '',
     fileReferenceNumber: '',
     remarks: ''
   });
@@ -97,7 +97,7 @@ export default function PPEIssueRecordsPage() {
             userEmpNumber: formData.userEmpNumber,
             userEmpName: formData.userEmpName,
             dateOfIssue: formData.dateOfIssue,
-            gatePassNumber: formData.gatePassNumber,
+            reservationNumber: formData.reservationNumber,
             fileReferenceNumber: formData.fileReferenceNumber,
             ppeId: r.ppeId,
             ppeName: r.ppeName,
@@ -121,7 +121,7 @@ export default function PPEIssueRecordsPage() {
               userEmpNumber: formData.userEmpNumber,
               userEmpName: formData.userEmpName,
               dateOfIssue: formData.dateOfIssue,
-              gatePassNumber: formData.gatePassNumber,
+              reservationNumber: formData.reservationNumber,
               fileReferenceNumber: formData.fileReferenceNumber,
               ppeId: r.ppeId,
               ppeName: r.ppeName,
@@ -145,7 +145,7 @@ export default function PPEIssueRecordsPage() {
         userEmpNumber: '',
         userEmpName: '',
         dateOfIssue: new Date().toISOString().split('T')[0],
-        gatePassNumber: '',
+        reservationNumber: '',
         fileReferenceNumber: '',
         remarks: ''
       });
@@ -164,12 +164,13 @@ export default function PPEIssueRecordsPage() {
   };
 
   const handleEdit = async (record: PPEIssueRecord) => {
+    console.log('Editing record:', record); // Debug log
     setEditingRecordId(record._id || null);
     setFormData({
       userEmpNumber: record.userEmpNumber,
       userEmpName: record.userEmpName,
       dateOfIssue: new Date(record.dateOfIssue).toISOString().split('T')[0],
-      gatePassNumber: (record as any).gatePassNumber || '',
+      reservationNumber: (record as any).reservationNumber || '',
       fileReferenceNumber: (record as any).fileReferenceNumber || '',
       remarks: record.remarks || ''
     });
@@ -232,26 +233,77 @@ export default function PPEIssueRecordsPage() {
     { key: 'userEmpName', label: 'Employee Name' },
     { key: 'ppeName', label: 'PPE Name' },
     { key: 'quantityIssued', label: 'Quantity' },
+    { key: 'additionalDetails', label: 'Additional Details' },
     { key: 'isFirstIssue', label: 'First Issue' },
     { key: 'issueAgainstDue', label: 'Issue Type' },
     { key: 'issuedByName', label: 'Issued By' },
     { key: 'actions', label: 'Actions' }
   ];
 
-  const tableData = issueRecords.map(record => ({
-    ...record,
-    dateOfIssue: new Date(record.dateOfIssue).toLocaleDateString(),
-    isFirstIssue: record.isFirstIssue ? 'Yes' : 'No',
-    issueAgainstDue: record.issueAgainstDue ? 'Due' : 'Damage',
-    actions: (
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={() => handleEdit(record)}>Edit</Button>
-        <Button variant="destructive" onClick={() => handleDelete(record)} disabled={deleteLoadingId === record._id}>
-          {deleteLoadingId === record._id ? 'Deleting...' : 'Delete'}
-        </Button>
-      </div>
-    )
-  }));
+  const tableData = issueRecords.map(record => {
+    // Create combined additional details with colored field names
+    const additionalDetails = [];
+    
+    const reservationNumber = (record as any).reservationNumber;
+    if (reservationNumber) {
+      additionalDetails.push(
+        <span key="reservation">
+          <span className="text-blue-600 dark:text-blue-400 font-medium">Reservation:</span> {reservationNumber}
+        </span>
+      );
+    }
+    
+    const fileReferenceNumber = (record as any).fileReferenceNumber;
+    if (fileReferenceNumber) {
+      additionalDetails.push(
+        <span key="fileref">
+          <span className="text-green-600 dark:text-green-400 font-medium">File Ref:</span> {fileReferenceNumber}
+        </span>
+      );
+    }
+    
+    const size = (record as any).size;
+    if (size) {
+      additionalDetails.push(
+        <span key="size">
+          <span className="text-purple-600 dark:text-purple-400 font-medium">Size:</span> {size}
+        </span>
+      );
+    }
+    
+    const remarks = record.remarks;
+    if (remarks) {
+      additionalDetails.push(
+        <span key="remarks">
+          <span className="text-orange-600 dark:text-orange-400 font-medium">Remarks:</span> {remarks}
+        </span>
+      );
+    }
+    
+    const additionalDetailsElement = additionalDetails.length > 0 
+      ? <div className="space-y-1">{additionalDetails.map((item, index) => (
+          <div key={index} className="text-xs">
+            {item}
+          </div>
+        ))}</div>
+      : <span className="text-gray-500">-</span>;
+
+    return {
+      ...record,
+      dateOfIssue: new Date(record.dateOfIssue).toLocaleDateString(),
+      additionalDetails: additionalDetailsElement,
+      isFirstIssue: record.isFirstIssue ? 'Yes' : 'No',
+      issueAgainstDue: record.issueAgainstDue ? 'Due' : 'Damage',
+      actions: (
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => handleEdit(record)}>Edit</Button>
+          <Button variant="destructive" onClick={() => handleDelete(record)} disabled={deleteLoadingId === record._id}>
+            {deleteLoadingId === record._id ? 'Deleting...' : 'Delete'}
+          </Button>
+        </div>
+      )
+    };
+  });
 
   return (
     <div className="container mx-auto p-6 text-sm bg-teal-50 dark:bg-slate-900">
@@ -295,9 +347,18 @@ export default function PPEIssueRecordsPage() {
         </TabsContent>
 
         <TabsContent value="form">
+          {editingRecordId && (
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Edit Mode:</strong> You are editing an existing PPE issue record. The date field is locked and cannot be changed.
+              </p>
+            </div>
+          )}
           <Card className="bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-600 shadow-xl dark:shadow-2xl">
             <CardHeader className="bg-gradient-to-b from-slate-50/90 to-transparent dark:from-slate-700/90 dark:to-transparent rounded-t-md border-b border-slate-200/50 dark:border-slate-600/50">
-              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100">Issue PPE to Employee</CardTitle>
+              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                {editingRecordId ? 'Edit PPE Issue Record' : 'Issue PPE to Employee'}
+              </CardTitle>
             </CardHeader>
             <CardContent className="bg-white/60 dark:bg-slate-800/60">
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -318,6 +379,11 @@ export default function PPEIssueRecordsPage() {
                       placeholder="Search employee by name or number..."
                       required
                     />
+                    {editingRecordId && formData.userEmpName && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                        Existing: {formData.userEmpName} ({formData.userEmpNumber})
+                      </p>
+                    )}
                   </div>
                   
                   <div>
@@ -327,21 +393,25 @@ export default function PPEIssueRecordsPage() {
                       value={formData.dateOfIssue}
                       onChange={(e) => setFormData({ ...formData, dateOfIssue: e.target.value })}
                       required
-                      className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100"
+                      disabled={!!editingRecordId}
+                      className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                     />
+                    {editingRecordId && (
+                      <p className="text-xs text-gray-500 mt-1">Date cannot be changed when editing</p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">
-                      Gate Pass Number
+                      Reservation Number
                     </label>
                     <Input
                       type="text"
-                      value={formData.gatePassNumber}
-                      onChange={(e) => setFormData({ ...formData, gatePassNumber: e.target.value })}
-                      placeholder="Enter gate pass number..."
+                      value={formData.reservationNumber}
+                      onChange={(e) => setFormData({ ...formData, reservationNumber: e.target.value })}
+                      placeholder="Enter reservation number..."
                       className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100"
                     />
                   </div>
@@ -383,6 +453,11 @@ export default function PPEIssueRecordsPage() {
                                 placeholder="Search PPE by name or ID..."
                                 required
                               />
+                              {editingRecordId && row.ppeName && (
+                                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                  Existing: {row.ppeName} ({row.ppeId})
+                                </p>
+                              )}
                             </td>
                             <td className="p-2 w-[140px]">
                               <Input className="text-sm border-slate-300 dark:border-slate-500 rounded-md shadow-inner bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-slate-100" type="number" min="1" value={row.quantityIssued}
@@ -447,7 +522,7 @@ export default function PPEIssueRecordsPage() {
                         userEmpNumber: '',
                         userEmpName: '',
                         dateOfIssue: new Date().toISOString().split('T')[0],
-                        gatePassNumber: '',
+                        reservationNumber: '',
                         fileReferenceNumber: '',
                         remarks: ''
                       });
