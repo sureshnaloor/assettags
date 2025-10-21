@@ -1,34 +1,73 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
+import { Employee, PPEApiResponse } from '@/types/ppe';
 
-export async function GET(request: Request) {
+// GET - Search employees with minimum 5 characters for name search
+export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
-    
-    if (!query || query.length < 2) {
-      return NextResponse.json([]);
+    const search = searchParams.get('search') || '';
+    const limit = parseInt(searchParams.get('limit') || '50');
+
+    if (!search) {
+      return NextResponse.json(
+        { success: false, error: 'Search term is required' },
+        { status: 400 }
+      );
+    }
+
+    // For name search, require minimum 5 characters
+    if (search.length < 5 && !/^\d+$/.test(search)) {
+      return NextResponse.json(
+        { success: false, error: 'Minimum 5 characters required for name search' },
+        { status: 400 }
+      );
     }
 
     const { db } = await connectToDatabase();
-    
-    // Create text index on empno and empname fields (do this once in MongoDB)
-    // db.employees.createIndex({ empno: "text", empname: "text" })
-    
-    const employees = await db.collection('employees')
-      .find({
-        $or: [
-          { empno: { $regex: query, $options: 'i' } },
-          { empname: { $regex: query, $options: 'i' } }
-        ]
-      })
-      .limit(10)  // Limit results
-      .project({ empno: 1, empname: 1 })
+    const collection = db.collection('employees');
+
+    // Build query
+    let query: any = {
+      active: { $ne: 'N' } // Only active employees
+    };
+
+    if (/^\d+$/.test(search)) {
+      // If search is numeric, search by employee number
+      query.empno = { $regex: search, $options: 'i' };
+    } else {
+      // If search is text, search by name (minimum 5 characters already validated)
+      query.empname = { $regex: search, $options: 'i' };
+    }
+
+    // Get results
+    const employees = await collection
+      .find(query)
+      .sort({ empname: 1 })
+      .limit(limit)
       .toArray();
 
-    return NextResponse.json(employees);
+    const response: PPEApiResponse<any> = {
+      success: true,
+      data: {
+        records: employees,
+        total: employees.length
+      }
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Database Error:', error);
-    return NextResponse.json({ error: 'Failed to fetch employees' }, { status: 500 });
+    console.error('Error searching employees:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to search employees' },
+      { status: 500 }
+    );
   }
-} 
+}

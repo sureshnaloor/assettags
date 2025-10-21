@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResponsiveTable from '@/components/ui/responsive-table';
+import PPEIssuesByEmployee from '@/components/PPEIssuesByEmployee';
 
 interface EmployeeFormData {
   empno: string;
@@ -24,6 +25,7 @@ export default function EmployeeManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('list');
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState<EmployeeFormData>({
     empno: '',
     empname: '',
@@ -112,6 +114,12 @@ export default function EmployeeManagementPage() {
     setActiveTab('form');
   };
 
+  // Handle employee selection for PPE records
+  const handleEmployeeSelect = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setActiveTab('ppe-records');
+  };
+
   // Handle deactivate
   const handleDeactivate = async (empno: string) => {
     if (!confirm('Are you sure you want to deactivate this employee?')) {
@@ -156,6 +164,9 @@ export default function EmployeeManagementPage() {
         <Button size="sm" onClick={() => handleEdit(emp)}>
           Edit
         </Button>
+        <Button size="sm" variant="outline" onClick={() => handleEmployeeSelect(emp)}>
+          View PPE Records
+        </Button>
         {emp.active !== 'N' && (
           <Button 
             size="sm" 
@@ -182,6 +193,9 @@ export default function EmployeeManagementPage() {
           <TabsTrigger value="form">
             {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
           </TabsTrigger>
+          {selectedEmployee && (
+            <TabsTrigger value="ppe-records">PPE Records</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="list">
@@ -326,6 +340,28 @@ export default function EmployeeManagementPage() {
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ppe-records">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                PPE Records - {selectedEmployee?.empname} ({selectedEmployee?.empno})
+              </CardTitle>
+              <p className="text-gray-600">
+                View complete PPE issue history for the selected employee
+              </p>
+            </CardHeader>
+            <CardContent>
+              {selectedEmployee && (
+                <PPEIssuesByEmployee 
+                  showSearch={false}
+                  preSelectedEmployee={selectedEmployee}
+                  onEmployeeSelect={setSelectedEmployee}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
