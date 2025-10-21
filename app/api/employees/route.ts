@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
+    const empnoOnly = searchParams.get('empno_only') === 'true';
     const active = searchParams.get('active');
 
     const { db } = await connectToDatabase();
@@ -24,12 +25,18 @@ export async function GET(request: NextRequest) {
     // Build query
     let query: any = {};
     if (search) {
-      query.$or = [
-        { empname: { $regex: search, $options: 'i' } },
-        { empno: { $regex: search, $options: 'i' } },
-        { department: { $regex: search, $options: 'i' } },
-        { designation: { $regex: search, $options: 'i' } }
-      ];
+      if (empnoOnly) {
+        // Exact match for employee number when empno_only is true
+        query.empno = search;
+      } else {
+        // General search across multiple fields
+        query.$or = [
+          { empname: { $regex: search, $options: 'i' } },
+          { empno: { $regex: search, $options: 'i' } },
+          { department: { $regex: search, $options: 'i' } },
+          { designation: { $regex: search, $options: 'i' } }
+        ];
+      }
     }
     if (active !== null && active !== undefined) {
       if (active === 'true') {

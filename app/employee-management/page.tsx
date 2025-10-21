@@ -23,6 +23,7 @@ export default function EmployeeManagementPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [empNumberSearch, setEmpNumberSearch] = useState('');
   const [activeTab, setActiveTab] = useState('list');
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -40,7 +41,20 @@ export default function EmployeeManagementPage() {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/employees?search=${searchTerm}`);
+      
+      // Build query parameters
+      const params = new URLSearchParams();
+      
+      // If employee number is provided, search only by employee number
+      if (empNumberSearch.trim()) {
+        params.append('search', empNumberSearch.trim());
+        params.append('empno_only', 'true'); // Custom parameter to indicate employee number only search
+      } else if (searchTerm.trim()) {
+        // If general search term is provided, use it
+        params.append('search', searchTerm.trim());
+      }
+      
+      const response = await fetch(`/api/employees?${params.toString()}`);
       const result = await response.json();
       
       if (result.success) {
@@ -57,7 +71,7 @@ export default function EmployeeManagementPage() {
 
   useEffect(() => {
     fetchEmployees();
-  }, [searchTerm]);
+  }, [searchTerm, empNumberSearch]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -202,16 +216,77 @@ export default function EmployeeManagementPage() {
           <Card>
             <CardHeader>
               <CardTitle>Employee Records</CardTitle>
-              <div className="flex gap-4">
-                <Input
-                  placeholder="Search employees..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="max-w-sm"
-                />
-                <Button onClick={() => setActiveTab('form')}>
-                  Add New Employee
-                </Button>
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-4 flex-wrap">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Search by employee number..."
+                      value={empNumberSearch}
+                      onChange={(e) => {
+                        setEmpNumberSearch(e.target.value);
+                        // Clear general search when employee number is entered
+                        if (e.target.value.trim()) {
+                          setSearchTerm('');
+                        }
+                      }}
+                      className="max-w-sm"
+                    />
+                    {empNumberSearch && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setEmpNumberSearch('')}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Search by name, department, designation..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        // Clear employee number search when general search is entered
+                        if (e.target.value.trim()) {
+                          setEmpNumberSearch('');
+                        }
+                      }}
+                      className="max-w-sm"
+                    />
+                    {searchTerm && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setSearchTerm('')}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <Button onClick={() => setActiveTab('form')}>
+                    Add New Employee
+                  </Button>
+                  {(empNumberSearch || searchTerm) && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setEmpNumberSearch('');
+                        setSearchTerm('');
+                      }}
+                    >
+                      Show All
+                    </Button>
+                  )}
+                </div>
+                {(empNumberSearch || searchTerm) && (
+                  <div className="text-sm text-gray-600">
+                    {empNumberSearch ? 
+                      `Searching by employee number: "${empNumberSearch}"` : 
+                      `Searching by name/department/designation: "${searchTerm}"`
+                    }
+                  </div>
+                )}
               </div>
             </CardHeader>
             <CardContent>
