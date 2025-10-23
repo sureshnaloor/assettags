@@ -289,31 +289,31 @@ export default function ProjectIssuedMaterialsPage() {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => handleRequestMaterial(row.original)}
-            className="text-orange-400 hover:text-orange-300"
+            className="p-1 text-orange-400 hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors"
             title="Request Material"
           >
             <Send className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleIssueMaterial(row.original)}
-            className="text-green-400 hover:text-green-300"
+            className="p-1 text-green-400 hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
             title="Issue Material"
           >
             <Package className="h-4 w-4" />
           </button>
           <button
             onClick={() => setEditingMaterial(row.original)}
-            className="text-blue-400 hover:text-blue-300"
+            className="p-1 text-blue-400 hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
             title="Edit Material"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleDeleteMaterial(row.original.materialid)}
-            className="text-red-400 hover:text-red-300"
+            className="p-1 text-red-400 hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
             title="Delete Material"
           >
             <Trash2 className="h-4 w-4" />
@@ -335,27 +335,36 @@ export default function ProjectIssuedMaterialsPage() {
     <div className="container mx-auto p-4 min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Project Issued Materials Management</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-1 flex-wrap">
           <Link
             href="/projectissued-materials/requests"
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="flex items-center justify-center w-10 h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors group relative"
+            title="Requests Pending"
           >
-            <ClipboardList className="h-4 w-4" />
-            Requests Pending
+            <ClipboardList className="h-5 w-5" />
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+              Requests Pending
+            </span>
           </Link>
           <button
             onClick={() => setShowImportForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center justify-center w-10 h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors group relative"
+            title="Import CSV"
           >
-            <Upload className="h-4 w-4" />
-            Import CSV
+            <Upload className="h-5 w-5" />
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+              Import CSV
+            </span>
           </button>
           <button
             onClick={() => setShowAddForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors group relative"
+            title="Add Material"
           >
-            <Plus className="h-4 w-4" />
-            Add Material
+            <Plus className="h-5 w-5" />
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+              Add Material
+            </span>
           </button>
         </div>
       </div>

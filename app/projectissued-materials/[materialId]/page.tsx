@@ -190,41 +190,56 @@ export default function ProjectIssuedMaterialDetailPage() {
               {material.materialDescription}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1 flex-wrap">
             <Link
               href="/projectissued-materials/requests"
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className="flex items-center justify-center w-10 h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors group relative"
+              title="Requests Pending"
             >
-              <ClipboardList className="h-4 w-4" />
-              Requests Pending
+              <ClipboardList className="h-5 w-5" />
+              <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                Requests Pending
+              </span>
             </Link>
             <button
               onClick={() => setShowRequestForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              className="flex items-center justify-center w-10 h-10 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors group relative"
+              title="Request Material"
             >
-              <Send className="h-4 w-4" />
-              Request
+              <Send className="h-5 w-5" />
+              <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                Request
+              </span>
             </button>
             <button
               onClick={() => setShowIssueForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center justify-center w-10 h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors group relative"
+              title="Issue Material"
             >
-              <Package className="h-4 w-4" />
-              Issue
+              <Package className="h-5 w-5" />
+              <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                Issue
+              </span>
             </button>
             <button
               onClick={() => setEditing(!editing)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors group relative"
+              title={editing ? 'Cancel Edit' : 'Edit Material'}
             >
-              <Edit className="h-4 w-4" />
-              {editing ? 'Cancel' : 'Edit'}
+              <Edit className="h-5 w-5" />
+              <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                {editing ? 'Cancel' : 'Edit'}
+              </span>
             </button>
             <button
               onClick={handleDelete}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="flex items-center justify-center w-10 h-10 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors group relative"
+              title="Delete Material"
             >
-              <Trash2 className="h-4 w-4" />
-              Delete
+              <Trash2 className="h-5 w-5" />
+              <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                Delete
+              </span>
             </button>
           </div>
         </div>
