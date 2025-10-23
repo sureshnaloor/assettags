@@ -92,6 +92,7 @@ export async function POST(request: Request) {
         materialData.createdAt = new Date();
         materialData.updatedAt = new Date();
         materialData.testDocs = []; // Initialize empty array
+        materialData.pendingRequests = 0; // Initialize pending requests to 0
 
         materials.push(materialData);
       } catch (error) {
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
     }
 
     // Insert materials into database
-    const result = await db.collection('zerovalmaterials').insertMany(materials);
+    const result = await db.collection('projectissuedmaterials').insertMany(materials);
 
     return NextResponse.json({
       success: true,
@@ -116,9 +117,9 @@ export async function POST(request: Request) {
     });
 
   } catch (err) {
-    console.error('Failed to import zero-value materials:', err);
+    console.error('Failed to import project issued materials:', err);
     return NextResponse.json(
-      { error: 'Failed to import zero-value materials' },
+      { error: 'Failed to import project issued materials' },
       { status: 500 }
     );
   }

@@ -36,12 +36,12 @@ export default function Header() {
   const [showReportsMenu, setShowReportsMenu] = useState(false);
   const [showPPEMenu, setShowPPEMenu] = useState(false);
   const [showToolsMenu, setShowToolsMenu] = useState(false);
-  const [showZeroValMenu, setShowZeroValMenu] = useState(false);
+  const [showProjectIssuedMenu, setShowProjectIssuedMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileReportsOpen, setIsMobileReportsOpen] = useState(false);
   const [isMobilePPEOpen, setIsMobilePPEOpen] = useState(false);
   const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
-  const [isMobileZeroValOpen, setIsMobileZeroValOpen] = useState(false);
+  const [isMobileProjectIssuedOpen, setIsMobileProjectIssuedOpen] = useState(false);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -76,8 +76,8 @@ export default function Header() {
         { name: 'Tools Reports', href: '/tools/reports', icon: ClipboardDocumentIcon },
       ];
 
-      const zeroValMenu = [
-        { name: 'Zero-Value Materials', href: '/zerovalmaterials', icon: CubeIcon },
+      const projectIssuedMenu = [
+        { name: 'Project Issued Materials', href: '/projectissued-materials', icon: CubeIcon },
       ];
 
   return (
@@ -211,25 +211,25 @@ export default function Header() {
             )}
           </div>
 
-          {/* Zero-Value Materials Dropdown */}
+          {/* Project Issued Materials Dropdown */}
           <div className="relative">
             <button
-              onMouseEnter={() => setShowZeroValMenu(true)}
-              onMouseLeave={() => setShowZeroValMenu(false)}
+              onMouseEnter={() => setShowProjectIssuedMenu(true)}
+              onMouseLeave={() => setShowProjectIssuedMenu(false)}
               className="group flex items-center space-x-1.5 transition-all duration-300 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-slate-200/25 to-slate-300/25 text-slate-600 dark:text-slate-300 hover:from-slate-200/45 hover:to-slate-300/45 hover:shadow-slate-200/20 border border-slate-200/25 dark:border-slate-600/25"
             >
               <CubeIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span className="font-medium tracking-wide">Zero-Value</span>
+              <span className="font-medium tracking-wide">Project Issued</span>
               <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
             </button>
 
-            {showZeroValMenu && (
+            {showProjectIssuedMenu && (
               <div
-                onMouseEnter={() => setShowZeroValMenu(true)}
-                onMouseLeave={() => setShowZeroValMenu(false)}
+                onMouseEnter={() => setShowProjectIssuedMenu(true)}
+                onMouseLeave={() => setShowProjectIssuedMenu(false)}
                 className="absolute left-0 top-full mt-2 w-64 rounded-xl z-50 bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl backdrop-saturate-150 py-3 shadow-2xl shadow-slate-200/30 dark:shadow-slate-900/30 ring-1 ring-white/30 dark:ring-slate-600/50 border border-white/30 dark:border-slate-600/50"
               >
-                {zeroValMenu.map((item) => (
+                {projectIssuedMenu.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
@@ -439,29 +439,29 @@ export default function Header() {
               )}
             </div>
 
-            {/* Mobile Zero-Value Materials Section */}
+            {/* Mobile Project Issued Materials Section */}
             <div>
               <button
-                onClick={() => setIsMobileZeroValOpen(!isMobileZeroValOpen)}
+                onClick={() => setIsMobileProjectIssuedOpen(!isMobileProjectIssuedOpen)}
                 className="flex items-center justify-between w-full px-3 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 text-sm font-light"
               >
                 <div className="flex items-center space-x-3">
                   <CubeIcon className="h-5 w-5" />
-                  <span>Zero-Value</span>
+                  <span>Project Issued</span>
                 </div>
-                <ChevronDownIcon className={`h-4 w-4 transition-transform ${isMobileZeroValOpen ? 'rotate-180' : ''}`} />
+                <ChevronDownIcon className={`h-4 w-4 transition-transform ${isMobileProjectIssuedOpen ? 'rotate-180' : ''}`} />
               </button>
               
-              {isMobileZeroValOpen && (
+              {isMobileProjectIssuedOpen && (
                 <div className="ml-8 mt-1 space-y-1">
-                  {zeroValMenu.map((item) => (
+                  {projectIssuedMenu.map((item) => (
                     <Link
                       key={item.name}
                       href={item.href}
                       className="flex items-center space-x-3 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-200 font-light"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
-                        setIsMobileZeroValOpen(false);
+                        setIsMobileProjectIssuedOpen(false);
                       }}
                     >
                       <item.icon className="h-4 w-4" />

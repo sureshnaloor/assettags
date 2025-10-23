@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/auth';
+import { authOptions } from '../../../auth/[...nextauth]/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { materialId: string } }
+  { params }: { params: { requestId: string } }
 ) {
   try {
     // Check authentication
@@ -20,22 +20,22 @@ export async function GET(
 
     const { db } = await connectToDatabase();
     
-    const material = await db
-      .collection('zerovalmaterials')
-      .findOne({ materialid: params.materialId });
+    const requestData = await db
+      .collection('materialrequests')
+      .findOne({ _id: new ObjectId(params.requestId) });
 
-    if (!material) {
+    if (!requestData) {
       return NextResponse.json(
-        { error: 'Zero-value material not found' },
+        { error: 'Request not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(material);
+    return NextResponse.json(requestData);
   } catch (err) {
-    console.error('Failed to fetch zero-value material:', err);
+    console.error('Failed to fetch material request:', err);
     return NextResponse.json(
-      { error: 'Failed to fetch zero-value material' },
+      { error: 'Failed to fetch material request' },
       { status: 500 }
     );
   }
@@ -43,7 +43,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { materialId: string } }
+  { params }: { params: { requestId: string } }
 ) {
   try {
     // Check authentication
@@ -65,24 +65,24 @@ export async function PUT(
     updateData.updatedAt = new Date();
     
     const result = await db
-      .collection('zerovalmaterials')
+      .collection('materialrequests')
       .updateOne(
-        { materialid: params.materialId },
+        { _id: new ObjectId(params.requestId) },
         { $set: updateData }
       );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
-        { error: 'Zero-value material not found' },
+        { error: 'Request not found' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('Failed to update zero-value material:', err);
+    console.error('Failed to update material request:', err);
     return NextResponse.json(
-      { error: 'Failed to update zero-value material' },
+      { error: 'Failed to update material request' },
       { status: 500 }
     );
   }
@@ -90,7 +90,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { materialId: string } }
+  { params }: { params: { requestId: string } }
 ) {
   try {
     // Check authentication
@@ -104,22 +104,44 @@ export async function DELETE(
 
     const { db } = await connectToDatabase();
     
-    const result = await db
-      .collection('zerovalmaterials')
-      .deleteOne({ materialid: params.materialId });
+    // Get the request first to update pending requests
+    const requestData = await db
+      .collection('materialrequests')
+      .findOne({ _id: new ObjectId(params.requestId) });
 
-    if (result.deletedCount === 0) {
+    if (!requestData) {
       return NextResponse.json(
-        { error: 'Zero-value material not found' },
+        { error: 'Request not found' },
         { status: 404 }
       );
     }
 
+    // Delete the request
+    const result = await db
+      .collection('materialrequests')
+      .deleteOne({ _id: new ObjectId(params.requestId) });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: 'Request not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update pending requests quantity
+    await db.collection('projectissuedmaterials').updateOne(
+      { materialid: requestData.materialid },
+      { 
+        $inc: { pendingRequests: -requestData.qtyRequested },
+        $set: { updatedAt: new Date() }
+      }
+    );
+
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('Failed to delete zero-value material:', err);
+    console.error('Failed to delete material request:', err);
     return NextResponse.json(
-      { error: 'Failed to delete zero-value material' },
+      { error: 'Failed to delete material request' },
       { status: 500 }
     );
   }

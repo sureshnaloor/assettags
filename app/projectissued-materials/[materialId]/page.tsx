@@ -1,19 +1,24 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ZeroValMaterialData } from '@/types/zerovalmaterials';
+import Link from 'next/link';
+import { ProjectIssuedMaterialData } from '@/types/projectissuedmaterials';
 import AssetQRCode from '@/components/AssetQRCode';
-import { Edit, Trash2, Download, Upload, FileText } from 'lucide-react';
+import { Edit, Trash2, Download, Upload, FileText, Package, Send, ClipboardList } from 'lucide-react';
+import MaterialRequestForm from '@/components/MaterialRequestForm';
+import MaterialIssueForm from '@/components/MaterialIssueForm';
 
-export default function ZeroValMaterialDetailPage() {
+export default function ProjectIssuedMaterialDetailPage() {
   const params = useParams();
   const router = useRouter();
   const materialId = params?.materialId as string;
   
-  const [material, setMaterial] = useState<ZeroValMaterialData | null>(null);
+  const [material, setMaterial] = useState<ProjectIssuedMaterialData | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<ZeroValMaterialData>>({});
+  const [formData, setFormData] = useState<Partial<ProjectIssuedMaterialData>>({});
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showIssueForm, setShowIssueForm] = useState(false);
 
   useEffect(() => {
     if (materialId) {
@@ -35,7 +40,7 @@ export default function ZeroValMaterialDetailPage() {
 
   const fetchMaterial = async () => {
     try {
-      const response = await fetch(`/api/zerovalmaterials/${materialId}`);
+      const response = await fetch(`/api/projectissued-materials/${materialId}`);
       if (!response.ok) throw new Error('Failed to fetch material');
       const data = await response.json();
       setMaterial(data);
@@ -49,7 +54,7 @@ export default function ZeroValMaterialDetailPage() {
 
   const handleUpdate = async () => {
     try {
-      const response = await fetch(`/api/zerovalmaterials/${materialId}`, {
+      const response = await fetch(`/api/projectissued-materials/${materialId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +65,7 @@ export default function ZeroValMaterialDetailPage() {
       if (!response.ok) throw new Error('Failed to update material');
       
       // Redirect back to the main list page after successful update
-      router.push('/zerovalmaterials');
+      router.push('/projectissued-materials');
     } catch (error) {
       console.error('Error updating material:', error);
     }
@@ -70,13 +75,13 @@ export default function ZeroValMaterialDetailPage() {
     if (!confirm('Are you sure you want to delete this material?')) return;
     
     try {
-      const response = await fetch(`/api/zerovalmaterials/${materialId}`, {
+      const response = await fetch(`/api/projectissued-materials/${materialId}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) throw new Error('Failed to delete material');
       
-      window.location.href = '/zerovalmaterials';
+      window.location.href = '/projectissued-materials';
     } catch (error) {
       console.error('Error deleting material:', error);
     }
@@ -95,7 +100,7 @@ export default function ZeroValMaterialDetailPage() {
       // For now, we'll just add the filename to the testDocs array
       const newTestDocs = [...(material?.testDocs || []), file.name];
       
-      const response = await fetch(`/api/zerovalmaterials/${materialId}`, {
+      const response = await fetch(`/api/projectissued-materials/${materialId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -108,6 +113,48 @@ export default function ZeroValMaterialDetailPage() {
       await fetchMaterial();
     } catch (error) {
       console.error('Error uploading file:', error);
+    }
+  };
+
+  const handleSubmitRequest = async (requestData: any) => {
+    try {
+      const response = await fetch('/api/projectissued-materials/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) throw new Error('Failed to submit request');
+      
+      await fetchMaterial();
+      setShowRequestForm(false);
+      alert('Request submitted successfully');
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      alert('Failed to submit request');
+    }
+  };
+
+  const handleSubmitIssue = async (issueData: any) => {
+    try {
+      const response = await fetch('/api/projectissued-materials/issues', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(issueData),
+      });
+
+      if (!response.ok) throw new Error('Failed to issue material');
+      
+      await fetchMaterial();
+      setShowIssueForm(false);
+      alert('Material issued successfully');
+    } catch (error) {
+      console.error('Error issuing material:', error);
+      alert('Failed to issue material');
     }
   };
 
@@ -124,7 +171,7 @@ export default function ZeroValMaterialDetailPage() {
       <div className="container mx-auto p-4 min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Material Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-400">The requested zero-value material could not be found.</p>
+          <p className="text-gray-600 dark:text-gray-400">The requested project issued material could not be found.</p>
         </div>
       </div>
     );
@@ -137,13 +184,34 @@ export default function ZeroValMaterialDetailPage() {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Zero-Value Material: {material.materialid}
+              Project Issued Material: {material.materialid}
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400">
               {material.materialDescription}
             </p>
           </div>
           <div className="flex gap-2">
+            <Link
+              href="/projectissued-materials/requests"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <ClipboardList className="h-4 w-4" />
+              Requests Pending
+            </Link>
+            <button
+              onClick={() => setShowRequestForm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <Send className="h-4 w-4" />
+              Request
+            </button>
+            <button
+              onClick={() => setShowIssueForm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Package className="h-4 w-4" />
+              Issue
+            </button>
             <button
               onClick={() => setEditing(!editing)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -232,7 +300,7 @@ export default function ZeroValMaterialDetailPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Quantity
+                    Available Quantity
                   </label>
                   {editing ? (
                     <input
@@ -248,6 +316,14 @@ export default function ZeroValMaterialDetailPage() {
                       {material.quantity.toLocaleString()}
                     </p>
                   )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Pending Requests
+                  </label>
+                  <p className="px-3 py-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-800 dark:text-orange-200">
+                    {(material.pendingRequests || 0).toLocaleString()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -405,7 +481,7 @@ export default function ZeroValMaterialDetailPage() {
                 <AssetQRCode 
                   assetNumber={material.materialid} 
                   assetDescription={material.materialDescription}
-                  assetType="Zero-Value Material" 
+                  assetType="Project Issued Material" 
                 />
               </div>
             </div>
@@ -443,6 +519,28 @@ export default function ZeroValMaterialDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Request Form Modal */}
+      {showRequestForm && material && (
+        <MaterialRequestForm
+          materialId={material.materialid}
+          materialDescription={material.materialDescription}
+          availableQuantity={material.quantity}
+          onClose={() => setShowRequestForm(false)}
+          onSubmit={handleSubmitRequest}
+        />
+      )}
+
+      {/* Issue Form Modal */}
+      {showIssueForm && material && (
+        <MaterialIssueForm
+          materialId={material.materialid}
+          materialDescription={material.materialDescription}
+          availableQuantity={material.quantity}
+          onClose={() => setShowIssueForm(false)}
+          onSubmit={handleSubmitIssue}
+        />
+      )}
     </div>
   );
 }

@@ -51,16 +51,16 @@ export async function GET(request: Request) {
     }
 
     const materials = await db
-      .collection('zerovalmaterials')
+      .collection('projectissuedmaterials')
       .find(query)
       .sort({ createdAt: -1 })
       .toArray();
 
     return NextResponse.json(materials);
   } catch (err) {
-    console.error('Failed to fetch zero-value materials:', err);
+    console.error('Failed to fetch project issued materials:', err);
     return NextResponse.json(
-      { error: 'Failed to fetch zero-value materials' },
+      { error: 'Failed to fetch project issued materials' },
       { status: 500 }
     );
   }
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     const materialId = generateMaterialId(objectId.toString());
     
     // Check if materialid already exists (very unlikely but good practice)
-    const existingMaterial = await db.collection('zerovalmaterials').findOne({ materialid: materialId });
+    const existingMaterial = await db.collection('projectissuedmaterials').findOne({ materialid: materialId });
     if (existingMaterial) {
       // If exists, generate a new one by appending a suffix
       const newMaterialId = materialId + Math.floor(Math.random() * 100).toString().padStart(2, '0');
@@ -96,16 +96,17 @@ export async function POST(request: Request) {
     
     // Add metadata with user information
     body._id = objectId;
+    body.pendingRequests = 0; // Initialize pending requests to 0
     body.createdBy = session.user.name || session.user.email; // Use name if available, fallback to email
     body.createdAt = new Date();
     body.updatedAt = new Date();
     
-    const result = await db.collection('zerovalmaterials').insertOne(body);
+    const result = await db.collection('projectissuedmaterials').insertOne(body);
     return NextResponse.json({ ...result, materialid: body.materialid }, { status: 201 });
   } catch (err) {
-    console.error('Failed to create zero-value material:', err);
+    console.error('Failed to create project issued material:', err);
     return NextResponse.json(
-      { error: 'Failed to create zero-value material' },
+      { error: 'Failed to create project issued material' },
       { status: 500 }
     );
   }

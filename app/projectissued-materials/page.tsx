@@ -5,21 +5,26 @@ import {
   SortingState,
   ColumnFiltersState
 } from '@tanstack/react-table';
-import { ArrowUpDown, Plus, Edit, Trash2, Upload, Download } from 'lucide-react';
+import { ArrowUpDown, Plus, Edit, Trash2, Upload, Download, Package, Send, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
-import { ZeroValMaterialData } from '@/types/zerovalmaterials';
+import { ProjectIssuedMaterialData } from '@/types/projectissuedmaterials';
 import AssetQRCode from '@/components/AssetQRCode';
+import MaterialRequestForm from '@/components/MaterialRequestForm';
+import MaterialIssueForm from '@/components/MaterialIssueForm';
 
-export default function ZeroValMaterialsPage() {
-  const [data, setData] = useState<ZeroValMaterialData[]>([]);
+export default function ProjectIssuedMaterialsPage() {
+  const [data, setData] = useState<ProjectIssuedMaterialData[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingMaterial, setEditingMaterial] = useState<ZeroValMaterialData | null>(null);
+  const [editingMaterial, setEditingMaterial] = useState<ProjectIssuedMaterialData | null>(null);
   const [showImportForm, setShowImportForm] = useState(false);
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showIssueForm, setShowIssueForm] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<ProjectIssuedMaterialData | null>(null);
 
   useEffect(() => {
     fetchMaterials();
@@ -27,7 +32,7 @@ export default function ZeroValMaterialsPage() {
 
   const fetchMaterials = async () => {
     try {
-      const response = await fetch('/api/zerovalmaterials');
+      const response = await fetch('/api/projectissued-materials');
       if (!response.ok) throw new Error('Failed to fetch materials');
       const data = await response.json();
       setData(data);
@@ -38,9 +43,9 @@ export default function ZeroValMaterialsPage() {
     }
   };
 
-  const handleAddMaterial = async (materialData: Partial<ZeroValMaterialData>) => {
+  const handleAddMaterial = async (materialData: Partial<ProjectIssuedMaterialData>) => {
     try {
-      const response = await fetch('/api/zerovalmaterials', {
+      const response = await fetch('/api/projectissued-materials', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,9 +62,9 @@ export default function ZeroValMaterialsPage() {
     }
   };
 
-  const handleEditMaterial = async (materialId: string, materialData: Partial<ZeroValMaterialData>) => {
+  const handleEditMaterial = async (materialId: string, materialData: Partial<ProjectIssuedMaterialData>) => {
     try {
-      const response = await fetch(`/api/zerovalmaterials/${materialId}`, {
+      const response = await fetch(`/api/projectissued-materials/${materialId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +85,7 @@ export default function ZeroValMaterialsPage() {
     if (!confirm('Are you sure you want to delete this material?')) return;
     
     try {
-      const response = await fetch(`/api/zerovalmaterials/${materialId}`, {
+      const response = await fetch(`/api/projectissued-materials/${materialId}`, {
         method: 'DELETE',
       });
 
@@ -97,7 +102,7 @@ export default function ZeroValMaterialsPage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/zerovalmaterials/import', {
+      const response = await fetch('/api/projectissued-materials/import', {
         method: 'POST',
         body: formData,
       });
@@ -119,7 +124,61 @@ export default function ZeroValMaterialsPage() {
     }
   };
 
-  const columns: ColumnDef<ZeroValMaterialData>[] = [
+  const handleRequestMaterial = (material: ProjectIssuedMaterialData) => {
+    setSelectedMaterial(material);
+    setShowRequestForm(true);
+  };
+
+  const handleIssueMaterial = (material: ProjectIssuedMaterialData) => {
+    setSelectedMaterial(material);
+    setShowIssueForm(true);
+  };
+
+  const handleSubmitRequest = async (requestData: any) => {
+    try {
+      const response = await fetch('/api/projectissued-materials/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) throw new Error('Failed to submit request');
+      
+      await fetchMaterials();
+      setShowRequestForm(false);
+      setSelectedMaterial(null);
+      alert('Request submitted successfully');
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      alert('Failed to submit request');
+    }
+  };
+
+  const handleSubmitIssue = async (issueData: any) => {
+    try {
+      const response = await fetch('/api/projectissued-materials/issues', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(issueData),
+      });
+
+      if (!response.ok) throw new Error('Failed to issue material');
+      
+      await fetchMaterials();
+      setShowIssueForm(false);
+      setSelectedMaterial(null);
+      alert('Material issued successfully');
+    } catch (error) {
+      console.error('Error issuing material:', error);
+      alert('Failed to issue material');
+    }
+  };
+
+  const columns: ColumnDef<ProjectIssuedMaterialData>[] = [
     {
       accessorKey: 'materialid',
       header: ({ column }) => (
@@ -133,7 +192,7 @@ export default function ZeroValMaterialsPage() {
       ),
       cell: ({ row }) => (
         <Link 
-          href={`/zerovalmaterials/${row.original.materialid}`}
+          href={`/projectissued-materials/${row.original.materialid}`}
           className="text-blue-400 hover:text-blue-300"
         >
           {row.original.materialid}
@@ -160,13 +219,29 @@ export default function ZeroValMaterialsPage() {
           className="flex items-center gap-1"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Quantity
+          Available Quantity
           <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
       cell: ({ row }) => {
         const value = row.getValue('quantity') as number;
         return value.toLocaleString();
+      }
+    },
+    {
+      accessorKey: 'pendingRequests',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Pending Requests
+          <ArrowUpDown className="h-4 w-4" />
+        </button>
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue('pendingRequests') as number;
+        return (value || 0).toLocaleString();
       }
     },
     {
@@ -206,7 +281,7 @@ export default function ZeroValMaterialsPage() {
         <AssetQRCode 
           assetNumber={row.original.materialid} 
           assetDescription={row.original.materialDescription}
-          assetType="Zero-Value Material" 
+          assetType="Project Issued Material" 
         />
       )
     },
@@ -216,14 +291,30 @@ export default function ZeroValMaterialsPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <button
+            onClick={() => handleRequestMaterial(row.original)}
+            className="text-orange-400 hover:text-orange-300"
+            title="Request Material"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => handleIssueMaterial(row.original)}
+            className="text-green-400 hover:text-green-300"
+            title="Issue Material"
+          >
+            <Package className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => setEditingMaterial(row.original)}
             className="text-blue-400 hover:text-blue-300"
+            title="Edit Material"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleDeleteMaterial(row.original.materialid)}
             className="text-red-400 hover:text-red-300"
+            title="Delete Material"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -243,8 +334,15 @@ export default function ZeroValMaterialsPage() {
   return (
     <div className="container mx-auto p-4 min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Zero-Value Materials Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Project Issued Materials Management</h1>
         <div className="flex gap-2">
+          <Link
+            href="/projectissued-materials/requests"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <ClipboardList className="h-4 w-4" />
+            Requests Pending
+          </Link>
           <button
             onClick={() => setShowImportForm(true)}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -310,17 +408,46 @@ export default function ZeroValMaterialsPage() {
           onSubmit={handleImportCSV}
         />
       )}
+
+      {/* Request Form Modal */}
+      {showRequestForm && selectedMaterial && (
+        <MaterialRequestForm
+          materialId={selectedMaterial.materialid}
+          materialDescription={selectedMaterial.materialDescription}
+          availableQuantity={selectedMaterial.quantity}
+          onClose={() => {
+            setShowRequestForm(false);
+            setSelectedMaterial(null);
+          }}
+          onSubmit={handleSubmitRequest}
+        />
+      )}
+
+      {/* Issue Form Modal */}
+      {showIssueForm && selectedMaterial && (
+        <MaterialIssueForm
+          materialId={selectedMaterial.materialid}
+          materialDescription={selectedMaterial.materialDescription}
+          availableQuantity={selectedMaterial.quantity}
+          onClose={() => {
+            setShowIssueForm(false);
+            setSelectedMaterial(null);
+          }}
+          onSubmit={handleSubmitIssue}
+        />
+      )}
     </div>
   );
 }
 
 // Add Material Form Component
-function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (data: Partial<ZeroValMaterialData>) => void }) {
-  const [formData, setFormData] = useState<Partial<ZeroValMaterialData>>({
+function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (data: Partial<ProjectIssuedMaterialData>) => void }) {
+  const [formData, setFormData] = useState<Partial<ProjectIssuedMaterialData>>({
     materialCode: '',
     materialDescription: '',
     uom: '',
     quantity: 0,
+    pendingRequests: 0,
     sourceProject: '',
     sourcePONumber: '',
     sourceIssueNumber: '',
@@ -337,7 +464,7 @@ function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit:
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Add New Zero-Value Material</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Add New Project Issued Material</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -474,8 +601,8 @@ function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit:
 }
 
 // Edit Material Form Component
-function EditMaterialForm({ material, onClose, onSubmit }: { material: ZeroValMaterialData; onClose: () => void; onSubmit: (data: Partial<ZeroValMaterialData>) => void }) {
-  const [formData, setFormData] = useState<Partial<ZeroValMaterialData>>(material);
+function EditMaterialForm({ material, onClose, onSubmit }: { material: ProjectIssuedMaterialData; onClose: () => void; onSubmit: (data: Partial<ProjectIssuedMaterialData>) => void }) {
+  const [formData, setFormData] = useState<Partial<ProjectIssuedMaterialData>>(material);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -485,7 +612,7 @@ function EditMaterialForm({ material, onClose, onSubmit }: { material: ZeroValMa
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit Zero-Value Material</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit Project Issued Material</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -646,7 +773,7 @@ function ImportCSVForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Import Zero-Value Materials from CSV</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Import Project Issued Materials from CSV</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
