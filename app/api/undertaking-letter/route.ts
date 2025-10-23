@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
       '4. Iconfirm that all accessories, manuals, and related documentation are present and accounted for.',
       '5. I acknowledge our responsibility for the proper care, maintenance, and security of the equipment.',
       '6. I agree to report any damage, malfunction, or loss of the equipment immediately to the appropriate authorities.',
-      '7. I understand that any misuse or negligence may result in disciplinary action.'
+      '7. I`  understand that any misuse or negligence may result in disciplinary action.'
     ];
 
     undertakingPoints.forEach(point => {
