@@ -772,7 +772,10 @@ export default function ProjectReturnMaterialsPage() {
                     Unit Rate
                   </label>
                   <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
-                    ${materialToDispose.sourceUnitRate.toFixed(2)}
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'SAR'
+                    }).format(materialToDispose.sourceUnitRate)}
                   </p>
                 </div>
                 <div>
@@ -780,7 +783,10 @@ export default function ProjectReturnMaterialsPage() {
                     Current Value
                   </label>
                   <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white font-semibold">
-                    ${((materialToDispose.quantity || 0) * (materialToDispose.sourceUnitRate || 0)).toFixed(2)}
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'SAR'
+                    }).format((materialToDispose.quantity || 0) * (materialToDispose.sourceUnitRate || 0))}
                   </p>
                 </div>
               </div>

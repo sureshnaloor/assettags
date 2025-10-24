@@ -6,6 +6,7 @@ import {
   ColumnFiltersState
 } from '@tanstack/react-table';
 import { ArrowUpDown, Trash2, AlertTriangle, Calendar, User } from 'lucide-react';
+import Link from 'next/link';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 import { DisposedMaterial } from '@/types/projectreturnmaterials';
 
@@ -48,9 +49,12 @@ export default function DisposedMaterialsPage() {
         );
       },
       cell: ({ row }) => (
-        <span className="font-mono text-sm text-blue-600 dark:text-blue-400">
+        <Link 
+          href={`/disposed-materials/${row.getValue('materialid')}`}
+          className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+        >
           {row.getValue('materialid')}
-        </span>
+        </Link>
       ),
     },
     {

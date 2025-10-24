@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ProjectReturnMaterialData, ProjReturnMaterialRequest, ProjReturnMaterialIssue } from '@/types/projectreturnmaterials';
 import AssetQRCode from '@/components/AssetQRCode';
-import { Edit, Trash2, Download, Upload, FileText, Package, Send, ClipboardList, Eye, EyeOff } from 'lucide-react';
+import { Edit, Trash2, Download, Upload, FileText, Package, Send, ClipboardList, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import ProjectReturnMaterialRequestForm from '@/components/ProjectReturnMaterialRequestForm';
 import ProjectReturnMaterialIssueForm from '@/components/ProjectReturnMaterialIssueForm';
 
@@ -19,6 +19,7 @@ export default function ProjectReturnMaterialDetailPage() {
   const [formData, setFormData] = useState<Partial<ProjectReturnMaterialData>>({});
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
+  const [showDisposeModal, setShowDisposeModal] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
   const [showIssues, setShowIssues] = useState(false);
   const [requests, setRequests] = useState<ProjReturnMaterialRequest[]>([]);
@@ -164,6 +165,32 @@ export default function ProjectReturnMaterialDetailPage() {
     }
   };
 
+  const handleDisposeMaterial = () => {
+    setShowDisposeModal(true);
+  };
+
+  const handleConfirmDispose = async () => {
+    if (!material) return;
+    
+    try {
+      const response = await fetch(`/api/projectreturn-materials/${material.materialid}/dispose`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to dispose material');
+      
+      alert('Material disposed successfully and moved to scrap');
+      // Redirect back to the main list page after successful disposal
+      router.push('/projectreturn-materials');
+    } catch (error) {
+      console.error('Error disposing material:', error);
+      alert('Failed to dispose material');
+    }
+  };
+
   const fetchRequests = async () => {
     if (!materialId) return;
     
@@ -296,6 +323,21 @@ export default function ProjectReturnMaterialDetailPage() {
                 Delete
               </span>
             </button>
+            {material && (() => {
+              const balanceQuantity = material.quantity - (material.pendingRequests || 0);
+              return balanceQuantity > 0 && (
+                <button
+                  onClick={handleDisposeMaterial}
+                  className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors group relative"
+                  title="Dispose Material"
+                >
+                  <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                    Dispose
+                  </span>
+                </button>
+              );
+            })()}
           </div>
         </div>
 
@@ -849,6 +891,109 @@ export default function ProjectReturnMaterialDetailPage() {
           onClose={() => setShowIssueForm(false)}
           onSubmit={handleSubmitIssue}
         />
+      )}
+
+      {/* Dispose Material Modal */}
+      {showDisposeModal && material && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="h-6 w-6 text-red-500" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Dispose Material</h2>
+            </div>
+            
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+              <p className="text-red-800 dark:text-red-200 font-medium">
+                ⚠️ This action is irreversible and will move the material to scrap status.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Material Details</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Material ID
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {material.materialid}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Material Code
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {material.materialCode}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {material.materialDescription}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Unit of Measure
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {material.uom}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Current Quantity
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {material.quantity.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Unit Rate
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'SAR'
+                    }).format(material.sourceUnitRate)}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Current Value
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white font-semibold">
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'SAR'
+                    }).format((material.quantity || 0) * (material.sourceUnitRate || 0))}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowDisposeModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDispose}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                Dispose Material
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
