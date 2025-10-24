@@ -59,16 +59,18 @@ export default function DisposedMaterialsPage() {
     },
     {
       accessorKey: 'materialCode',
-      header: 'Material Code',
-    },
-    {
-      accessorKey: 'materialDescription',
-      header: 'Description',
+      header: 'Material Info',
       cell: ({ row }) => {
-        const description = row.getValue('materialDescription') as string;
+        const materialCode = row.getValue('materialCode') as string;
+        const materialDescription = row.original.materialDescription;
         return (
-          <div className="max-w-xs truncate" title={description}>
-            {description}
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              {materialCode}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs max-w-xs truncate" title={materialDescription}>
+              {materialDescription}
+            </div>
           </div>
         );
       },
@@ -79,50 +81,42 @@ export default function DisposedMaterialsPage() {
     },
     {
       accessorKey: 'disposedQuantity',
-      header: ({ column }) => {
+      header: 'Disposal Details',
+      cell: ({ row }) => {
+        const disposedQuantity = row.getValue('disposedQuantity') as number;
+        const disposedValue = row.original.disposedValue;
         return (
-          <button
-            className="flex items-center gap-2 hover:text-gray-600 dark:hover:text-gray-300"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Disposed Quantity
-            <ArrowUpDown className="h-4 w-4" />
-          </button>
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              Qty: {disposedQuantity.toLocaleString()}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs">
+              Value: {new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'SAR'
+              }).format(disposedValue)}
+            </div>
+          </div>
         );
       },
-      cell: ({ row }) => {
-        const value = row.getValue('disposedQuantity') as number;
-        return value.toLocaleString();
-      }
-    },
-    {
-      accessorKey: 'disposedValue',
-      header: ({ column }) => {
-        return (
-          <button
-            className="flex items-center gap-2 hover:text-gray-600 dark:hover:text-gray-300"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Disposed Value
-            <ArrowUpDown className="h-4 w-4" />
-          </button>
-        );
-      },
-      cell: ({ row }) => {
-        const value = row.getValue('disposedValue') as number;
-        return new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'SAR'
-        }).format(value);
-      }
     },
     {
       accessorKey: 'sourceProject',
-      header: 'Source Project',
-    },
-    {
-      accessorKey: 'sourceWBS',
-      header: 'Source WBS',
+      header: 'Project Info',
+      cell: ({ row }) => {
+        const sourceProject = row.getValue('sourceProject') as string;
+        const sourceWBS = row.original.sourceWBS;
+        return (
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              {sourceProject}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs">
+              WBS: {sourceWBS}
+            </div>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'warehouseLocation',
@@ -143,38 +137,22 @@ export default function DisposedMaterialsPage() {
     },
     {
       accessorKey: 'disposedBy',
-      header: 'Disposed By',
+      header: 'Disposal Info',
       cell: ({ row }) => {
         const disposedBy = row.getValue('disposedBy') as string;
+        const disposedAt = row.original.disposedAt;
         return (
-          <div className="flex items-center gap-1">
-            <User className="h-3 w-3 text-gray-400" />
-            <span className="text-sm">{disposedBy}</span>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'disposedAt',
-      header: ({ column }) => {
-        return (
-          <button
-            className="flex items-center gap-2 hover:text-gray-600 dark:hover:text-gray-300"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Disposed Date
-            <ArrowUpDown className="h-4 w-4" />
-          </button>
-        );
-      },
-      cell: ({ row }) => {
-        const date = row.getValue('disposedAt') as Date;
-        return (
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3 text-gray-400" />
-            <span className="text-sm">
-              {new Date(date).toLocaleDateString()}
-            </span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <User className="h-3 w-3 text-gray-400" />
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">{disposedBy}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3 text-gray-400" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                {new Date(disposedAt).toLocaleDateString()}
+              </span>
+            </div>
           </div>
         );
       },
