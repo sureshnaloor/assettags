@@ -2,27 +2,27 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ProjectIssuedMaterialData, MaterialRequest, MaterialIssue } from '@/types/projectissuedmaterials';
+import { ProjectReturnMaterialData, ProjReturnMaterialRequest, ProjReturnMaterialIssue } from '@/types/projectreturnmaterials';
 import AssetQRCode from '@/components/AssetQRCode';
 import { Edit, Trash2, Download, Upload, FileText, Package, Send, ClipboardList, Eye, EyeOff } from 'lucide-react';
-import MaterialRequestForm from '@/components/MaterialRequestForm';
-import MaterialIssueForm from '@/components/MaterialIssueForm';
+import ProjectReturnMaterialRequestForm from '@/components/ProjectReturnMaterialRequestForm';
+import ProjectReturnMaterialIssueForm from '@/components/ProjectReturnMaterialIssueForm';
 
-export default function ProjectIssuedMaterialDetailPage() {
+export default function ProjectReturnMaterialDetailPage() {
   const params = useParams();
   const router = useRouter();
   const materialId = params?.materialId as string;
   
-  const [material, setMaterial] = useState<ProjectIssuedMaterialData | null>(null);
+  const [material, setMaterial] = useState<ProjectReturnMaterialData | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<ProjectIssuedMaterialData>>({});
+  const [formData, setFormData] = useState<Partial<ProjectReturnMaterialData>>({});
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
   const [showIssues, setShowIssues] = useState(false);
-  const [requests, setRequests] = useState<MaterialRequest[]>([]);
-  const [issues, setIssues] = useState<MaterialIssue[]>([]);
+  const [requests, setRequests] = useState<ProjReturnMaterialRequest[]>([]);
+  const [issues, setIssues] = useState<ProjReturnMaterialIssue[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [loadingIssues, setLoadingIssues] = useState(false);
 
@@ -46,7 +46,7 @@ export default function ProjectIssuedMaterialDetailPage() {
 
   const fetchMaterial = async () => {
     try {
-      const response = await fetch(`/api/projectissued-materials/${materialId}`);
+      const response = await fetch(`/api/projectreturn-materials/${materialId}`);
       if (!response.ok) throw new Error('Failed to fetch material');
       const data = await response.json();
       setMaterial(data);
@@ -60,7 +60,7 @@ export default function ProjectIssuedMaterialDetailPage() {
 
   const handleUpdate = async () => {
     try {
-      const response = await fetch(`/api/projectissued-materials/${materialId}`, {
+      const response = await fetch(`/api/projectreturn-materials/${materialId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export default function ProjectIssuedMaterialDetailPage() {
       if (!response.ok) throw new Error('Failed to update material');
       
       // Redirect back to the main list page after successful update
-      router.push('/projectissued-materials');
+      router.push('/projectreturn-materials');
     } catch (error) {
       console.error('Error updating material:', error);
     }
@@ -81,13 +81,13 @@ export default function ProjectIssuedMaterialDetailPage() {
     if (!confirm('Are you sure you want to delete this material?')) return;
     
     try {
-      const response = await fetch(`/api/projectissued-materials/${materialId}`, {
+      const response = await fetch(`/api/projectreturn-materials/${materialId}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) throw new Error('Failed to delete material');
       
-      window.location.href = '/projectissued-materials';
+      window.location.href = '/projectreturn-materials';
     } catch (error) {
       console.error('Error deleting material:', error);
     }
@@ -106,7 +106,7 @@ export default function ProjectIssuedMaterialDetailPage() {
       // For now, we'll just add the filename to the testDocs array
       const newTestDocs = [...(material?.testDocs || []), file.name];
       
-      const response = await fetch(`/api/projectissued-materials/${materialId}`, {
+      const response = await fetch(`/api/projectreturn-materials/${materialId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ export default function ProjectIssuedMaterialDetailPage() {
 
   const handleSubmitRequest = async (requestData: any) => {
     try {
-      const response = await fetch('/api/projectissued-materials/requests', {
+      const response = await fetch('/api/projectreturn-materials/requests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export default function ProjectIssuedMaterialDetailPage() {
 
   const handleSubmitIssue = async (issueData: any) => {
     try {
-      const response = await fetch('/api/projectissued-materials/issues', {
+      const response = await fetch('/api/projectreturn-materials/issues', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ export default function ProjectIssuedMaterialDetailPage() {
     
     setLoadingRequests(true);
     try {
-      const response = await fetch(`/api/projectissued-materials/requests?materialId=${materialId}`);
+      const response = await fetch(`/api/projectreturn-materials/requests?materialId=${materialId}`);
       if (!response.ok) throw new Error('Failed to fetch requests');
       const data = await response.json();
       setRequests(data);
@@ -185,7 +185,7 @@ export default function ProjectIssuedMaterialDetailPage() {
     
     setLoadingIssues(true);
     try {
-      const response = await fetch(`/api/projectissued-materials/issues?materialId=${materialId}`);
+      const response = await fetch(`/api/projectreturn-materials/issues?materialId=${materialId}`);
       if (!response.ok) throw new Error('Failed to fetch issues');
       const data = await response.json();
       setIssues(data);
@@ -223,7 +223,7 @@ export default function ProjectIssuedMaterialDetailPage() {
       <div className="container mx-auto p-4 min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Material Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-400">The requested project issued material could not be found.</p>
+          <p className="text-gray-600 dark:text-gray-400">The requested project return material could not be found.</p>
         </div>
       </div>
     );
@@ -237,7 +237,7 @@ export default function ProjectIssuedMaterialDetailPage() {
           {/* Title and Description */}
           <div className="mb-4">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              Project Issued Material: {material.materialid}
+              Project Return Material: {material.materialid}
             </h1>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
               {material.materialDescription}
@@ -247,7 +247,7 @@ export default function ProjectIssuedMaterialDetailPage() {
           {/* Action Icons */}
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <Link
-              href="/projectissued-materials/requests"
+              href="/projectreturn-materials/requests"
               className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors group relative"
               title="Requests Pending"
             >
@@ -575,9 +575,15 @@ export default function ProjectIssuedMaterialDetailPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Project Name
+                            </label>
+                            <p className="text-sm text-gray-900 dark:text-white">{request.projectName}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                               Requestor
                             </label>
-                            <p className="text-sm text-gray-900 dark:text-white">{request.requestorName}</p>
+                            <p className="text-sm text-gray-900 dark:text-white">{request.requestor}</p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -597,24 +603,6 @@ export default function ProjectIssuedMaterialDetailPage() {
                             }`}>
                               {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                             </span>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Drawing Number
-                            </label>
-                            <p className="text-sm text-gray-900 dark:text-white">{request.drawingNumber}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Equipment
-                            </label>
-                            <p className="text-sm text-gray-900 dark:text-white">{request.equipment}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Room
-                            </label>
-                            <p className="text-sm text-gray-900 dark:text-white">{request.room}</p>
                           </div>
                           <div className="md:col-span-2 lg:col-span-3">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -657,9 +645,15 @@ export default function ProjectIssuedMaterialDetailPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Project Name
+                            </label>
+                            <p className="text-sm text-gray-900 dark:text-white">{issue.projectName}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                               Requestor
                             </label>
-                            <p className="text-sm text-gray-900 dark:text-white">{issue.requestorName}</p>
+                            <p className="text-sm text-gray-900 dark:text-white">{issue.requestor}</p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -672,24 +666,6 @@ export default function ProjectIssuedMaterialDetailPage() {
                               Quantity Issued
                             </label>
                             <p className="text-sm text-gray-900 dark:text-white">{issue.issueQuantity}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Drawing Number
-                            </label>
-                            <p className="text-sm text-gray-900 dark:text-white">{issue.drawingNumber}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Equipment
-                            </label>
-                            <p className="text-sm text-gray-900 dark:text-white">{issue.equipment}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Room
-                            </label>
-                            <p className="text-sm text-gray-900 dark:text-white">{issue.room}</p>
                           </div>
                           <div className="md:col-span-2 lg:col-span-3">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -739,7 +715,7 @@ export default function ProjectIssuedMaterialDetailPage() {
                 <AssetQRCode 
                   assetNumber={material.materialid} 
                   assetDescription={material.materialDescription}
-                  assetType="Project Issued Material" 
+                  assetType="Project Return Material" 
                 />
               </div>
             </div>
@@ -780,7 +756,7 @@ export default function ProjectIssuedMaterialDetailPage() {
 
       {/* Request Form Modal */}
       {showRequestForm && material && (
-        <MaterialRequestForm
+        <ProjectReturnMaterialRequestForm
           materialId={material.materialid}
           materialDescription={material.materialDescription}
           availableQuantity={material.quantity}
@@ -791,7 +767,7 @@ export default function ProjectIssuedMaterialDetailPage() {
 
       {/* Issue Form Modal */}
       {showIssueForm && material && (
-        <MaterialIssueForm
+        <ProjectReturnMaterialIssueForm
           materialId={material.materialid}
           materialDescription={material.materialDescription}
           availableQuantity={material.quantity}
@@ -802,3 +778,4 @@ export default function ProjectIssuedMaterialDetailPage() {
     </div>
   );
 }
+

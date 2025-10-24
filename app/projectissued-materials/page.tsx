@@ -333,36 +333,43 @@ export default function ProjectIssuedMaterialsPage() {
 
   return (
     <div className="container mx-auto p-4 min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Project Issued Materials Management</h1>
-        <div className="flex gap-1 flex-wrap">
+      <div className="mb-6">
+        {/* Title */}
+        <div className="mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            Project Issued Materials Management
+          </h1>
+        </div>
+        
+        {/* Action Icons */}
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <Link
             href="/projectissued-materials/requests"
-            className="flex items-center justify-center w-10 h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors group relative"
+            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors group relative"
             title="Requests Pending"
           >
-            <ClipboardList className="h-5 w-5" />
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+            <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
               Requests Pending
             </span>
           </Link>
           <button
             onClick={() => setShowImportForm(true)}
-            className="flex items-center justify-center w-10 h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors group relative"
+            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors group relative"
             title="Import CSV"
           >
-            <Upload className="h-5 w-5" />
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+            <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
               Import CSV
             </span>
           </button>
           <button
             onClick={() => setShowAddForm(true)}
-            className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors group relative"
+            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors group relative"
             title="Add Material"
           >
-            <Plus className="h-5 w-5" />
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
               Add Material
             </span>
           </button>
