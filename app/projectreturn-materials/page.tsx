@@ -221,16 +221,18 @@ export default function ProjectReturnMaterialsPage() {
     },
     {
       accessorKey: 'materialCode',
-      header: 'Material Code',
-    },
-    {
-      accessorKey: 'materialDescription',
-      header: 'Description',
+      header: 'Material Info',
       cell: ({ row }) => {
-        const description = row.getValue('materialDescription') as string;
+        const materialCode = row.getValue('materialCode') as string;
+        const materialDescription = row.original.materialDescription;
         return (
-          <div className="max-w-xs truncate" title={description}>
-            {description}
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              {materialCode}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs max-w-xs truncate" title={materialDescription}>
+              {materialDescription}
+            </div>
           </div>
         );
       },
@@ -241,41 +243,47 @@ export default function ProjectReturnMaterialsPage() {
     },
     {
       accessorKey: 'quantity',
-      header: ({ column }) => {
-        return (
-          <button
-            className="flex items-center gap-2 hover:text-gray-600 dark:hover:text-gray-300"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Quantity
-            <ArrowUpDown className="h-4 w-4" />
-          </button>
-        );
-      },
+      header: 'Stock Info',
       cell: ({ row }) => {
-        const value = row.getValue('quantity') as number;
-        return value.toLocaleString();
-      }
-    },
-    {
-      accessorKey: 'pendingRequests',
-      header: 'Pending Requests',
-      cell: ({ row }) => {
-        const value = row.getValue('pendingRequests') as number;
+        const quantity = row.getValue('quantity') as number;
+        const pendingRequests = row.original.pendingRequests;
         return (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            value > 0 
-              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' 
-              : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
-          }`}>
-            {value.toLocaleString()}
-          </span>
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              Qty: {quantity.toLocaleString()}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                pendingRequests > 0 
+                  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' 
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
+              }`}>
+                Pending: {pendingRequests.toLocaleString()}
+              </span>
+            </div>
+          </div>
         );
       }
     },
     {
       accessorKey: 'sourceProject',
-      header: 'Source Project',
+      header: 'Source Info',
+      cell: ({ row }) => {
+        const sourceProject = row.getValue('sourceProject') as string;
+        const sourcePONumber = row.original.sourcePONumber;
+        const sourceIssueNumber = row.original.sourceIssueNumber;
+        return (
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              {sourceProject}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs space-y-0.5">
+              {sourcePONumber && <div>PO: {sourcePONumber}</div>}
+              {sourceIssueNumber && <div>Issue: {sourceIssueNumber}</div>}
+            </div>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'sourceUnitRate',
@@ -290,42 +298,38 @@ export default function ProjectReturnMaterialsPage() {
     },
     {
       accessorKey: 'warehouseLocation',
-      header: 'Warehouse Location',
+      header: 'Location Info',
       cell: ({ row }) => {
-        const location = row.getValue('warehouseLocation') as string;
+        const warehouseLocation = row.getValue('warehouseLocation') as string;
+        const yardRoomRackBin = row.original.yardRoomRackBin;
         return (
-          <div className="max-w-xs truncate" title={location}>
-            {location}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: 'yardRoomRackBin',
-      header: 'Yard/Room/Rack-Bin',
-      cell: ({ row }) => {
-        const location = row.getValue('yardRoomRackBin') as string;
-        return (
-          <div className="max-w-xs truncate" title={location}>
-            {location}
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm max-w-xs truncate" title={warehouseLocation}>
+              {warehouseLocation}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs max-w-xs truncate" title={yardRoomRackBin}>
+              {yardRoomRackBin}
+            </div>
           </div>
         );
       }
     },
     {
       accessorKey: 'receivedInWarehouseDate',
-      header: 'Received Date',
+      header: 'Receipt Info',
       cell: ({ row }) => {
-        const date = row.getValue('receivedInWarehouseDate') as Date;
-        return date ? new Date(date).toLocaleDateString() : '-';
-      }
-    },
-    {
-      accessorKey: 'consignmentNoteNumber',
-      header: 'Consignment Note',
-      cell: ({ row }) => {
-        const note = row.getValue('consignmentNoteNumber') as string;
-        return note || '-';
+        const receivedDate = row.getValue('receivedInWarehouseDate') as Date;
+        const consignmentNote = row.original.consignmentNoteNumber;
+        return (
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              {receivedDate ? new Date(receivedDate).toLocaleDateString() : 'Not received'}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs">
+              {consignmentNote ? `Note: ${consignmentNote}` : 'No note'}
+            </div>
+          </div>
+        );
       }
     },
     {

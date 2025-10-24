@@ -237,7 +237,7 @@ export default function ProjectIssuedMaterialsPage() {
       cell: ({ row }) => (
         <Link 
           href={`/projectissued-materials/${row.original.materialid}`}
-          className="text-blue-400 hover:text-blue-300"
+          className="text-blue-400 hover:text-blue-300 font-mono text-sm"
         >
           {row.original.materialid}
         </Link>
@@ -245,95 +245,111 @@ export default function ProjectIssuedMaterialsPage() {
     },
     {
       accessorKey: 'materialCode',
-      header: 'Material Code',
-    },
-    {
-      accessorKey: 'materialDescription',
-      header: 'Description',
-      cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue('materialDescription')}</div>,
+      header: 'Material Info',
+      cell: ({ row }) => {
+        const materialCode = row.getValue('materialCode') as string;
+        const materialDescription = row.original.materialDescription;
+        return (
+          <div className="space-y-1 min-w-[200px]">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              {materialCode}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs max-w-[180px] truncate" title={materialDescription}>
+              {materialDescription}
+            </div>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'uom',
       header: 'UOM',
+      cell: ({ row }) => (
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {row.getValue('uom')}
+        </span>
+      ),
     },
     {
       accessorKey: 'quantity',
-      header: ({ column }) => (
-        <button
-          className="flex items-center gap-1"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Available Quantity
-          <ArrowUpDown className="h-4 w-4" />
-        </button>
-      ),
+      header: 'Stock Info',
       cell: ({ row }) => {
-        const value = row.getValue('quantity') as number;
-        return value.toLocaleString();
-      }
-    },
-    {
-      accessorKey: 'pendingRequests',
-      header: ({ column }) => (
-        <button
-          className="flex items-center gap-1"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Pending Requests
-          <ArrowUpDown className="h-4 w-4" />
-        </button>
-      ),
-      cell: ({ row }) => {
-        const value = row.getValue('pendingRequests') as number;
-        return (value || 0).toLocaleString();
+        const quantity = row.getValue('quantity') as number;
+        const pendingRequests = row.original.pendingRequests;
+        return (
+          <div className="space-y-1 min-w-[120px]">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              Qty: {quantity.toLocaleString()}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                pendingRequests > 0 
+                  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' 
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
+              }`}>
+                Pending: {pendingRequests.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        );
       }
     },
     {
       accessorKey: 'sourceProject',
-      header: 'Source Project',
-    },
-    {
-      accessorKey: 'sourceWBS',
-      header: 'Source WBS',
-    },
-    {
-      accessorKey: 'sourcePONumber',
-      header: 'Source PO',
-    },
-    {
-      accessorKey: 'sourceIssueNumber',
-      header: 'Issue Number',
+      header: 'Source Info',
+      cell: ({ row }) => {
+        const sourceProject = row.getValue('sourceProject') as string;
+        const sourceWBS = row.original.sourceWBS;
+        const sourcePONumber = row.original.sourcePONumber;
+        const sourceIssueNumber = row.original.sourceIssueNumber;
+        return (
+          <div className="space-y-1 min-w-[180px]">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              {sourceProject}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs space-y-0.5">
+              <div>WBS: {sourceWBS}</div>
+              {sourcePONumber && <div>PO: {sourcePONumber}</div>}
+              {sourceIssueNumber && <div>Issue: {sourceIssueNumber}</div>}
+            </div>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'sourceUnitRate',
-      header: ({ column }) => (
-        <button
-          className="flex items-center gap-1"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Unit Rate
-          <ArrowUpDown className="h-4 w-4" />
-        </button>
-      ),
+      header: 'Unit Rate',
       cell: ({ row }) => {
         const value = row.getValue('sourceUnitRate') as number;
-        return new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'SAR'
-        }).format(value);
+        return (
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'SAR'
+            }).format(value)}
+          </span>
+        );
       }
     },
     {
       accessorKey: 'gatepassNumber',
-      header: 'Gatepass Number',
-    },
-    {
-      accessorKey: 'receivedByEmpNumber',
-      header: 'Received By Emp #',
-    },
-    {
-      accessorKey: 'receivedByEmpName',
-      header: 'Received By Emp Name',
+      header: 'Receipt Info',
+      cell: ({ row }) => {
+        const gatepassNumber = row.getValue('gatepassNumber') as string;
+        const receivedByEmpNumber = row.original.receivedByEmpNumber;
+        const receivedByEmpName = row.original.receivedByEmpName;
+        return (
+          <div className="space-y-1 min-w-[150px]">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm">
+              {gatepassNumber || 'No Gatepass'}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-xs space-y-0.5">
+              {receivedByEmpNumber && <div>Emp #: {receivedByEmpNumber}</div>}
+              {receivedByEmpName && <div>Name: {receivedByEmpName}</div>}
+            </div>
+          </div>
+        );
+      }
     },
     {
       header: 'QR Code',
@@ -488,18 +504,20 @@ export default function ProjectIssuedMaterialsPage() {
         </div>
       </div>
 
-      <div className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <ResponsiveTanStackTable
-          data={filteredData}
-          columns={columns}
-          sorting={sorting}
-          setSorting={setSorting}
-          columnFilters={columnFilters}
-          setColumnFilters={setColumnFilters}
-          globalFilter={globalFilter}
-          setGlobalFilter={setGlobalFilter}
-          getRowId={(row) => row._id || row.materialid}
-        />
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="overflow-x-auto">
+          <ResponsiveTanStackTable
+            data={filteredData}
+            columns={columns}
+            sorting={sorting}
+            setSorting={setSorting}
+            columnFilters={columnFilters}
+            setColumnFilters={setColumnFilters}
+            globalFilter={globalFilter}
+            setGlobalFilter={setGlobalFilter}
+            getRowId={(row) => row._id || row.materialid}
+          />
+        </div>
       </div>
 
       {/* Add Material Form Modal */}
