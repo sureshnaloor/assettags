@@ -5,7 +5,7 @@ import {
   SortingState,
   ColumnFiltersState
 } from '@tanstack/react-table';
-import { ArrowUpDown, Plus, Edit, Trash2, Upload, Download, Package, Send, ClipboardList } from 'lucide-react';
+import { ArrowUpDown, Plus, Edit, Trash2, Upload, Download, Package, Send, ClipboardList, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 import { ProjectReturnMaterialData } from '@/types/projectreturnmaterials';
@@ -26,6 +26,8 @@ export default function ProjectReturnMaterialsPage() {
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<ProjectReturnMaterialData | null>(null);
   const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [showDisposeModal, setShowDisposeModal] = useState(false);
+  const [materialToDispose, setMaterialToDispose] = useState<ProjectReturnMaterialData | null>(null);
 
   useEffect(() => {
     fetchMaterials();
@@ -163,6 +165,34 @@ export default function ProjectReturnMaterialsPage() {
     } catch (error) {
       console.error('Error issuing material:', error);
       alert('Failed to issue material');
+    }
+  };
+
+  const handleDisposeMaterial = (material: ProjectReturnMaterialData) => {
+    setMaterialToDispose(material);
+    setShowDisposeModal(true);
+  };
+
+  const handleConfirmDispose = async () => {
+    if (!materialToDispose) return;
+    
+    try {
+      const response = await fetch(`/api/projectreturn-materials/${materialToDispose.materialid}/dispose`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to dispose material');
+      
+      await fetchMaterials();
+      setShowDisposeModal(false);
+      setMaterialToDispose(null);
+      alert('Material disposed successfully and moved to scrap');
+    } catch (error) {
+      console.error('Error disposing material:', error);
+      alert('Failed to dispose material');
     }
   };
 
@@ -335,6 +365,13 @@ export default function ProjectReturnMaterialsPage() {
             <Edit className="h-4 w-4" />
           </button>
           <button
+            onClick={() => handleDisposeMaterial(row.original)}
+            className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
+            title="Dispose Material"
+          >
+            <AlertTriangle className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => handleDeleteMaterial(row.original.materialid)}
             className="p-1 text-red-400 hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
             title="Delete Material"
@@ -374,6 +411,16 @@ export default function ProjectReturnMaterialsPage() {
             <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
               Requests Pending
+            </span>
+          </Link>
+          <Link
+            href="/disposed-materials"
+            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors group relative"
+            title="Disposed Materials"
+          >
+            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+              Disposed Materials
             </span>
           </Link>
           <button
@@ -659,6 +706,103 @@ export default function ProjectReturnMaterialsPage() {
           onClose={() => setShowIssueForm(false)}
           onSubmit={handleSubmitIssue}
         />
+      )}
+
+      {/* Dispose Material Modal */}
+      {showDisposeModal && materialToDispose && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="h-6 w-6 text-red-500" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Dispose Material</h2>
+            </div>
+            
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+              <p className="text-red-800 dark:text-red-200 font-medium">
+                ⚠️ This action is irreversible and will move the material to scrap status.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Material Details</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Material ID
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {materialToDispose.materialid}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Material Code
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {materialToDispose.materialCode}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {materialToDispose.materialDescription}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Unit of Measure
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {materialToDispose.uom}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Current Quantity
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    {materialToDispose.quantity.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Unit Rate
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                    ${materialToDispose.sourceUnitRate.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Current Value
+                  </label>
+                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white font-semibold">
+                    ${((materialToDispose.quantity || 0) * (materialToDispose.sourceUnitRate || 0)).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowDisposeModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDispose}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                Dispose Material
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

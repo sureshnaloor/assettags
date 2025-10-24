@@ -79,6 +79,7 @@ export default function Header() {
       const projectIssuedMenu = [
         { name: 'Project Issued Materials', href: '/projectissued-materials', icon: CubeIcon },
         { name: 'Project Return Materials', href: '/projectreturn-materials', icon: CubeIcon },
+        { name: 'Disposed Materials', href: '/disposed-materials', icon: ExclamationTriangleIcon },
       ];
 
   return (

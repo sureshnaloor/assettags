@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     const { db } = await connectToDatabase();
     
     // Build query based on provided parameters
-    const query: any = {};
+    const query: any = { disposed: { $ne: true } }; // Exclude disposed materials
     if (materialId?.trim()) {
       query.materialid = { $regex: materialId, $options: 'i' };
     }
