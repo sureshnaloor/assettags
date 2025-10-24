@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { db } = await connectToDatabase();
+    const { db, client } = await connectToDatabase();
 
     // Get the material from projectissuedmaterials first
     const issuedMaterial = await db
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     }
 
     // Start a transaction to ensure data consistency
-    const session_db = db.client.startSession();
+    const session_db = client.startSession();
     
     try {
       await session_db.withTransaction(async () => {
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
         };
 
         // Insert into projectreturnmaterials collection
-        await db.collection('projreturnmaterials').insertOne(returnMaterialData);
+        await db.collection('projreturnmaterials').insertOne(returnMaterialData, { session: session_db });
 
         // Update the issued material to reduce quantity by the transferred amount
         // Set quantity to total issued quantity (since we're transferring the balance)
@@ -123,7 +123,8 @@ export async function POST(request: Request) {
               quantity: totalIssuedQuantity, // Keep only the issued quantity
               updatedAt: new Date()
             }
-          }
+          },
+          { session: session_db }
         );
       });
 
