@@ -26,13 +26,13 @@ export default function ThemeSwitcher() {
   return (
     <button
       onClick={toggleTheme}
-      className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      className="rounded-lg p-2.5 hover:bg-gradient-to-r hover:from-slate-100/90 hover:to-slate-50/90 dark:hover:from-slate-700/90 dark:hover:to-slate-600/90 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border border-transparent hover:border-slate-200/50 dark:hover:border-slate-600/50 hover:scale-105"
       aria-label="Toggle theme"
     >
       {theme === 'light' ? (
-        <MoonIcon className="h-5 w-5 text-slate-700 dark:text-slate-300" />
+        <MoonIcon className="h-4 w-4 text-slate-700 dark:text-slate-300 transition-transform duration-300 hover:scale-125 hover:rotate-12" />
       ) : (
-        <SunIcon className="h-5 w-5 text-slate-400 dark:text-slate-300" />
+        <SunIcon className="h-4 w-4 text-slate-600 dark:text-slate-300 transition-transform duration-300 hover:scale-125 hover:rotate-12" />
       )}
     </button>
   );
