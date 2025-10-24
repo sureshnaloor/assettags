@@ -97,7 +97,7 @@ export async function POST(request: Request) {
           sourceUnitRate: issuedMaterial.sourceUnitRate,
           materialid: returnMaterialId,
           pendingRequests: 0, // Reset pending requests for return material
-          createdBy: session.user.email,
+          createdBy: session.user?.email || 'unknown',
           createdAt: new Date(),
           updatedAt: new Date(),
           // Additional fields for return materials
