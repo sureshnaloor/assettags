@@ -56,7 +56,7 @@ export async function POST(
       receivedByEmpNumber: material.receivedByEmpNumber,
       receivedByEmpName: material.receivedByEmpName,
       remarks: material.remarks,
-      disposedBy: session.user.email,
+      disposedBy: session.user?.email || 'unknown',
       disposedAt: new Date(),
       status: 'scrap',
       createdAt: new Date(),
@@ -78,7 +78,7 @@ export async function POST(
             $set: { 
               disposed: true,
               disposedAt: new Date(),
-              disposedBy: session.user.email,
+              disposedBy: session.user?.email || 'unknown',
               updatedAt: new Date()
             }
           },
