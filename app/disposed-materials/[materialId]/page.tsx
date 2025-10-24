@@ -20,7 +20,7 @@ import { DisposedMaterial } from '@/types/projectreturnmaterials';
 export default function DisposedMaterialDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const materialId = params.materialId as string;
+  const materialId = params?.materialId as string;
   
   const [material, setMaterial] = useState<DisposedMaterial | null>(null);
   const [loading, setLoading] = useState(true);
