@@ -7,9 +7,13 @@ export interface ProjectIssuedMaterialData {
   quantity: number;
   pendingRequests: number; // Sum of all requested but not yet issued quantities
   sourceProject: string;
+  sourceWBS: string; // Source WBS
   sourcePONumber: string;
   sourceIssueNumber: string;
   sourceUnitRate: number;
+  gatepassNumber?: string; // Gatepass number
+  receivedByEmpNumber?: string; // Employee number of person receiving
+  receivedByEmpName?: string; // Employee name of person receiving
   testDocs: string[]; // Array of file URLs
   remarks?: string;
   createdBy?: string;

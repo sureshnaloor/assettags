@@ -25,6 +25,7 @@ export default function ProjectIssuedMaterialsPage() {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<ProjectIssuedMaterialData | null>(null);
+  const [projectFilter, setProjectFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchMaterials();
@@ -42,6 +43,14 @@ export default function ProjectIssuedMaterialsPage() {
       setLoading(false);
     }
   };
+
+  // Get unique projects for filter dropdown
+  const uniqueProjects = Array.from(new Set(data.map(material => material.sourceProject).filter(Boolean)));
+
+  // Filter data based on project filter
+  const filteredData = projectFilter === 'all' 
+    ? data 
+    : data.filter(material => material.sourceProject === projectFilter);
 
   const handleAddMaterial = async (materialData: Partial<ProjectIssuedMaterialData>) => {
     try {
@@ -249,6 +258,10 @@ export default function ProjectIssuedMaterialsPage() {
       header: 'Source Project',
     },
     {
+      accessorKey: 'sourceWBS',
+      header: 'Source WBS',
+    },
+    {
       accessorKey: 'sourcePONumber',
       header: 'Source PO',
     },
@@ -274,6 +287,18 @@ export default function ProjectIssuedMaterialsPage() {
           currency: 'SAR'
         }).format(value);
       }
+    },
+    {
+      accessorKey: 'gatepassNumber',
+      header: 'Gatepass Number',
+    },
+    {
+      accessorKey: 'receivedByEmpNumber',
+      header: 'Received By Emp #',
+    },
+    {
+      accessorKey: 'receivedByEmpName',
+      header: 'Received By Emp Name',
     },
     {
       header: 'QR Code',
@@ -376,19 +401,44 @@ export default function ProjectIssuedMaterialsPage() {
         </div>
       </div>
 
-      <div className="mb-4">
-        <input
-          type="text"
-          value={globalFilter ?? ''}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Search materials..."
-          className="w-full max-w-sm px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      <div className="mb-4 space-y-4">
+        {/* Project Filter */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Filter by Project
+            </label>
+            <select
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Projects ({data.length})</option>
+              {uniqueProjects.map((project) => (
+                <option key={project} value={project}>
+                  {project} ({data.filter(m => m.sourceProject === project).length})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Search Materials
+            </label>
+            <input
+              type="text"
+              value={globalFilter ?? ''}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              placeholder="Search materials..."
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
         <ResponsiveTanStackTable
-          data={data}
+          data={filteredData}
           columns={columns}
           sorting={sorting}
           setSorting={setSorting}
@@ -465,9 +515,13 @@ function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit:
     quantity: 0,
     pendingRequests: 0,
     sourceProject: '',
+    sourceWBS: '',
     sourcePONumber: '',
     sourceIssueNumber: '',
     sourceUnitRate: 0,
+    gatepassNumber: '',
+    receivedByEmpNumber: '',
+    receivedByEmpName: '',
     testDocs: [],
     remarks: '',
   });
@@ -592,6 +646,55 @@ function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit:
                 onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Source WBS *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.sourceWBS}
+                onChange={(e) => setFormData({ ...formData, sourceWBS: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter source WBS"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Gatepass Number
+              </label>
+              <input
+                type="text"
+                value={formData.gatepassNumber}
+                onChange={(e) => setFormData({ ...formData, gatepassNumber: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter gatepass number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Received By Employee Number
+              </label>
+              <input
+                type="text"
+                value={formData.receivedByEmpNumber}
+                onChange={(e) => setFormData({ ...formData, receivedByEmpNumber: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter employee number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Received By Employee Name
+              </label>
+              <input
+                type="text"
+                value={formData.receivedByEmpName}
+                onChange={(e) => setFormData({ ...formData, receivedByEmpName: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter employee name"
               />
             </div>
           </div>
@@ -751,6 +854,55 @@ function EditMaterialForm({ material, onClose, onSubmit }: { material: ProjectIs
                 onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Source WBS *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.sourceWBS}
+                onChange={(e) => setFormData({ ...formData, sourceWBS: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter source WBS"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Gatepass Number
+              </label>
+              <input
+                type="text"
+                value={formData.gatepassNumber}
+                onChange={(e) => setFormData({ ...formData, gatepassNumber: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter gatepass number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Received By Employee Number
+              </label>
+              <input
+                type="text"
+                value={formData.receivedByEmpNumber}
+                onChange={(e) => setFormData({ ...formData, receivedByEmpNumber: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter employee number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Received By Employee Name
+              </label>
+              <input
+                type="text"
+                value={formData.receivedByEmpName}
+                onChange={(e) => setFormData({ ...formData, receivedByEmpName: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter employee name"
               />
             </div>
           </div>
