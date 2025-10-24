@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { db } = await connectToDatabase();
+    const { db, client } = await connectToDatabase();
     const materialId = params.materialId;
 
     // Find the material to dispose
@@ -64,12 +64,12 @@ export async function POST(
     };
 
     // Start transaction
-    const session_db = db.client.startSession();
+    const dbSession = await client.startSession();
     
     try {
-      await session_db.withTransaction(async () => {
+      await dbSession.withTransaction(async () => {
         // Insert into disposed materials collection
-        await db.collection('disposedmaterials').insertOne(disposedMaterial);
+        await db.collection('disposedmaterials').insertOne(disposedMaterial, { session: dbSession });
 
         // Mark material as disposed in original collection
         await db.collection('projreturnmaterials').updateOne(
@@ -81,7 +81,8 @@ export async function POST(
               disposedBy: session.user.email,
               updatedAt: new Date()
             }
-          }
+          },
+          { session: dbSession }
         );
       });
 
@@ -95,7 +96,7 @@ export async function POST(
       console.error('Transaction error:', error);
       return NextResponse.json({ error: 'Failed to dispose material' }, { status: 500 });
     } finally {
-      await session_db.endSession();
+      await dbSession.endSession();
     }
 
   } catch (error) {
