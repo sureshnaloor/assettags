@@ -478,6 +478,81 @@ export default function ProjectReturnMaterialDetailPage() {
               </div>
             </div>
 
+            {/* Warehouse Information */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Warehouse Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Warehouse Location
+                  </label>
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={formData.warehouseLocation || ''}
+                      onChange={(e) => setFormData({ ...formData, warehouseLocation: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  ) : (
+                    <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                      {material.warehouseLocation || 'Not specified'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Yard/Room/Rack-Bin
+                  </label>
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={formData.yardRoomRackBin || ''}
+                      onChange={(e) => setFormData({ ...formData, yardRoomRackBin: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  ) : (
+                    <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                      {material.yardRoomRackBin || 'Not specified'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Received in Warehouse Date
+                  </label>
+                  {editing ? (
+                    <input
+                      type="date"
+                      value={formData.receivedInWarehouseDate ? new Date(formData.receivedInWarehouseDate).toISOString().split('T')[0] : ''}
+                      onChange={(e) => setFormData({ ...formData, receivedInWarehouseDate: e.target.value ? new Date(e.target.value) : undefined })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  ) : (
+                    <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                      {material.receivedInWarehouseDate ? new Date(material.receivedInWarehouseDate).toLocaleDateString() : 'Not specified'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Consignment Note Number
+                  </label>
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={formData.consignmentNoteNumber || ''}
+                      onChange={(e) => setFormData({ ...formData, consignmentNoteNumber: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  ) : (
+                    <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                      {material.consignmentNoteNumber || 'Not specified'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Test Documents */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center mb-4">

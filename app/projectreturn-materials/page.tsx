@@ -25,6 +25,7 @@ export default function ProjectReturnMaterialsPage() {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<ProjectReturnMaterialData | null>(null);
+  const [locationFilter, setLocationFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchMaterials();
@@ -42,6 +43,14 @@ export default function ProjectReturnMaterialsPage() {
       setLoading(false);
     }
   };
+
+  // Get unique warehouse locations for filter dropdown
+  const uniqueLocations = Array.from(new Set(data.map(material => material.warehouseLocation).filter(Boolean)));
+
+  // Filter data based on location filter
+  const filteredData = locationFilter === 'all' 
+    ? data 
+    : data.filter(material => material.warehouseLocation === locationFilter);
 
   const handleAddMaterial = async (materialData: Partial<ProjectReturnMaterialData>) => {
     try {
@@ -250,6 +259,46 @@ export default function ProjectReturnMaterialsPage() {
       }
     },
     {
+      accessorKey: 'warehouseLocation',
+      header: 'Warehouse Location',
+      cell: ({ row }) => {
+        const location = row.getValue('warehouseLocation') as string;
+        return (
+          <div className="max-w-xs truncate" title={location}>
+            {location}
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: 'yardRoomRackBin',
+      header: 'Yard/Room/Rack-Bin',
+      cell: ({ row }) => {
+        const location = row.getValue('yardRoomRackBin') as string;
+        return (
+          <div className="max-w-xs truncate" title={location}>
+            {location}
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: 'receivedInWarehouseDate',
+      header: 'Received Date',
+      cell: ({ row }) => {
+        const date = row.getValue('receivedInWarehouseDate') as Date;
+        return date ? new Date(date).toLocaleDateString() : '-';
+      }
+    },
+    {
+      accessorKey: 'consignmentNoteNumber',
+      header: 'Consignment Note',
+      cell: ({ row }) => {
+        const note = row.getValue('consignmentNoteNumber') as string;
+        return note || '-';
+      }
+    },
+    {
       header: 'QR Code',
       cell: ({ row }) => (
         <AssetQRCode 
@@ -350,20 +399,45 @@ export default function ProjectReturnMaterialsPage() {
         </div>
       </div>
 
-      <div className="mb-4">
-        <input
-          type="text"
-          value={globalFilter ?? ''}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Search materials..."
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-        />
+      <div className="mb-4 space-y-4">
+        {/* Location Filter */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Filter by Warehouse Location
+            </label>
+            <select
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Locations ({data.length})</option>
+              {uniqueLocations.map((location) => (
+                <option key={location} value={location}>
+                  {location} ({data.filter(m => m.warehouseLocation === location).length})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Search Materials
+            </label>
+            <input
+              type="text"
+              value={globalFilter ?? ''}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              placeholder="Search materials..."
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
       </div>
 
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <ResponsiveTanStackTable
-          data={data}
+          data={filteredData}
           columns={columns}
           sorting={sorting}
           setSorting={setSorting}
@@ -391,6 +465,10 @@ export default function ProjectReturnMaterialsPage() {
                 sourcePONumber: formData.get('sourcePONumber') as string,
                 sourceIssueNumber: formData.get('sourceIssueNumber') as string,
                 sourceUnitRate: parseFloat(formData.get('sourceUnitRate') as string) || 0,
+                warehouseLocation: formData.get('warehouseLocation') as string,
+                yardRoomRackBin: formData.get('yardRoomRackBin') as string,
+                receivedInWarehouseDate: formData.get('receivedInWarehouseDate') ? new Date(formData.get('receivedInWarehouseDate') as string) : undefined,
+                consignmentNoteNumber: formData.get('consignmentNoteNumber') as string,
                 remarks: formData.get('remarks') as string,
               };
               handleAddMaterial(materialData);
@@ -483,6 +561,51 @@ export default function ProjectReturnMaterialsPage() {
                     min="0"
                     step="0.01"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Warehouse Location *
+                  </label>
+                  <input
+                    type="text"
+                    name="warehouseLocation"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="Enter warehouse location"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Yard/Room/Rack-Bin *
+                  </label>
+                  <input
+                    type="text"
+                    name="yardRoomRackBin"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="Enter yard/room/rack-bin"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Received in Warehouse Date
+                  </label>
+                  <input
+                    type="date"
+                    name="receivedInWarehouseDate"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Consignment Note Number
+                  </label>
+                  <input
+                    type="text"
+                    name="consignmentNoteNumber"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="Enter consignment note number"
                   />
                 </div>
                 <div className="md:col-span-2">

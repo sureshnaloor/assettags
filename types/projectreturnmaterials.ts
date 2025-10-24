@@ -10,6 +10,10 @@ export interface ProjectReturnMaterialData {
   sourcePONumber: string;
   sourceIssueNumber: string;
   sourceUnitRate: number;
+  warehouseLocation: string; // Warehouse location
+  yardRoomRackBin: string; // Yard/Room/Rack-Bin
+  receivedInWarehouseDate?: Date; // Date when material was received in warehouse
+  consignmentNoteNumber?: string; // Consignment note number
   testDocs: string[]; // Array of file URLs
   remarks?: string;
   createdBy?: string;
