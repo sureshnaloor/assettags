@@ -5,6 +5,7 @@ import Link from 'next/link';
 import ThemeSwitcher from './ThemeSwitcher';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { useNavigation } from '@/app/contexts/NavigationContext';
 import { 
   HomeIcon, 
   ChartBarIcon, 
@@ -34,6 +35,7 @@ import {
 
 export default function Header() {
   const { data: session, status } = useSession();
+  const { setActiveSection } = useNavigation();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReportsMenu, setShowReportsMenu] = useState(false);
   const [showPPEMenu, setShowPPEMenu] = useState(false);
@@ -120,6 +122,7 @@ export default function Header() {
             <div className="flex items-center space-x-1 px-3 py-2">
               <Link
                 href="/dashboard"
+                onClick={() => setActiveSection('dashboard')}
                 className="group flex items-center space-x-2 transition-all duration-300 px-2 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-800/50 hover:scale-105"
               >
                 <HomeIcon className="h-3.5 w-3.5 text-blue-300 dark:text-blue-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -131,6 +134,7 @@ export default function Header() {
                 <button
                   onMouseEnter={() => setShowReportsMenu(true)}
                   onMouseLeave={() => setShowReportsMenu(false)}
+                  onClick={() => setActiveSection('reports')}
                   className="group flex items-center space-x-2 transition-all duration-300 px-2 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-800/50 hover:scale-105"
                 >
                   <DocumentChartBarIcon className="h-3.5 w-3.5 text-blue-300 dark:text-blue-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -148,6 +152,7 @@ export default function Header() {
                       <Link
                         key={report.name}
                         href={report.href}
+                        onClick={() => setActiveSection('reports')}
                         className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
                       >
                         <ChartBarIcon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
@@ -163,6 +168,7 @@ export default function Header() {
             <div className="flex items-center space-x-1 px-3 py-2">
               <Link
                 href="/mme"
+                onClick={() => setActiveSection('mme')}
                 className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
               >
                 <BeakerIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -171,6 +177,7 @@ export default function Header() {
               
               <Link
                 href="/fixedasset"
+                onClick={() => setActiveSection('assets')}
                 className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
               >
                 <BuildingOfficeIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -182,6 +189,7 @@ export default function Header() {
                 <button
                   onMouseEnter={() => setShowToolsMenu(true)}
                   onMouseLeave={() => setShowToolsMenu(false)}
+                  onClick={() => setActiveSection('tools')}
                   className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
                 >
                   <CogIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -199,6 +207,7 @@ export default function Header() {
                       <Link
                         key={tool.name}
                         href={tool.href}
+                        onClick={() => setActiveSection('tools')}
                         className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
                       >
                         <tool.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
@@ -214,6 +223,7 @@ export default function Header() {
                 <button
                   onMouseEnter={() => setShowProjectIssuedMenu(true)}
                   onMouseLeave={() => setShowProjectIssuedMenu(false)}
+                  onClick={() => setActiveSection('materials')}
                   className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
                 >
                   <CubeIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -231,6 +241,7 @@ export default function Header() {
                       <Link
                         key={item.name}
                         href={item.href}
+                        onClick={() => setActiveSection('materials')}
                         className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
                       >
                         <item.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
@@ -246,6 +257,7 @@ export default function Header() {
             <div className="flex items-center space-x-1 px-3 py-2">
               <Link
                 href="/search"
+                onClick={() => setActiveSection('search')}
                 className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
               >
                 <MagnifyingGlassIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -254,6 +266,7 @@ export default function Header() {
               
               <Link
                 href="/employee-management"
+                onClick={() => setActiveSection('employee')}
                 className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
               >
                 <UserGroupIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -265,6 +278,7 @@ export default function Header() {
                 <button
                   onMouseEnter={() => setShowPPEMenu(true)}
                   onMouseLeave={() => setShowPPEMenu(false)}
+                  onClick={() => setActiveSection('ppe')}
                   className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
                 >
                   <ShieldCheckIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
@@ -282,6 +296,7 @@ export default function Header() {
                       <Link
                         key={ppe.name}
                         href={ppe.href}
+                        onClick={() => setActiveSection('ppe')}
                         className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
                       >
                         <ppe.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
