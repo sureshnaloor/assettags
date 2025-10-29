@@ -11,12 +11,12 @@ import {
 
 // Map of navigation sections to their sub-links
 const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
-  dashboard: [
-    { name: 'Dashboard-1', href: '#' },
-    { name: 'Dashboard-2', href: '#' },
-    { name: 'Dashboard-3', href: '#' },
-    { name: 'Dashboard-4', href: '#' },
-  ],
+  // dashboard: [
+  //   { name: 'Dashboard-1', href: '#' },
+  //   { name: 'Dashboard-2', href: '#' },
+  //   { name: 'Dashboard-3', href: '#' },
+  //   { name: 'Dashboard-4', href: '#' },
+  // ],
   reports: [
     { name: 'Active Calibrations-1', href: '#' },
     { name: 'Active Calibrations-2', href: '#' },
