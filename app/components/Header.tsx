@@ -163,18 +163,18 @@ export default function Header() {
             <div className="flex items-center space-x-1 px-3 py-2">
               <Link
                 href="/mme"
-                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-sky-200/50 dark:hover:shadow-sky-800/50 hover:scale-105"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
               >
-                <BeakerIcon className="h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-sky-900 dark:text-sky-100">MME</span>
+                <BeakerIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-yellow-600 dark:text-yellow-300">MME</span>
               </Link>
               
               <Link
                 href="/fixedasset"
-                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-sky-200/50 dark:hover:shadow-sky-800/50 hover:scale-105"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
               >
-                <BuildingOfficeIcon className="h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-sky-900 dark:text-sky-100">Assets</span>
+                <BuildingOfficeIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-yellow-600 dark:text-yellow-300">Assets</span>
               </Link>
               
               {/* Tools Dropdown */}
@@ -182,11 +182,11 @@ export default function Header() {
                 <button
                   onMouseEnter={() => setShowToolsMenu(true)}
                   onMouseLeave={() => setShowToolsMenu(false)}
-                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-sky-200/50 dark:hover:shadow-sky-800/50 hover:scale-105"
+                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
                 >
-                  <CogIcon className="h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                  <span className="font-black tracking-widest text-sky-900 dark:text-sky-100">Tools</span>
-                  <ChevronDownIcon className="h-3 w-3 text-sky-300 dark:text-sky-400 transition-transform duration-300 group-hover:rotate-180" />
+                  <CogIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                  <span className="font-black tracking-widest text-yellow-600 dark:text-yellow-300">Tools</span>
+                  <ChevronDownIcon className="h-3 w-3 text-yellow-500 dark:text-yellow-300 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
                 {showToolsMenu && (
@@ -214,11 +214,11 @@ export default function Header() {
                 <button
                   onMouseEnter={() => setShowProjectIssuedMenu(true)}
                   onMouseLeave={() => setShowProjectIssuedMenu(false)}
-                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-200/50 dark:hover:shadow-emerald-800/50 hover:scale-105"
+                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
                 >
-                  <CubeIcon className="h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                  <span className="font-black tracking-widest text-sky-900 dark:text-sky-100">Materials</span>
-                  <ChevronDownIcon className="h-3 w-3 text-sky-300 dark:text-sky-400 transition-transform duration-300 group-hover:rotate-180" />
+                  <CubeIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                  <span className="font-black tracking-widest text-yellow-600 dark:text-yellow-300">Materials</span>
+                  <ChevronDownIcon className="h-3 w-3 text-yellow-500 dark:text-yellow-300 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
                 {showProjectIssuedMenu && (
@@ -246,18 +246,18 @@ export default function Header() {
             <div className="flex items-center space-x-1 px-3 py-2">
               <Link
                 href="/search"
-                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-300/50 dark:hover:shadow-blue-700/50 hover:scale-105"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
               >
-                <MagnifyingGlassIcon className="h-3.5 w-3.5 text-blue-400 dark:text-blue-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-blue-800 dark:text-blue-200">Search</span>
+                <MagnifyingGlassIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-green-600 dark:text-green-300">Search</span>
               </Link>
               
               <Link
                 href="/employee-management"
-                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-300/50 dark:hover:shadow-blue-700/50 hover:scale-105"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
               >
-                <UserGroupIcon className="h-3.5 w-3.5 text-blue-400 dark:text-blue-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-blue-800 dark:text-blue-200">Employee</span>
+                <UserGroupIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-green-600 dark:text-green-300">Employee</span>
               </Link>
               
               {/* PPE Dropdown */}
@@ -265,11 +265,11 @@ export default function Header() {
                 <button
                   onMouseEnter={() => setShowPPEMenu(true)}
                   onMouseLeave={() => setShowPPEMenu(false)}
-                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-300/50 dark:hover:shadow-blue-700/50 hover:scale-105"
+                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
                 >
-                  <ShieldCheckIcon className="h-3.5 w-3.5 text-blue-500 dark:text-blue-200 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                  <span className="font-black tracking-widest text-blue-700 dark:text-blue-300">PPE</span>
-                  <ChevronDownIcon className="h-3 w-3 text-blue-500 dark:text-blue-200 transition-transform duration-300 group-hover:rotate-180" />
+                  <ShieldCheckIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                  <span className="font-black tracking-widest text-green-600 dark:text-green-300">PPE</span>
+                  <ChevronDownIcon className="h-3 w-3 text-green-500 dark:text-green-300 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
                 {showPPEMenu && (
@@ -430,32 +430,32 @@ export default function Header() {
               <div className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-2">Assets & Management</div>
               <Link
                 href="/mme"
-                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-100 hover:bg-sky-100/80 dark:hover:bg-sky-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-sky-200/60 dark:hover:shadow-sky-800/60 hover:scale-105"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-yellow-600 dark:text-yellow-300 hover:bg-yellow-100/80 dark:hover:bg-yellow-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-yellow-200/60 dark:hover:shadow-yellow-800/60 hover:scale-105"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <BeakerIcon className="h-4 w-4 text-sky-300 dark:text-sky-400 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <BeakerIcon className="h-4 w-4 text-yellow-500 dark:text-yellow-300 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
                 <span className="font-black tracking-widest">MME</span>
               </Link>
               
               <Link
                 href="/fixedasset"
-                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-100 hover:bg-sky-100/80 dark:hover:bg-sky-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-sky-200/60 dark:hover:shadow-sky-800/60 hover:scale-105"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-yellow-600 dark:text-yellow-300 hover:bg-yellow-100/80 dark:hover:bg-yellow-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-yellow-200/60 dark:hover:shadow-yellow-800/60 hover:scale-105"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <BuildingOfficeIcon className="h-4 w-4 text-sky-300 dark:text-sky-400 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <BuildingOfficeIcon className="h-4 w-4 text-yellow-500 dark:text-yellow-300 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
                 <span className="font-black tracking-widest">Assets</span>
               </Link>
 
               <div>
                 <button
                   onClick={() => setIsMobileToolsOpen(!isMobileToolsOpen)}
-                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-100 hover:bg-sky-100/80 dark:hover:bg-sky-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-sky-200/60 dark:hover:shadow-sky-800/60"
+                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-yellow-600 dark:text-yellow-300 hover:bg-yellow-100/80 dark:hover:bg-yellow-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-yellow-200/60 dark:hover:shadow-yellow-800/60"
                 >
                   <div className="flex items-center space-x-3">
-                    <CogIcon className="h-4 w-4 text-sky-300 dark:text-sky-400 animate-spin-slow" />
+                    <CogIcon className="h-4 w-4 text-yellow-500 dark:text-yellow-300 animate-spin-slow" />
                     <span className="font-black tracking-widest">Tools</span>
                   </div>
-                  <ChevronDownIcon className={`h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-transform duration-300 ${isMobileToolsOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDownIcon className={`h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-transform duration-300 ${isMobileToolsOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {isMobileToolsOpen && (
@@ -481,13 +481,13 @@ export default function Header() {
               <div>
                 <button
                   onClick={() => setIsMobileProjectIssuedOpen(!isMobileProjectIssuedOpen)}
-                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-100 hover:bg-sky-100/80 dark:hover:bg-sky-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-sky-200/60 dark:hover:shadow-sky-800/60"
+                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-yellow-600 dark:text-yellow-300 hover:bg-yellow-100/80 dark:hover:bg-yellow-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-yellow-200/60 dark:hover:shadow-yellow-800/60"
                 >
                   <div className="flex items-center space-x-3">
-                    <CubeIcon className="h-4 w-4 text-sky-300 dark:text-sky-400 animate-spin-slow" />
+                    <CubeIcon className="h-4 w-4 text-yellow-500 dark:text-yellow-300 animate-spin-slow" />
                     <span className="font-black tracking-widest">Materials</span>
                   </div>
-                  <ChevronDownIcon className={`h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-transform duration-300 ${isMobileProjectIssuedOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDownIcon className={`h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-transform duration-300 ${isMobileProjectIssuedOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {isMobileProjectIssuedOpen && (
@@ -516,32 +516,32 @@ export default function Header() {
               <div className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">Search & Users</div>
               <Link
                 href="/search"
-                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-200 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-blue-200/60 dark:hover:shadow-blue-800/60 hover:scale-105"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-300 hover:bg-green-100/80 dark:hover:bg-green-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-green-200/60 dark:hover:shadow-green-800/60 hover:scale-105"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <MagnifyingGlassIcon className="h-4 w-4 text-blue-400 dark:text-blue-300 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <MagnifyingGlassIcon className="h-4 w-4 text-green-500 dark:text-green-300 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
                 <span className="font-black tracking-widest">Search</span>
               </Link>
               
               <Link
                 href="/employee-management"
-                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-200 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-blue-200/60 dark:hover:shadow-blue-800/60 hover:scale-105"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-300 hover:bg-green-100/80 dark:hover:bg-green-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-green-200/60 dark:hover:shadow-green-800/60 hover:scale-105"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <UserGroupIcon className="h-4 w-4 text-blue-400 dark:text-blue-300 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <UserGroupIcon className="h-4 w-4 text-green-500 dark:text-green-300 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
                 <span className="font-black tracking-widest">Employee</span>
               </Link>
 
               <div>
                 <button
                   onClick={() => setIsMobilePPEOpen(!isMobilePPEOpen)}
-                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300 hover:bg-blue-200/80 dark:hover:bg-blue-800/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-blue-300/60 dark:hover:shadow-blue-700/60"
+                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-300 hover:bg-green-100/80 dark:hover:bg-green-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-green-200/60 dark:hover:shadow-green-800/60"
                 >
                   <div className="flex items-center space-x-3">
-                    <ShieldCheckIcon className="h-4 w-4 text-blue-500 dark:text-blue-200 animate-spin-slow" />
+                    <ShieldCheckIcon className="h-4 w-4 text-green-500 dark:text-green-300 animate-spin-slow" />
                     <span className="font-black tracking-widest">PPE</span>
                   </div>
-                  <ChevronDownIcon className={`h-3.5 w-3.5 text-blue-500 dark:text-blue-200 transition-transform duration-300 ${isMobilePPEOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDownIcon className={`h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-transform duration-300 ${isMobilePPEOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {isMobilePPEOpen && (
