@@ -51,13 +51,27 @@ export default function NewCustodyPage() {
   };
 
   const loadEmployeeOptions = async (inputValue: string) => {
-    if (inputValue.length < 2) return [];
+    // Require minimum 3 characters for name searches, or any length for numeric searches
+    if (inputValue.length < 3 && !/^\d+$/.test(inputValue)) return [];
     
     try {
-      const response = await fetch(`/api/employees/search?q=${encodeURIComponent(inputValue)}`);
-      if (!response.ok) throw new Error('Failed to fetch employees');
+      const url = `/api/employees/search?q=${encodeURIComponent(inputValue)}`;
+      console.log('Fetching employees:', { inputValue, url });
       
-      const employees = await response.json();
+      const response = await fetch(url);
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        console.error('API Error:', { status: response.status, data: responseData });
+        setError(`Failed to fetch employees: ${responseData.error || 'Unknown error'}`);
+        return [];
+      }
+      
+      // Handle wrapped response format
+      const employees = responseData.success ? responseData.data?.records || [] : [];
+      
+      console.log('Employees fetched:', employees.length);
+      
       return employees.map((emp: Employee) => ({
         value: emp.empno,
         label: `${emp.empno} - ${emp.empname}`,
@@ -65,6 +79,8 @@ export default function NewCustodyPage() {
       }));
     } catch (error) {
       console.error('Error fetching employees:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch employees';
+      setError(`Error: ${errorMessage}`);
       return [];
     }
   };

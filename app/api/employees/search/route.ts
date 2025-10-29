@@ -4,7 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Employee, PPEApiResponse } from '@/types/ppe';
 
-// GET - Search employees with minimum 5 characters for name search
+// GET - Search employees with minimum 3 characters for name search
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,20 +13,34 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const search = searchParams.get('search') || '';
+    // Support both 'q' and 'search' query parameters for backward compatibility
+    const search = searchParams.get('search') || searchParams.get('q') || '';
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    if (!search) {
+    // Debug logging
+    console.log('Employee search API called:', { 
+      search, 
+      searchLength: search.length,
+      isNumeric: /^\d+$/.test(search),
+      limit, 
+      url: request.url,
+      allParams: Object.fromEntries(searchParams.entries())
+    });
+
+    if (!search || search.trim() === '') {
+      console.log('Validation failed: search term is empty');
       return NextResponse.json(
         { success: false, error: 'Search term is required' },
         { status: 400 }
       );
     }
 
-    // For name search, require minimum 5 characters
-    if (search.length < 5 && !/^\d+$/.test(search)) {
+    // For name search, require minimum 3 characters (reduced from 5 for better UX)
+    // For numeric search, allow any length
+    if (search.length < 3 && !/^\d+$/.test(search)) {
+      console.log('Validation failed: search term too short', { search, length: search.length });
       return NextResponse.json(
-        { success: false, error: 'Minimum 5 characters required for name search' },
+        { success: false, error: `Minimum 3 characters required for name search. Received: "${search}" (${search.length} chars)` },
         { status: 400 }
       );
     }
@@ -43,7 +57,7 @@ export async function GET(request: NextRequest) {
       // If search is numeric, search by employee number
       query.empno = { $regex: search, $options: 'i' };
     } else {
-      // If search is text, search by name (minimum 5 characters already validated)
+      // If search is text, search by name (minimum 3 characters already validated)
       query.empname = { $regex: search, $options: 'i' };
     }
 
@@ -65,8 +79,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('Error searching employees:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { success: false, error: 'Failed to search employees' },
+      { success: false, error: `Failed to search employees: ${errorMessage}` },
       { status: 500 }
     );
   }
