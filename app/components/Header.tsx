@@ -27,7 +27,9 @@ import {
   CogIcon,
   QrCodeIcon,
   ClipboardDocumentIcon,
-  CubeIcon
+  CubeIcon,
+  MagnifyingGlassIcon,
+  BeakerIcon
 } from '@heroicons/react/24/outline';
 
 export default function Header() {
@@ -45,9 +47,9 @@ export default function Header() {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-    { name: 'MME', href: '/mme', icon: WrenchScrewdriverIcon },
+    { name: 'MME', href: '/mme', icon: BeakerIcon },
     { name: 'Assets', href: '/fixedasset', icon: BuildingOfficeIcon },
-    { name: 'Search', href: '/search', icon: ChartBarIcon },
+    { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
     { name: 'Employee', href: '/employee-management', icon: UserGroupIcon },
   ];
 
@@ -72,7 +74,7 @@ export default function Header() {
       ];
 
       const toolsMenu = [
-        { name: 'Tools Management', href: '/tools', icon: CogIcon },
+        { name: 'Tools Management', href: '/tools', icon: WrenchScrewdriverIcon },
         { name: 'Tools Reports', href: '/tools/reports', icon: ClipboardDocumentIcon },
       ];
 
@@ -112,148 +114,188 @@ export default function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center space-x-2">
-          {navigation.map((item, idx) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border ${
-                idx < 4
-                  ? 'bg-gradient-to-r from-slate-100/80 to-slate-200/80 text-slate-800 dark:text-slate-100 hover:from-slate-200/90 hover:to-slate-300/90 border-slate-300/40 dark:border-slate-600/40 hover:scale-105'
-                  : 'bg-gradient-to-r from-slate-50/60 to-slate-100/60 text-slate-700 dark:text-slate-200 hover:from-slate-100/80 hover:to-slate-200/80 border-slate-200/30 dark:border-slate-600/30 hover:scale-105'
-              }`}
-            >
-              <item.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-              <span className="font-bold tracking-widest">{item.name}</span>
-            </Link>
-          ))}
-          
-          {/* Reports Dropdown */}
-          <div className="relative">
-            <button
-              onMouseEnter={() => setShowReportsMenu(true)}
-              onMouseLeave={() => setShowReportsMenu(false)}
-              className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-slate-100/70 to-slate-200/70 text-slate-700 dark:text-slate-200 hover:from-slate-200/90 hover:to-slate-300/90 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border border-slate-300/40 dark:border-slate-600/40 hover:scale-105"
-            >
-              <DocumentChartBarIcon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-              <span className="font-bold tracking-widest">Reports</span>
-              <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
-            </button>
-
-            {showReportsMenu && (
-              <div
-                onMouseEnter={() => setShowReportsMenu(true)}
-                onMouseLeave={() => setShowReportsMenu(false)}
-                className="absolute left-0 top-full mt-3 w-72 rounded-2xl z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl backdrop-saturate-150 py-4 shadow-2xl shadow-slate-200/40 dark:shadow-slate-900/50 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50"
+        <nav className="hidden lg:flex items-center justify-between w-full">
+          {/* LEFT GROUP: Dashboard + Reports */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl px-4 py-2 border border-blue-200/50 dark:border-blue-700/50">
+              <Link
+                href="/dashboard"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-800/50 hover:scale-105"
               >
-                {reportsMenu.map((report) => (
-                  <Link
-                    key={report.name}
-                    href={report.href}
-                    className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
+                <HomeIcon className="h-3.5 w-3.5 text-blue-300 dark:text-blue-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-blue-900 dark:text-blue-100">Dashboard</span>
+              </Link>
+              
+              {/* Reports Dropdown */}
+              <div className="relative">
+                <button
+                  onMouseEnter={() => setShowReportsMenu(true)}
+                  onMouseLeave={() => setShowReportsMenu(false)}
+                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-800/50 hover:scale-105"
+                >
+                  <DocumentChartBarIcon className="h-3.5 w-3.5 text-blue-300 dark:text-blue-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                  <span className="font-black tracking-widest text-blue-900 dark:text-blue-100">Reports</span>
+                  <ChevronDownIcon className="h-3 w-3 text-blue-300 dark:text-blue-400 transition-transform duration-300 group-hover:rotate-180" />
+                </button>
+
+                {showReportsMenu && (
+                  <div
+                    onMouseEnter={() => setShowReportsMenu(true)}
+                    onMouseLeave={() => setShowReportsMenu(false)}
+                    className="absolute left-0 top-full mt-3 w-72 rounded-2xl z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl backdrop-saturate-150 py-4 shadow-2xl shadow-slate-200/40 dark:shadow-slate-900/50 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50"
                   >
-                    <ChartBarIcon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-                    <span className="font-bold tracking-widest">{report.name}</span>
-                  </Link>
-                ))}
+                    {reportsMenu.map((report) => (
+                      <Link
+                        key={report.name}
+                        href={report.href}
+                        className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
+                      >
+                        <ChartBarIcon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
+                        <span className="font-bold tracking-widest">{report.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
-          {/* PPE Dropdown */}
-          <div className="relative">
-            <button
-              onMouseEnter={() => setShowPPEMenu(true)}
-              onMouseLeave={() => setShowPPEMenu(false)}
-              className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-slate-100/70 to-slate-200/70 text-slate-700 dark:text-slate-200 hover:from-slate-200/90 hover:to-slate-300/90 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border border-slate-300/40 dark:border-slate-600/40 hover:scale-105"
-            >
-              <ShieldCheckIcon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-              <span className="font-bold tracking-widest">PPE</span>
-              <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
-            </button>
+          {/* CENTER GROUP: MME + Assets + Tools + Materials */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 bg-gradient-to-r from-sky-50 to-sky-100 dark:from-sky-900/30 dark:to-sky-800/30 rounded-xl px-4 py-2 border border-sky-200/50 dark:border-sky-700/50">
+              <Link
+                href="/mme"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-sky-200/50 dark:hover:shadow-sky-800/50 hover:scale-105"
+              >
+                <BeakerIcon className="h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-sky-900 dark:text-sky-100">MME</span>
+              </Link>
+              
+              <Link
+                href="/fixedasset"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-sky-200/50 dark:hover:shadow-sky-800/50 hover:scale-105"
+              >
+                <BuildingOfficeIcon className="h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-sky-900 dark:text-sky-100">Assets</span>
+              </Link>
+              
+              {/* Tools Dropdown */}
+              <div className="relative">
+                <button
+                  onMouseEnter={() => setShowToolsMenu(true)}
+                  onMouseLeave={() => setShowToolsMenu(false)}
+                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-sky-200/50 dark:hover:shadow-sky-800/50 hover:scale-105"
+                >
+                  <CogIcon className="h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                  <span className="font-black tracking-widest text-sky-900 dark:text-sky-100">Tools</span>
+                  <ChevronDownIcon className="h-3 w-3 text-sky-300 dark:text-sky-400 transition-transform duration-300 group-hover:rotate-180" />
+                </button>
 
-            {showPPEMenu && (
-              <div
+                {showToolsMenu && (
+                  <div
+                    onMouseEnter={() => setShowToolsMenu(true)}
+                    onMouseLeave={() => setShowToolsMenu(false)}
+                    className="absolute left-0 top-full mt-3 w-72 rounded-2xl z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl backdrop-saturate-150 py-4 shadow-2xl shadow-slate-200/40 dark:shadow-slate-900/50 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50"
+                  >
+                    {toolsMenu.map((tool) => (
+                      <Link
+                        key={tool.name}
+                        href={tool.href}
+                        className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
+                      >
+                        <tool.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
+                        <span className="font-bold tracking-widest">{tool.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Materials Dropdown */}
+              <div className="relative">
+                <button
+                  onMouseEnter={() => setShowProjectIssuedMenu(true)}
+                  onMouseLeave={() => setShowProjectIssuedMenu(false)}
+                  className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-200/50 dark:hover:shadow-emerald-800/50 hover:scale-105"
+                >
+                  <CubeIcon className="h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                  <span className="font-black tracking-widest text-sky-900 dark:text-sky-100">Materials</span>
+                  <ChevronDownIcon className="h-3 w-3 text-sky-300 dark:text-sky-400 transition-transform duration-300 group-hover:rotate-180" />
+                </button>
+
+                {showProjectIssuedMenu && (
+                  <div
+                    onMouseEnter={() => setShowProjectIssuedMenu(true)}
+                    onMouseLeave={() => setShowProjectIssuedMenu(false)}
+                    className="absolute left-0 top-full mt-3 w-72 rounded-2xl z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl backdrop-saturate-150 py-4 shadow-2xl shadow-slate-200/40 dark:shadow-slate-900/50 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50"
+                  >
+                    {projectIssuedMenu.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
+                      >
+                        <item.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
+                        <span className="font-bold tracking-widest">{item.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT GROUP: Search + Employee */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-800/30 dark:to-blue-700/30 rounded-xl px-4 py-2 border border-blue-300/50 dark:border-blue-600/50">
+              <Link
+                href="/search"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-300/50 dark:hover:shadow-blue-700/50 hover:scale-105"
+              >
+                <MagnifyingGlassIcon className="h-3.5 w-3.5 text-blue-400 dark:text-blue-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-blue-800 dark:text-blue-200">Search</span>
+              </Link>
+              
+              <Link
+                href="/employee-management"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-300/50 dark:hover:shadow-blue-700/50 hover:scale-105"
+              >
+                <UserGroupIcon className="h-3.5 w-3.5 text-blue-400 dark:text-blue-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest text-blue-800 dark:text-blue-200">Employee</span>
+              </Link>
+            </div>
+            
+            {/* PPE Dropdown - positioned separately */}
+            <div className="relative">
+              <button
                 onMouseEnter={() => setShowPPEMenu(true)}
                 onMouseLeave={() => setShowPPEMenu(false)}
-                className="absolute left-0 top-full mt-3 w-72 rounded-2xl z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl backdrop-saturate-150 py-4 shadow-2xl shadow-slate-200/40 dark:shadow-slate-900/50 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50"
+                className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-200 to-blue-300 dark:from-blue-700/30 dark:to-blue-600/30 text-blue-700 dark:text-blue-300 hover:from-blue-300/90 hover:to-blue-400/90 hover:shadow-lg hover:shadow-blue-300/50 dark:hover:shadow-blue-600/50 border border-blue-400/50 dark:border-blue-500/50 hover:scale-105"
               >
-                {ppeMenu.map((ppe) => (
-                  <Link
-                    key={ppe.name}
-                    href={ppe.href}
-                    className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
-                  >
-                    <ppe.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-                    <span className="font-bold tracking-widest">{ppe.name}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+                <ShieldCheckIcon className="h-3.5 w-3.5 text-blue-500 dark:text-blue-200 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest">PPE</span>
+                <ChevronDownIcon className="h-3 w-3 text-blue-500 dark:text-blue-200 transition-transform duration-300 group-hover:rotate-180" />
+              </button>
 
-          {/* Tools Dropdown */}
-          <div className="relative">
-            <button
-              onMouseEnter={() => setShowToolsMenu(true)}
-              onMouseLeave={() => setShowToolsMenu(false)}
-              className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-slate-100/70 to-slate-200/70 text-slate-700 dark:text-slate-200 hover:from-slate-200/90 hover:to-slate-300/90 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border border-slate-300/40 dark:border-slate-600/40 hover:scale-105"
-            >
-              <CogIcon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-              <span className="font-bold tracking-widest">Tools</span>
-              <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
-            </button>
-
-            {showToolsMenu && (
-              <div
-                onMouseEnter={() => setShowToolsMenu(true)}
-                onMouseLeave={() => setShowToolsMenu(false)}
-                className="absolute left-0 top-full mt-3 w-72 rounded-2xl z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl backdrop-saturate-150 py-4 shadow-2xl shadow-slate-200/40 dark:shadow-slate-900/50 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50"
-              >
-                {toolsMenu.map((tool) => (
-                  <Link
-                    key={tool.name}
-                    href={tool.href}
-                    className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
-                  >
-                    <tool.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-                    <span className="font-bold tracking-widest">{tool.name}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Project Issued Materials Dropdown */}
-          <div className="relative">
-            <button
-              onMouseEnter={() => setShowProjectIssuedMenu(true)}
-              onMouseLeave={() => setShowProjectIssuedMenu(false)}
-              className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-slate-100/70 to-slate-200/70 text-slate-700 dark:text-slate-200 hover:from-slate-200/90 hover:to-slate-300/90 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 border border-slate-300/40 dark:border-slate-600/40 hover:scale-105"
-            >
-              <CubeIcon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-              <span className="font-bold tracking-widest">Materials</span>
-              <ChevronDownIcon className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
-            </button>
-
-            {showProjectIssuedMenu && (
-              <div
-                onMouseEnter={() => setShowProjectIssuedMenu(true)}
-                onMouseLeave={() => setShowProjectIssuedMenu(false)}
-                className="absolute left-0 top-full mt-3 w-72 rounded-2xl z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl backdrop-saturate-150 py-4 shadow-2xl shadow-slate-200/40 dark:shadow-slate-900/50 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50"
-              >
-                {projectIssuedMenu.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
-                  >
-                    <item.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
-                    <span className="font-bold tracking-widest">{item.name}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
+              {showPPEMenu && (
+                <div
+                  onMouseEnter={() => setShowPPEMenu(true)}
+                  onMouseLeave={() => setShowPPEMenu(false)}
+                  className="absolute left-0 top-full mt-3 w-72 rounded-2xl z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl backdrop-saturate-150 py-4 shadow-2xl shadow-slate-200/40 dark:shadow-slate-900/50 ring-1 ring-slate-200/50 dark:ring-slate-600/50 border border-slate-100/50 dark:border-slate-700/50"
+                >
+                  {ppeMenu.map((ppe) => (
+                    <Link
+                      key={ppe.name}
+                      href={ppe.href}
+                      className="group flex items-center space-x-3 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-700/80 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 mx-3 rounded-xl hover:scale-105"
+                    >
+                      <ppe.icon className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
+                      <span className="font-bold tracking-widest">{ppe.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </nav>
 
@@ -340,149 +382,191 @@ export default function Header() {
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200/80 dark:border-slate-700/80 bg-gradient-to-b from-white/98 to-slate-50/98 dark:from-slate-900/98 dark:to-slate-800/98 backdrop-blur-xl shadow-xl shadow-slate-200/30 dark:shadow-slate-900/40">
-          <div className="px-6 py-4 space-y-2">
-            {navigation.map((item) => (
+          <div className="px-6 py-4 space-y-4">
+            
+            {/* LEFT GROUP: Dashboard + Reports */}
+            <div className="space-y-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">Dashboard & Reports</div>
               <Link
-                key={item.name}
-                href={item.href}
-                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-gradient-to-r hover:from-slate-100/90 hover:to-slate-50/90 dark:hover:from-slate-700/90 dark:hover:to-slate-600/90 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 hover:scale-105"
+                href="/dashboard"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-900 dark:text-blue-100 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-blue-200/60 dark:hover:shadow-blue-800/60 hover:scale-105"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-6" />
-                <span className="font-bold tracking-widest">{item.name}</span>
+                <HomeIcon className="h-4 w-4 text-blue-300 dark:text-blue-400 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest">Dashboard</span>
               </Link>
-            ))}
-            
-            {/* Mobile Reports Section */}
-            <div>
-              <button
-                onClick={() => setIsMobileReportsOpen(!isMobileReportsOpen)}
-                className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60"
-              >
-                <div className="flex items-center space-x-3">
-                  <DocumentChartBarIcon className="h-4 w-4" />
-                  <span className="font-bold tracking-widest">Reports</span>
-                </div>
-                <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform duration-300 ${isMobileReportsOpen ? 'rotate-180' : ''}`} />
-              </button>
               
-              {isMobileReportsOpen && (
-                <div className="ml-6 mt-2 space-y-1">
-                  {reportsMenu.map((report) => (
-                    <Link
-                      key={report.name}
-                      href={report.href}
-                      className="flex items-center space-x-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 hover:scale-105"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setIsMobileReportsOpen(false);
-                      }}
-                    >
-                      <ChartBarIcon className="h-3.5 w-3.5" />
-                      <span className="font-bold tracking-widest">{report.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <div>
+                <button
+                  onClick={() => setIsMobileReportsOpen(!isMobileReportsOpen)}
+                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-900 dark:text-blue-100 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-blue-200/60 dark:hover:shadow-blue-800/60"
+                >
+                  <div className="flex items-center space-x-3">
+                    <DocumentChartBarIcon className="h-4 w-4 text-blue-300 dark:text-blue-400 animate-spin-slow" />
+                    <span className="font-black tracking-widest">Reports</span>
+                  </div>
+                  <ChevronDownIcon className={`h-3.5 w-3.5 text-blue-300 dark:text-blue-400 transition-transform duration-300 ${isMobileReportsOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isMobileReportsOpen && (
+                  <div className="ml-6 mt-2 space-y-1">
+                    {reportsMenu.map((report) => (
+                      <Link
+                        key={report.name}
+                        href={report.href}
+                        className="flex items-center space-x-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100 hover:bg-blue-50/80 dark:hover:bg-blue-900/40 rounded-lg transition-all duration-300 hover:shadow-md hover:shadow-blue-200/60 dark:hover:shadow-blue-800/60 hover:scale-105"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          setIsMobileReportsOpen(false);
+                        }}
+                      >
+                        <ChartBarIcon className="h-3.5 w-3.5" />
+                        <span className="font-bold tracking-widest">{report.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Mobile PPE Section */}
-            <div>
-              <button
-                onClick={() => setIsMobilePPEOpen(!isMobilePPEOpen)}
-                className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60"
+            {/* CENTER GROUP: MME + Assets + Tools + Materials */}
+            <div className="space-y-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-2">Assets & Management</div>
+              <Link
+                href="/mme"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-100 hover:bg-sky-100/80 dark:hover:bg-sky-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-sky-200/60 dark:hover:shadow-sky-800/60 hover:scale-105"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
-                <div className="flex items-center space-x-3">
-                  <ShieldCheckIcon className="h-4 w-4" />
-                  <span className="font-bold tracking-widest">PPE</span>
-                </div>
-                <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform duration-300 ${isMobilePPEOpen ? 'rotate-180' : ''}`} />
-              </button>
+                <BeakerIcon className="h-4 w-4 text-sky-300 dark:text-sky-400 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest">MME</span>
+              </Link>
               
-              {isMobilePPEOpen && (
-                <div className="ml-6 mt-2 space-y-1">
-                  {ppeMenu.map((ppe) => (
-                    <Link
-                      key={ppe.name}
-                      href={ppe.href}
-                      className="flex items-center space-x-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 hover:scale-105"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setIsMobilePPEOpen(false);
-                      }}
-                    >
-                      <ppe.icon className="h-3.5 w-3.5" />
-                      <span className="font-bold tracking-widest">{ppe.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <Link
+                href="/fixedasset"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-100 hover:bg-sky-100/80 dark:hover:bg-sky-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-sky-200/60 dark:hover:shadow-sky-800/60 hover:scale-105"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <BuildingOfficeIcon className="h-4 w-4 text-sky-300 dark:text-sky-400 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest">Assets</span>
+              </Link>
+
+              <div>
+                <button
+                  onClick={() => setIsMobileToolsOpen(!isMobileToolsOpen)}
+                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-100 hover:bg-sky-100/80 dark:hover:bg-sky-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-sky-200/60 dark:hover:shadow-sky-800/60"
+                >
+                  <div className="flex items-center space-x-3">
+                    <CogIcon className="h-4 w-4 text-sky-300 dark:text-sky-400 animate-spin-slow" />
+                    <span className="font-black tracking-widest">Tools</span>
+                  </div>
+                  <ChevronDownIcon className={`h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-transform duration-300 ${isMobileToolsOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isMobileToolsOpen && (
+                  <div className="ml-6 mt-2 space-y-1">
+                    {toolsMenu.map((tool) => (
+                      <Link
+                        key={tool.name}
+                        href={tool.href}
+                        className="flex items-center space-x-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-100 hover:bg-emerald-50/80 dark:hover:bg-emerald-900/40 rounded-lg transition-all duration-300 hover:shadow-md hover:shadow-emerald-200/60 dark:hover:shadow-emerald-800/60 hover:scale-105"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          setIsMobileToolsOpen(false);
+                        }}
+                      >
+                        <tool.icon className="h-3.5 w-3.5" />
+                        <span className="font-bold tracking-widest">{tool.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <button
+                  onClick={() => setIsMobileProjectIssuedOpen(!isMobileProjectIssuedOpen)}
+                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900 dark:text-sky-100 hover:bg-sky-100/80 dark:hover:bg-sky-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-sky-200/60 dark:hover:shadow-sky-800/60"
+                >
+                  <div className="flex items-center space-x-3">
+                    <CubeIcon className="h-4 w-4 text-sky-300 dark:text-sky-400 animate-spin-slow" />
+                    <span className="font-black tracking-widest">Materials</span>
+                  </div>
+                  <ChevronDownIcon className={`h-3.5 w-3.5 text-sky-300 dark:text-sky-400 transition-transform duration-300 ${isMobileProjectIssuedOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isMobileProjectIssuedOpen && (
+                  <div className="ml-6 mt-2 space-y-1">
+                    {projectIssuedMenu.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="flex items-center space-x-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-100 hover:bg-emerald-50/80 dark:hover:bg-emerald-900/40 rounded-lg transition-all duration-300 hover:shadow-md hover:shadow-emerald-200/60 dark:hover:shadow-emerald-800/60 hover:scale-105"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          setIsMobileProjectIssuedOpen(false);
+                        }}
+                      >
+                        <item.icon className="h-3.5 w-3.5" />
+                        <span className="font-bold tracking-widest">{item.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Mobile Tools Section */}
-            <div>
-              <button
-                onClick={() => setIsMobileToolsOpen(!isMobileToolsOpen)}
-                className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60"
+            {/* RIGHT GROUP: Search + Employee + PPE */}
+            <div className="space-y-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">Search & Users</div>
+              <Link
+                href="/search"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-200 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-blue-200/60 dark:hover:shadow-blue-800/60 hover:scale-105"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
-                <div className="flex items-center space-x-3">
-                  <CogIcon className="h-4 w-4" />
-                  <span className="font-bold tracking-widest">Tools</span>
-                </div>
-                <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform duration-300 ${isMobileToolsOpen ? 'rotate-180' : ''}`} />
-              </button>
+                <MagnifyingGlassIcon className="h-4 w-4 text-blue-400 dark:text-blue-300 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest">Search</span>
+              </Link>
               
-              {isMobileToolsOpen && (
-                <div className="ml-6 mt-2 space-y-1">
-                  {toolsMenu.map((tool) => (
-                    <Link
-                      key={tool.name}
-                      href={tool.href}
-                      className="flex items-center space-x-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 hover:scale-105"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setIsMobileToolsOpen(false);
-                      }}
-                    >
-                      <tool.icon className="h-3.5 w-3.5" />
-                      <span className="font-bold tracking-widest">{tool.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+              <Link
+                href="/employee-management"
+                className="group flex items-center space-x-3 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-200 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-blue-200/60 dark:hover:shadow-blue-800/60 hover:scale-105"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <UserGroupIcon className="h-4 w-4 text-blue-400 dark:text-blue-300 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
+                <span className="font-black tracking-widest">Employee</span>
+              </Link>
 
-            {/* Mobile Project Issued Materials Section */}
-            <div>
-              <button
-                onClick={() => setIsMobileProjectIssuedOpen(!isMobileProjectIssuedOpen)}
-                className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60"
-              >
-                <div className="flex items-center space-x-3">
-                  <CubeIcon className="h-4 w-4" />
-                  <span className="font-bold tracking-widest">Materials</span>
-                </div>
-                <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform duration-300 ${isMobileProjectIssuedOpen ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {isMobileProjectIssuedOpen && (
-                <div className="ml-6 mt-2 space-y-1">
-                  {projectIssuedMenu.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="flex items-center space-x-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80 rounded-lg transition-all duration-300 hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-800/60 hover:scale-105"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setIsMobileProjectIssuedOpen(false);
-                      }}
-                    >
-                      <item.icon className="h-3.5 w-3.5" />
-                      <span className="font-bold tracking-widest">{item.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <div>
+                <button
+                  onClick={() => setIsMobilePPEOpen(!isMobilePPEOpen)}
+                  className="flex items-center justify-between w-full px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300 hover:bg-blue-200/80 dark:hover:bg-blue-800/80 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-blue-300/60 dark:hover:shadow-blue-700/60"
+                >
+                  <div className="flex items-center space-x-3">
+                    <ShieldCheckIcon className="h-4 w-4 text-blue-500 dark:text-blue-200 animate-spin-slow" />
+                    <span className="font-black tracking-widest">PPE</span>
+                  </div>
+                  <ChevronDownIcon className={`h-3.5 w-3.5 text-blue-500 dark:text-blue-200 transition-transform duration-300 ${isMobilePPEOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isMobilePPEOpen && (
+                  <div className="ml-6 mt-2 space-y-1">
+                    {ppeMenu.map((ppe) => (
+                      <Link
+                        key={ppe.name}
+                        href={ppe.href}
+                        className="flex items-center space-x-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-orange-600 hover:text-orange-800 dark:text-orange-300 dark:hover:text-orange-100 hover:bg-orange-50/80 dark:hover:bg-orange-900/40 rounded-lg transition-all duration-300 hover:shadow-md hover:shadow-orange-200/60 dark:hover:shadow-orange-800/60 hover:scale-105"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          setIsMobilePPEOpen(false);
+                        }}
+                      >
+                        <ppe.icon className="h-3.5 w-3.5" />
+                        <span className="font-bold tracking-widest">{ppe.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Mobile Auth Section */}

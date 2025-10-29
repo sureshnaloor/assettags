@@ -16,6 +16,20 @@ body {
     text-wrap: balance;
   }
   
+  /* Slow spin animation for icons */
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+  }
+  
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
   /* Enhanced text styling utilities */
   .text-asset-number {
     @apply font-mono font-bold text-slate-900 dark:text-slate-100 text-sm tracking-wide;

@@ -10,8 +10,10 @@ interface LayoutWrapperProps {
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
   
-  // Don't show sidebar on asset detail pages (pages with asset numbers)
+  // Don't show sidebar on landing page, dashboard, and asset detail pages
   const shouldShowSidebar = pathname && 
+                           pathname !== '/' &&
+                           pathname !== '/dashboard' &&
                            !pathname.match(/^\/asset\/[^\/]+$/) && 
                            !pathname.match(/^\/fixedasset\/[^\/]+$/) &&
                            !pathname.match(/^\/tools\/[^\/]+$/);
