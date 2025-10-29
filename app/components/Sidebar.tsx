@@ -109,7 +109,7 @@ export default function Sidebar() {
   const subLinks = activeSection ? subLinksMap[activeSection] || [] : [];
 
   return (
-    <div className="hidden border-r border-slate-200/80 dark:border-slate-700/80 bg-gradient-to-b from-white/95 via-slate-50/95 to-white/95 dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95 backdrop-blur-xl shadow-xl shadow-slate-200/30 dark:shadow-slate-900/40 md:block md:w-64 sticky top-18 h-[calc(100vh-4.5rem)]">
+    <div className="hidden border-r border-slate-200/80 dark:border-slate-700/80 bg-gradient-to-b from-white/95 via-slate-50/95 to-white/95 dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95 backdrop-blur-xl shadow-xl shadow-slate-200/30 dark:shadow-slate-900/40 md:block md:w-64 self-stretch h-full">
       <div className="flex h-full flex-col gap-3">
         <div className="flex-1 overflow-auto py-6">
           {activeSection && subLinks.length > 0 ? (

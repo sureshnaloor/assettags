@@ -72,13 +72,20 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
   };
 
   const loadEmployeeOptions = async (inputValue: string) => {
-    if (inputValue.length < 2) return [];
+    // Require minimum 3 characters for name searches, or any length for numeric searches
+    if (inputValue.length < 3 && !/^\d+$/.test(inputValue)) return [];
     
     try {
       const response = await fetch(`/api/employees/search?q=${encodeURIComponent(inputValue)}`);
-      if (!response.ok) throw new Error('Failed to fetch employees');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch employees');
+      }
       
-      const employees = await response.json();
+      const data = await response.json();
+      // Handle wrapped response format
+      const employees = data.success ? data.data?.records || [] : [];
+      
       return employees.map((emp: Employee) => ({
         value: emp.empno,
         label: `${emp.empno} - ${emp.empname}`,

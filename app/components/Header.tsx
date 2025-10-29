@@ -126,7 +126,7 @@ export default function Header() {
                 className="group flex items-center space-x-2 transition-all duration-300 px-2 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-800/50 hover:scale-105"
               >
                 <HomeIcon className="h-3.5 w-3.5 text-blue-300 dark:text-blue-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-blue-900 dark:text-blue-100">Dashboard</span>
+                <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-blue-900 dark:text-blue-100">Dashboard</span>
               </Link>
               
               {/* Reports Dropdown */}
@@ -138,7 +138,7 @@ export default function Header() {
                   className="group flex items-center space-x-2 transition-all duration-300 px-2 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-800/50 hover:scale-105"
                 >
                   <DocumentChartBarIcon className="h-3.5 w-3.5 text-blue-300 dark:text-blue-400 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                  <span className="font-black tracking-widest text-blue-900 dark:text-blue-100">Reports</span>
+                  <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-blue-900 dark:text-blue-100">Reports</span>
                   <ChevronDownIcon className="h-3 w-3 text-blue-300 dark:text-blue-400 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
@@ -172,7 +172,7 @@ export default function Header() {
                 className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
               >
                 <BeakerIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-yellow-600 dark:text-yellow-300">MME</span>
+                <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-yellow-600 dark:text-yellow-300">MME</span>
               </Link>
               
               <Link
@@ -181,7 +181,7 @@ export default function Header() {
                 className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
               >
                 <BuildingOfficeIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-yellow-600 dark:text-yellow-300">Assets</span>
+                <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-yellow-600 dark:text-yellow-300">Assets</span>
               </Link>
               
               {/* Tools Dropdown */}
@@ -193,7 +193,7 @@ export default function Header() {
                   className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
                 >
                   <CogIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                  <span className="font-black tracking-widest text-yellow-600 dark:text-yellow-300">Tools</span>
+                  <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-yellow-600 dark:text-yellow-300">Tools</span>
                   <ChevronDownIcon className="h-3 w-3 text-yellow-500 dark:text-yellow-300 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
@@ -227,7 +227,7 @@ export default function Header() {
                   className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-yellow-200/50 dark:hover:shadow-yellow-800/50 hover:scale-105"
                 >
                   <CubeIcon className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                  <span className="font-black tracking-widest text-yellow-600 dark:text-yellow-300">Materials</span>
+                  <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-yellow-600 dark:text-yellow-300">Materials</span>
                   <ChevronDownIcon className="h-3 w-3 text-yellow-500 dark:text-yellow-300 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
@@ -261,7 +261,7 @@ export default function Header() {
                 className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
               >
                 <MagnifyingGlassIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-green-600 dark:text-green-300">Search</span>
+                <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-green-600 dark:text-green-300">Search</span>
               </Link>
               
               <Link
@@ -270,7 +270,7 @@ export default function Header() {
                 className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
               >
                 <UserGroupIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                <span className="font-black tracking-widest text-green-600 dark:text-green-300">Employee</span>
+                <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-green-600 dark:text-green-300">Employee</span>
               </Link>
               
               {/* PPE Dropdown */}
@@ -282,7 +282,7 @@ export default function Header() {
                   className="group flex items-center space-x-2 transition-all duration-300 px-3 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider hover:shadow-lg hover:shadow-green-300/50 dark:hover:shadow-green-700/50 hover:scale-105"
                 >
                   <ShieldCheckIcon className="h-3.5 w-3.5 text-green-500 dark:text-green-300 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-spin-slow" />
-                  <span className="font-black tracking-widest text-green-600 dark:text-green-300">PPE</span>
+                  <span className="font-normal tracking-wide dark:font-black dark:tracking-widest text-green-600 dark:text-green-300">PPE</span>
                   <ChevronDownIcon className="h-3 w-3 text-green-500 dark:text-green-300 transition-transform duration-300 group-hover:rotate-180" />
                 </button>
 
