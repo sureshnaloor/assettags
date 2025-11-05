@@ -40,7 +40,11 @@ export async function GET(request: Request) {
         console.log('Found record by ObjectId 675ebfdd78cd37af6aa123bd');
       }
     } catch (e) {
-      console.log('Could not find record by ObjectId:', e.message);
+      if (e instanceof Error) {
+        console.log('Could not find record by ObjectId:', e.message);
+      } else {
+        console.log('Could not find record by ObjectId:', e);
+      }
     }
     
     // If not found by ObjectId, try to find ANY record with a serial number field
@@ -50,7 +54,7 @@ export async function GET(request: Request) {
       const fieldVariations = ['assetserialnumber', 'assetSerialNumber', 'ASSETSERIALNUMBER', 'asset_serial_number'];
       for (const field of fieldVariations) {
         const testRecord = await targetDb.collection('equipmentandtools').findOne({ 
-          [field]: { $exists: true, $ne: null, $ne: '' } 
+          [field]: { $exists: true, $nin: [null, ''] } 
         });
         if (testRecord) {
           sampleRecord = testRecord;
@@ -108,7 +112,7 @@ export async function GET(request: Request) {
     
     // First, check how many records have this field
     const countWithField = await targetDb.collection('equipmentandtools').countDocuments({
-      [fieldName]: { $exists: true, $ne: null, $ne: '' }
+      [fieldName]: { $exists: true, $nin: [null, ''] }
     });
     console.log(`Total records with "${fieldName}" field: ${countWithField}`);
     
@@ -116,8 +120,7 @@ export async function GET(request: Request) {
     const query: any = {
       [fieldName]: {
         $exists: true,
-        $ne: null,
-        $ne: '',
+        $nin: [null, ''],
         $regex: trimmedSerial,
         $options: 'i'
       }
