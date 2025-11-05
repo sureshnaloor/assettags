@@ -25,9 +25,9 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
   ],
   mme: [
     { name: 'MME-1', href: '#' },
-    { name: 'MME-2', href: '#' },
-    { name: 'MME-3', href: '#' },
-    { name: 'MME-4', href: '#' },
+    { name: 'Search by Serial Number', href: '/mme-search-by-serial-number' },
+    { name: 'Search by Manufacturer', href: '/mme-search-by-manufacturer' },
+    { name: 'Search by Model', href: '/mme-search-by-model' },
   ],
   assets: [
     { name: 'Assets-1', href: '#' },
