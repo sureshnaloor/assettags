@@ -346,7 +346,7 @@ function ItemFormModal({
     // Convert form data to match API expectations
     const submitData: Partial<UnidentifiedItem> = {
       ...formData,
-      locationdate: formData.locationdate ? formData.locationdate : undefined,
+      locationdate: formData.locationdate ? new Date(formData.locationdate) : undefined,
     };
     onSubmit(submitData);
   };
