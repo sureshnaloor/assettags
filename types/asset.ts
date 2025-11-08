@@ -69,6 +69,31 @@ export interface Calibration {
   createdat: Date;
 }
 
+export interface UnidentifiedItem {
+  _id?: string;
+  // Mandatory fields
+  assetmodel: string;
+  assetmanufacturer: string;
+  assetserialnumber: string;
+  assetdescription?: string;
+  // Optional fields
+  possibleassetnumber?: string;
+  assetvalue?: number;
+  assettype?: string;
+  assetcategory?: string;
+  assetsubcategory?: string;
+  // Location and custody
+  location?: string;
+  locationdate?: Date;
+  custodianuser?: string;
+  custodianname?: string;
+  // Metadata
+  createdat?: Date;
+  createdby?: string;
+  updatedat?: Date;
+  updatedby?: string;
+}
+
 
 
 
