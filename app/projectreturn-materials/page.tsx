@@ -173,6 +173,74 @@ export default function ProjectReturnMaterialsPage() {
     setShowDisposeModal(true);
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch('/api/projectreturn-materials/template');
+      if (!response.ok) throw new Error('Failed to download template');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'project_return_materials_template.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      alert('Failed to download template');
+    }
+  };
+
+  const handleImportCSV = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/projectreturn-materials/import', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMessage = errorData.error || 'Failed to import materials';
+        
+        if (errorData.errors && errorData.errors.length > 0) {
+          errorMessage += `\n\nErrors:\n${errorData.errors.slice(0, 20).join('\n')}`;
+          if (errorData.errors.length > 20) {
+            errorMessage += `\n... and ${errorData.errors.length - 20} more errors`;
+          }
+        }
+        
+        if (errorData.debug) {
+          errorMessage += `\n\nDebug Info:\nHeaders found: ${errorData.debug.headersFound?.join(', ') || 'None'}\nTotal rows: ${errorData.debug.totalRows || 0}`;
+        }
+        
+        alert(errorMessage);
+        throw new Error(errorMessage);
+      }
+      
+      const result = await response.json();
+      if (result.errors && result.errors.length > 0) {
+        alert(`Import completed with ${result.imported} materials. Errors: ${result.errors.join(', ')}`);
+      } else {
+        alert(`Successfully imported ${result.imported} materials`);
+      }
+      
+      await fetchMaterials();
+      setShowImportForm(false);
+    } catch (error: any) {
+      console.error('Error importing materials:', error);
+      if (!error.message || !error.message.includes('Failed to import materials')) {
+        // Error already shown in alert above
+      } else {
+        alert('Failed to import materials');
+      }
+    }
+  };
+
   const handleConfirmDispose = async () => {
     if (!materialToDispose) return;
     
@@ -710,6 +778,65 @@ export default function ProjectReturnMaterialsPage() {
           onClose={() => setShowIssueForm(false)}
           onSubmit={handleSubmitIssue}
         />
+      )}
+
+      {/* Import CSV Form Modal */}
+      {showImportForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Import Project Return Materials from Excel/CSV</h2>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const fileInput = e.currentTarget.querySelector('input[type="file"]') as HTMLInputElement;
+              if (fileInput?.files?.[0]) {
+                handleImportCSV(fileInput.files[0]);
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Excel/CSV File *
+                </label>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                <p className="font-medium mb-2">Expected columns:</p>
+                <p className="text-xs">Material Code*, Material Description*, UOM*, Quantity*, Source Project*, Warehouse Location*, Yard/Room/Rack-Bin*, Source PO Number, Source Issue Number, Source Unit Rate, Received in Warehouse Date, Consignment Note Number, Remarks</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500">* Required fields</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                >
+                  <Download className="h-4 w-4 inline mr-2" />
+                  Download Template
+                </button>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowImportForm(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Import
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Dispose Material Modal */}

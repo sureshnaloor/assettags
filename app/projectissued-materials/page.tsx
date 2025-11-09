@@ -22,6 +22,7 @@ export default function ProjectIssuedMaterialsPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<ProjectIssuedMaterialData | null>(null);
   const [showImportForm, setShowImportForm] = useState(false);
+  const [showIssueImportForm, setShowIssueImportForm] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<ProjectIssuedMaterialData | null>(null);
@@ -107,6 +108,26 @@ export default function ProjectIssuedMaterialsPage() {
     }
   };
 
+  const handleDownloadMaterialTemplate = async () => {
+    try {
+      const response = await fetch('/api/projectissued-materials/template');
+      if (!response.ok) throw new Error('Failed to download template');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'materials_template.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      alert('Failed to download template');
+    }
+  };
+
   const handleImportCSV = async (file: File) => {
     try {
       const formData = new FormData();
@@ -117,7 +138,20 @@ export default function ProjectIssuedMaterialsPage() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Failed to import materials');
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMessage = errorData.error || 'Failed to import materials';
+        
+        if (errorData.errors && errorData.errors.length > 0) {
+          errorMessage += `\n\nErrors:\n${errorData.errors.slice(0, 20).join('\n')}`;
+          if (errorData.errors.length > 20) {
+            errorMessage += `\n... and ${errorData.errors.length - 20} more errors`;
+          }
+        }
+        
+        alert(errorMessage);
+        throw new Error(errorMessage);
+      }
       
       const result = await response.json();
       if (result.errors && result.errors.length > 0) {
@@ -128,9 +162,89 @@ export default function ProjectIssuedMaterialsPage() {
       
       await fetchMaterials();
       setShowImportForm(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error importing materials:', error);
-      alert('Failed to import materials');
+      if (!error.message || !error.message.includes('Failed to import materials')) {
+        // Error already shown in alert above
+      } else {
+        alert('Failed to import materials');
+      }
+    }
+  };
+
+  const handleDownloadIssueTemplate = async () => {
+    try {
+      const response = await fetch('/api/projectissued-materials/issues/template');
+      if (!response.ok) throw new Error('Failed to download template');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'material_issues_template.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      alert('Failed to download template');
+    }
+  };
+
+  const handleImportIssues = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/projectissued-materials/issues/import', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMessage = errorData.error || 'Failed to import material issues';
+        
+        if (errorData.errors && errorData.errors.length > 0) {
+          errorMessage += `\n\nErrors:\n${errorData.errors.slice(0, 20).join('\n')}`;
+          if (errorData.errors.length > 20) {
+            errorMessage += `\n... and ${errorData.errors.length - 20} more errors`;
+          }
+        }
+        
+        if (errorData.debug) {
+          errorMessage += `\n\nDebug Info:\nHeaders found: ${errorData.debug.headersFound?.join(', ') || 'None'}\nTotal rows: ${errorData.debug.totalRows || 0}`;
+        }
+        
+        alert(errorMessage);
+        throw new Error(errorMessage);
+      }
+      
+      const result = await response.json();
+      let message = `Successfully imported ${result.imported} out of ${result.total} material issues.`;
+      
+      if (result.errors && result.errors.length > 0) {
+        message += `\n\nErrors:\n${result.errors.slice(0, 10).join('\n')}`;
+        if (result.errors.length > 10) {
+          message += `\n... and ${result.errors.length - 10} more errors`;
+        }
+      }
+      
+      if (result.failedIssues && result.failedIssues.length > 0) {
+        message += `\n\nFailed Issues:\n${result.failedIssues.slice(0, 10).join('\n')}`;
+        if (result.failedIssues.length > 10) {
+          message += `\n... and ${result.failedIssues.length - 10} more failures`;
+        }
+      }
+      
+      alert(message);
+      
+      await fetchMaterials();
+      setShowIssueImportForm(false);
+    } catch (error: any) {
+      console.error('Error importing material issues:', error);
+      alert(error.message || 'Failed to import material issues');
     }
   };
 
@@ -449,11 +563,21 @@ export default function ProjectIssuedMaterialsPage() {
           <button
             onClick={() => setShowImportForm(true)}
             className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors group relative"
-            title="Import CSV"
+            title="Import Materials CSV"
           >
             <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-              Import CSV
+              Import Materials CSV
+            </span>
+          </button>
+          <button
+            onClick={() => setShowIssueImportForm(true)}
+            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors group relative"
+            title="Import Material Issues"
+          >
+            <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+              Import Material Issues
             </span>
           </button>
           <button
@@ -542,6 +666,16 @@ export default function ProjectIssuedMaterialsPage() {
         <ImportCSVForm
           onClose={() => setShowImportForm(false)}
           onSubmit={handleImportCSV}
+          onDownloadTemplate={handleDownloadMaterialTemplate}
+        />
+      )}
+
+      {/* Import Material Issues Form Modal */}
+      {showIssueImportForm && (
+        <ImportIssuesForm
+          onClose={() => setShowIssueImportForm(false)}
+          onSubmit={handleImportIssues}
+          onDownloadTemplate={handleDownloadIssueTemplate}
         />
       )}
 
@@ -1010,7 +1144,15 @@ function EditMaterialForm({ material, onClose, onSubmit }: { material: ProjectIs
 }
 
 // Import CSV Form Component
-function ImportCSVForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (file: File) => void }) {
+function ImportCSVForm({ 
+  onClose, 
+  onSubmit, 
+  onDownloadTemplate 
+}: { 
+  onClose: () => void; 
+  onSubmit: (file: File) => void;
+  onDownloadTemplate: () => void;
+}) {
   const [file, setFile] = useState<File | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1023,23 +1165,34 @@ function ImportCSVForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Import Project Issued Materials from CSV</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Import Project Issued Materials from Excel/CSV</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              CSV File *
+              Excel/CSV File *
             </label>
             <input
               type="file"
-              accept=".csv"
+              accept=".xlsx,.xls,.csv"
               required
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p className="font-medium mb-2">Expected CSV format:</p>
-            <p>material code, material description, uom, quantity, source project, source po number, source issue number, source unit rate, remarks</p>
+          <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+            <p className="font-medium mb-2">Expected columns:</p>
+            <p className="text-xs">Material Code*, Material Description*, UOM*, Quantity*, Source Project*, Source WBS*, Source PO Number*, Source Issue Number*, Source Unit Rate*, Gatepass Number, Received By Employee Number, Received By Employee Name, Remarks</p>
+            <p className="text-xs text-gray-500 dark:text-gray-500">* Required fields</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onDownloadTemplate}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              <Download className="h-4 w-4 inline mr-2" />
+              Download Template
+            </button>
           </div>
           <div className="flex justify-end gap-2 pt-4">
             <button
@@ -1054,6 +1207,84 @@ function ImportCSVForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
               Import
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Import Material Issues Form Component
+function ImportIssuesForm({ 
+  onClose, 
+  onSubmit, 
+  onDownloadTemplate 
+}: { 
+  onClose: () => void; 
+  onSubmit: (file: File) => void;
+  onDownloadTemplate: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (file) {
+      onSubmit(file);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Import Material Issues from Excel/CSV</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Excel/CSV File *
+            </label>
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              required
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+            <p className="font-medium mb-2">Expected columns:</p>
+            <p className="text-xs">Material ID, Drawing Number, Equipment, Room, Requestor Name, Quantity Requested, Issuer Name, Issue Quantity, Remarks</p>
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <p className="font-semibold text-yellow-800 dark:text-yellow-200 text-xs mb-1">⚠️ Important Note:</p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                Material Issues are transaction records for existing materials. The Material ID must already exist in your materials inventory. 
+                If you need to add new materials, use the "Import Materials CSV" button instead.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onDownloadTemplate}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              <Download className="h-4 w-4 inline mr-2" />
+              Download Template
+            </button>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+            >
+              Import Issues
             </button>
           </div>
         </form>

@@ -5,14 +5,20 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/auth';
 
 function generateMaterialId(objectId: string): string {
-  // Extract digits from ObjectId and pad to 10 digits
-  const allDigits = objectId.replace(/[^0-9]/g, '');
-  if (allDigits.length === 0) {
-    // Fallback: use timestamp
-    return Date.now().toString().padEnd(10, '0').substring(0, 10);
+  // Use a combination of timestamp and random parts for better uniqueness
+  const hexString = objectId.replace(/^[0-9a-f]{8}/, '');
+  const digits = hexString.replace(/[^0-9]/g, '');
+  
+  if (digits.length >= 10) {
+    return digits.substring(0, 10);
+  } else {
+    // Extract all digits from ObjectId and add timestamp milliseconds for uniqueness
+    const allDigits = objectId.replace(/[^0-9]/g, '');
+    const timestamp = Date.now().toString();
+    // Combine ObjectId digits with last few digits of timestamp
+    const combined = (allDigits + timestamp.slice(-6)).replace(/[^0-9]/g, '');
+    return combined.padEnd(10, '0').substring(0, 10);
   }
-
-  return allDigits.padEnd(10, '0').substring(0, 10);
 }
 
 export async function GET(request: Request) {
@@ -75,9 +81,25 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { db } = await connectToDatabase();
     
-    // Generate material ID
+    // Generate unique material ID with uniqueness check
     const objectId = new ObjectId();
-    const materialId = generateMaterialId(objectId.toString());
+    let materialId = generateMaterialId(objectId.toString());
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (attempts < maxAttempts) {
+      const existingMaterial = await db.collection('projreturnmaterials').findOne({ materialid: materialId });
+      if (!existingMaterial) {
+        break; // Found unique ID
+      }
+      
+      attempts++;
+      // If duplicate found, generate new one with timestamp and random
+      const timestamp = Date.now().toString();
+      const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      const combined = (timestamp.slice(-6) + random).padStart(10, '0').substring(0, 10);
+      materialId = combined;
+    }
     
     // Add metadata
     const materialData = {
@@ -85,6 +107,7 @@ export async function POST(request: Request) {
       _id: objectId,
       materialid: materialId,
       pendingRequests: 0,
+      disposed: false,
       createdBy: session.user.name || session.user.email,
       createdAt: new Date(),
       updatedAt: new Date()

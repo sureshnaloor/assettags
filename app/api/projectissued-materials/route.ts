@@ -82,17 +82,27 @@ export async function POST(request: Request) {
     
     // Generate a new ObjectId for the material
     const objectId = new ObjectId();
-    const materialId = generateMaterialId(objectId.toString());
     
-    // Check if materialid already exists (very unlikely but good practice)
-    const existingMaterial = await db.collection('projectissuedmaterials').findOne({ materialid: materialId });
-    if (existingMaterial) {
-      // If exists, generate a new one by appending a suffix
-      const newMaterialId = materialId + Math.floor(Math.random() * 100).toString().padStart(2, '0');
-      body.materialid = newMaterialId;
-    } else {
-      body.materialid = materialId;
+    // Generate unique material ID with uniqueness check
+    let materialId = generateMaterialId(objectId.toString());
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (attempts < maxAttempts) {
+      const existingMaterial = await db.collection('projectissuedmaterials').findOne({ materialid: materialId });
+      if (!existingMaterial) {
+        break; // Found unique ID
+      }
+      
+      attempts++;
+      // If duplicate found, generate new one with timestamp and random
+      const timestamp = Date.now().toString();
+      const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      const combined = (timestamp.slice(-6) + random).padStart(10, '0').substring(0, 10);
+      materialId = combined;
     }
+    
+    body.materialid = materialId;
     
     // Add metadata with user information
     body._id = objectId;

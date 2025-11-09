@@ -33,7 +33,7 @@ async function generateUniqueMaterialId(db: any, existingIds: Set<string> = new 
     let materialId = generateMaterialId(objectId.toString());
     
     // Check if this Material ID already exists in database or in current batch
-    const existingInDb = await db.collection('projectissuedmaterials').findOne({ materialid: materialId });
+    const existingInDb = await db.collection('projreturnmaterials').findOne({ materialid: materialId });
     
     if (!existingInDb && !existingIds.has(materialId)) {
       existingIds.add(materialId); // Add to set to prevent duplicates in same batch
@@ -48,7 +48,7 @@ async function generateUniqueMaterialId(db: any, existingIds: Set<string> = new 
     materialId = (timestamp.slice(-5) + random).padStart(10, '0').substring(0, 10);
     
     // Check again
-    const existingWithNew = await db.collection('projectissuedmaterials').findOne({ materialid: materialId });
+    const existingWithNew = await db.collection('projreturnmaterials').findOne({ materialid: materialId });
     if (!existingWithNew && !existingIds.has(materialId)) {
       existingIds.add(materialId);
       return materialId;
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     let headers: string[] = rows[0].map((h: any) => String(h).trim().toLowerCase());
     
     // Check if first row is actually headers (contains expected header keywords)
-    const expectedHeaders = ['material', 'uom', 'quantity', 'source', 'project', 'wbs', 'po', 'issue', 'unit', 'rate', 'gatepass', 'received', 'employee', 'remarks'];
+    const expectedHeaders = ['material', 'uom', 'quantity', 'source', 'project', 'po', 'issue', 'unit', 'rate', 'warehouse', 'location', 'yard', 'room', 'rack', 'bin', 'received', 'consignment', 'note', 'remarks'];
     const firstRowIsHeader = headers.some((h: string) => expectedHeaders.some((eh: string) => h.includes(eh)));
     
     // If first row doesn't look like headers, try second row (might have instruction row)
@@ -179,10 +179,6 @@ export async function POST(request: Request) {
       'source project': 'sourceProject',
       'sourceproject': 'sourceProject',
       'source_project': 'sourceProject',
-      'source wbs': 'sourceWBS',
-      'sourcewbs': 'sourceWBS',
-      'source_wbs': 'sourceWBS',
-      'wbs': 'sourceWBS',
       'source po number': 'sourcePONumber',
       'sourceponumber': 'sourcePONumber',
       'source_po_number': 'sourcePONumber',
@@ -198,20 +194,26 @@ export async function POST(request: Request) {
       'source_unit_rate': 'sourceUnitRate',
       'unit rate': 'sourceUnitRate',
       'unitrate': 'sourceUnitRate',
-      'gatepass number': 'gatepassNumber',
-      'gatepassnumber': 'gatepassNumber',
-      'gatepass_number': 'gatepassNumber',
-      'gatepass': 'gatepassNumber',
-      'received by employee number': 'receivedByEmpNumber',
-      'receivedbyempnumber': 'receivedByEmpNumber',
-      'received_by_employee_number': 'receivedByEmpNumber',
-      'employee number': 'receivedByEmpNumber',
-      'employeenumber': 'receivedByEmpNumber',
-      'received by employee name': 'receivedByEmpName',
-      'receivedbyempname': 'receivedByEmpName',
-      'received_by_employee_name': 'receivedByEmpName',
-      'employee name': 'receivedByEmpName',
-      'employeename': 'receivedByEmpName',
+      'warehouse location': 'warehouseLocation',
+      'warehouselocation': 'warehouseLocation',
+      'warehouse_location': 'warehouseLocation',
+      'warehouse': 'warehouseLocation',
+      'location': 'warehouseLocation',
+      'yard/room/rack-bin': 'yardRoomRackBin',
+      'yardroomrackbin': 'yardRoomRackBin',
+      'yard_room_rack_bin': 'yardRoomRackBin',
+      'yard room rack bin': 'yardRoomRackBin',
+      'yard room rack-bin': 'yardRoomRackBin',
+      'received in warehouse date': 'receivedInWarehouseDate',
+      'receivedinwarehousedate': 'receivedInWarehouseDate',
+      'received_in_warehouse_date': 'receivedInWarehouseDate',
+      'received date': 'receivedInWarehouseDate',
+      'receiveddate': 'receivedInWarehouseDate',
+      'consignment note number': 'consignmentNoteNumber',
+      'consignmentnotenumber': 'consignmentNoteNumber',
+      'consignment_note_number': 'consignmentNoteNumber',
+      'consignment note': 'consignmentNoteNumber',
+      'consignmentnote': 'consignmentNoteNumber',
       'remarks': 'remarks',
       'remark': 'remarks'
     };
@@ -238,6 +240,12 @@ export async function POST(request: Request) {
             if (value !== '') {
               if (mappedField === 'quantity' || mappedField === 'sourceUnitRate') {
                 materialData[mappedField] = parseFloat(value) || 0;
+              } else if (mappedField === 'receivedInWarehouseDate') {
+                // Parse date - handle various formats
+                const dateValue = new Date(value);
+                if (!isNaN(dateValue.getTime())) {
+                  materialData[mappedField] = dateValue;
+                }
               } else {
                 materialData[mappedField] = value;
               }
@@ -266,20 +274,12 @@ export async function POST(request: Request) {
           errors.push(`Row ${i + 1}: Missing required field - Source Project`);
           continue;
         }
-        if (!materialData.sourceWBS) {
-          errors.push(`Row ${i + 1}: Missing required field - Source WBS`);
+        if (!materialData.warehouseLocation) {
+          errors.push(`Row ${i + 1}: Missing required field - Warehouse Location`);
           continue;
         }
-        if (!materialData.sourcePONumber) {
-          errors.push(`Row ${i + 1}: Missing required field - Source PO Number`);
-          continue;
-        }
-        if (!materialData.sourceIssueNumber) {
-          errors.push(`Row ${i + 1}: Missing required field - Source Issue Number`);
-          continue;
-        }
-        if (materialData.sourceUnitRate === undefined || materialData.sourceUnitRate === null) {
-          errors.push(`Row ${i + 1}: Missing required field - Source Unit Rate`);
+        if (!materialData.yardRoomRackBin) {
+          errors.push(`Row ${i + 1}: Missing required field - Yard/Room/Rack-Bin`);
           continue;
         }
 
@@ -287,11 +287,12 @@ export async function POST(request: Request) {
         const objectId = new ObjectId();
         materialData.materialid = await generateUniqueMaterialId(db, generatedMaterialIds);
         materialData._id = objectId;
-        materialData.createdBy = session.user.name || session.user.email; // Use name if available, fallback to email
+        materialData.createdBy = session.user.name || session.user.email;
         materialData.createdAt = new Date();
         materialData.updatedAt = new Date();
         materialData.testDocs = []; // Initialize empty array
         materialData.pendingRequests = 0; // Initialize pending requests to 0
+        materialData.disposed = false; // Initialize disposed flag
 
         materials.push(materialData);
       } catch (error) {
@@ -301,13 +302,21 @@ export async function POST(request: Request) {
 
     if (materials.length === 0) {
       return NextResponse.json(
-        { error: 'No valid materials to import', errors },
+        { 
+          error: 'No valid materials to import', 
+          errors,
+          debug: {
+            headersFound: headers,
+            totalRows: rows.length - 1, // Excluding header
+            headerMapping: Object.keys(headerMapping)
+          }
+        },
         { status: 400 }
       );
     }
 
     // Insert materials into database
-    const result = await db.collection('projectissuedmaterials').insertMany(materials);
+    const result = await db.collection('projreturnmaterials').insertMany(materials);
 
     return NextResponse.json({
       success: true,
@@ -316,10 +325,11 @@ export async function POST(request: Request) {
     });
 
   } catch (err) {
-    console.error('Failed to import project issued materials:', err);
+    console.error('Failed to import project return materials:', err);
     return NextResponse.json(
-      { error: 'Failed to import project issued materials' },
+      { error: 'Failed to import project return materials' },
       { status: 500 }
     );
   }
 }
+
