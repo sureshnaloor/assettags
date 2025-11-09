@@ -5,7 +5,7 @@ import {
   SortingState,
   ColumnFiltersState
 } from '@tanstack/react-table';
-import { ArrowUpDown, Plus, Edit, Trash2, Upload, Download, Package, Send, ClipboardList, AlertTriangle } from 'lucide-react';
+import { ArrowUpDown, Plus, Edit, Trash2, Upload, Download, Package, Send, ClipboardList, AlertTriangle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 import { ProjectReturnMaterialData } from '@/types/projectreturnmaterials';
@@ -28,6 +28,8 @@ export default function ProjectReturnMaterialsPage() {
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [showDisposeModal, setShowDisposeModal] = useState(false);
   const [materialToDispose, setMaterialToDispose] = useState<ProjectReturnMaterialData | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     fetchMaterials();
@@ -55,6 +57,7 @@ export default function ProjectReturnMaterialsPage() {
     : data.filter(material => material.warehouseLocation === locationFilter);
 
   const handleAddMaterial = async (materialData: Partial<ProjectReturnMaterialData>) => {
+    setIsSaving(true);
     try {
       const response = await fetch('/api/projectreturn-materials', {
         method: 'POST',
@@ -72,12 +75,15 @@ export default function ProjectReturnMaterialsPage() {
     } catch (error) {
       console.error('Error adding material:', error);
       alert('Failed to add material');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleUpdateMaterial = async (materialData: Partial<ProjectReturnMaterialData>) => {
     if (!editingMaterial) return;
     
+    setIsSaving(true);
     try {
       const response = await fetch(`/api/projectreturn-materials/${editingMaterial.materialid}`, {
         method: 'PUT',
@@ -95,6 +101,8 @@ export default function ProjectReturnMaterialsPage() {
     } catch (error) {
       console.error('Error updating material:', error);
       alert('Failed to update material');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -127,6 +135,7 @@ export default function ProjectReturnMaterialsPage() {
   };
 
   const handleSubmitRequest = async (requestData: any) => {
+    setIsSaving(true);
     try {
       const response = await fetch('/api/projectreturn-materials/requests', {
         method: 'POST',
@@ -144,10 +153,13 @@ export default function ProjectReturnMaterialsPage() {
     } catch (error) {
       console.error('Error submitting request:', error);
       alert('Failed to submit request');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleSubmitIssue = async (issueData: any) => {
+    setIsSaving(true);
     try {
       const response = await fetch('/api/projectreturn-materials/issues', {
         method: 'POST',
@@ -165,6 +177,8 @@ export default function ProjectReturnMaterialsPage() {
     } catch (error) {
       console.error('Error issuing material:', error);
       alert('Failed to issue material');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -194,6 +208,7 @@ export default function ProjectReturnMaterialsPage() {
   };
 
   const handleImportCSV = async (file: File) => {
+    setIsImporting(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -238,12 +253,15 @@ export default function ProjectReturnMaterialsPage() {
       } else {
         alert('Failed to import materials');
       }
+    } finally {
+      setIsImporting(false);
     }
   };
 
   const handleConfirmDispose = async () => {
     if (!materialToDispose) return;
     
+    setIsSaving(true);
     try {
       const response = await fetch(`/api/projectreturn-materials/${materialToDispose.materialid}/dispose`, {
         method: 'POST',
@@ -261,6 +279,8 @@ export default function ProjectReturnMaterialsPage() {
     } catch (error) {
       console.error('Error disposing material:', error);
       alert('Failed to dispose material');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -748,9 +768,11 @@ export default function ProjectReturnMaterialsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={isSaving}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Add Material
+                  {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {isSaving ? 'Saving...' : 'Add Material'}
                 </button>
               </div>
             </form>
@@ -766,6 +788,7 @@ export default function ProjectReturnMaterialsPage() {
           availableQuantity={selectedMaterial.quantity}
           onClose={() => setShowRequestForm(false)}
           onSubmit={handleSubmitRequest}
+          isSaving={isSaving}
         />
       )}
 
@@ -777,6 +800,7 @@ export default function ProjectReturnMaterialsPage() {
           availableQuantity={selectedMaterial.quantity}
           onClose={() => setShowIssueForm(false)}
           onSubmit={handleSubmitIssue}
+          isSaving={isSaving}
         />
       )}
 
@@ -829,9 +853,11 @@ export default function ProjectReturnMaterialsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  disabled={isImporting}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Import
+                  {isImporting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {isImporting ? 'Importing...' : 'Import'}
                 </button>
               </div>
             </form>
@@ -932,10 +958,20 @@ export default function ProjectReturnMaterialsPage() {
               </button>
               <button
                 onClick={handleConfirmDispose}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                disabled={isSaving}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <AlertTriangle className="h-4 w-4" />
-                Dispose Material
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Disposing...
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="h-4 w-4" />
+                    Dispose Material
+                  </>
+                )}
               </button>
             </div>
           </div>

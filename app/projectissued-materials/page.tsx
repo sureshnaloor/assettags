@@ -5,7 +5,7 @@ import {
   SortingState,
   ColumnFiltersState
 } from '@tanstack/react-table';
-import { ArrowUpDown, Plus, Edit, Trash2, Upload, Download, Package, Send, ClipboardList, ArrowRightLeft } from 'lucide-react';
+import { ArrowUpDown, Plus, Edit, Trash2, Upload, Download, Package, Send, ClipboardList, ArrowRightLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 import { ProjectIssuedMaterialData } from '@/types/projectissuedmaterials';
@@ -28,6 +28,9 @@ export default function ProjectIssuedMaterialsPage() {
   const [selectedMaterial, setSelectedMaterial] = useState<ProjectIssuedMaterialData | null>(null);
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [showTransferForm, setShowTransferForm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isImportingIssues, setIsImportingIssues] = useState(false);
 
   useEffect(() => {
     fetchMaterials();
@@ -55,6 +58,7 @@ export default function ProjectIssuedMaterialsPage() {
     : data.filter(material => material.sourceProject === projectFilter);
 
   const handleAddMaterial = async (materialData: Partial<ProjectIssuedMaterialData>) => {
+    setIsSaving(true);
     try {
       const response = await fetch('/api/projectissued-materials', {
         method: 'POST',
@@ -70,10 +74,14 @@ export default function ProjectIssuedMaterialsPage() {
       setShowAddForm(false);
     } catch (error) {
       console.error('Error adding material:', error);
+      alert('Failed to add material');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleEditMaterial = async (materialId: string, materialData: Partial<ProjectIssuedMaterialData>) => {
+    setIsSaving(true);
     try {
       const response = await fetch(`/api/projectissued-materials/${materialId}`, {
         method: 'PUT',
@@ -89,6 +97,9 @@ export default function ProjectIssuedMaterialsPage() {
       setEditingMaterial(null);
     } catch (error) {
       console.error('Error updating material:', error);
+      alert('Failed to update material');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -129,6 +140,7 @@ export default function ProjectIssuedMaterialsPage() {
   };
 
   const handleImportCSV = async (file: File) => {
+    setIsImporting(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -169,6 +181,8 @@ export default function ProjectIssuedMaterialsPage() {
       } else {
         alert('Failed to import materials');
       }
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -193,6 +207,7 @@ export default function ProjectIssuedMaterialsPage() {
   };
 
   const handleImportIssues = async (file: File) => {
+    setIsImportingIssues(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -245,6 +260,8 @@ export default function ProjectIssuedMaterialsPage() {
     } catch (error: any) {
       console.error('Error importing material issues:', error);
       alert(error.message || 'Failed to import material issues');
+    } finally {
+      setIsImportingIssues(false);
     }
   };
 
@@ -264,6 +281,7 @@ export default function ProjectIssuedMaterialsPage() {
   };
 
   const handleSubmitRequest = async (requestData: any) => {
+    setIsSaving(true);
     try {
       const response = await fetch('/api/projectissued-materials/requests', {
         method: 'POST',
@@ -282,10 +300,13 @@ export default function ProjectIssuedMaterialsPage() {
     } catch (error) {
       console.error('Error submitting request:', error);
       alert('Failed to submit request');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleSubmitIssue = async (issueData: any) => {
+    setIsSaving(true);
     try {
       const response = await fetch('/api/projectissued-materials/issues', {
         method: 'POST',
@@ -304,10 +325,13 @@ export default function ProjectIssuedMaterialsPage() {
     } catch (error) {
       console.error('Error issuing material:', error);
       alert('Failed to issue material');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleSubmitTransfer = async (transferData: any) => {
+    setIsSaving(true);
     try {
       const response = await fetch('/api/projectissued-materials/transfer', {
         method: 'POST',
@@ -333,6 +357,8 @@ export default function ProjectIssuedMaterialsPage() {
     } catch (error: any) {
       console.error('Error transferring material:', error);
       alert(error.message || 'Failed to transfer material');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -649,6 +675,7 @@ export default function ProjectIssuedMaterialsPage() {
         <AddMaterialForm
           onClose={() => setShowAddForm(false)}
           onSubmit={handleAddMaterial}
+          isSaving={isSaving}
         />
       )}
 
@@ -658,6 +685,7 @@ export default function ProjectIssuedMaterialsPage() {
           material={editingMaterial}
           onClose={() => setEditingMaterial(null)}
           onSubmit={(materialData) => handleEditMaterial(editingMaterial.materialid, materialData)}
+          isSaving={isSaving}
         />
       )}
 
@@ -667,6 +695,7 @@ export default function ProjectIssuedMaterialsPage() {
           onClose={() => setShowImportForm(false)}
           onSubmit={handleImportCSV}
           onDownloadTemplate={handleDownloadMaterialTemplate}
+          isImporting={isImporting}
         />
       )}
 
@@ -676,6 +705,7 @@ export default function ProjectIssuedMaterialsPage() {
           onClose={() => setShowIssueImportForm(false)}
           onSubmit={handleImportIssues}
           onDownloadTemplate={handleDownloadIssueTemplate}
+          isImporting={isImportingIssues}
         />
       )}
 
@@ -690,6 +720,7 @@ export default function ProjectIssuedMaterialsPage() {
             setSelectedMaterial(null);
           }}
           onSubmit={handleSubmitRequest}
+          isSaving={isSaving}
         />
       )}
 
@@ -704,6 +735,7 @@ export default function ProjectIssuedMaterialsPage() {
             setSelectedMaterial(null);
           }}
           onSubmit={handleSubmitIssue}
+          isSaving={isSaving}
         />
       )}
 
@@ -716,6 +748,7 @@ export default function ProjectIssuedMaterialsPage() {
             setSelectedMaterial(null);
           }}
           onSubmit={handleSubmitTransfer}
+          isSaving={isSaving}
         />
       )}
     </div>
@@ -723,7 +756,7 @@ export default function ProjectIssuedMaterialsPage() {
 }
 
 // Add Material Form Component
-function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (data: Partial<ProjectIssuedMaterialData>) => void }) {
+function AddMaterialForm({ onClose, onSubmit, isSaving }: { onClose: () => void; onSubmit: (data: Partial<ProjectIssuedMaterialData>) => void; isSaving?: boolean }) {
   const [formData, setFormData] = useState<Partial<ProjectIssuedMaterialData>>({
     materialCode: '',
     materialDescription: '',
@@ -924,9 +957,11 @@ function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit:
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              disabled={isSaving}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Add Material
+              {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isSaving ? 'Saving...' : 'Add Material'}
             </button>
           </div>
         </form>
@@ -936,7 +971,7 @@ function AddMaterialForm({ onClose, onSubmit }: { onClose: () => void; onSubmit:
 }
 
 // Edit Material Form Component
-function EditMaterialForm({ material, onClose, onSubmit }: { material: ProjectIssuedMaterialData; onClose: () => void; onSubmit: (data: Partial<ProjectIssuedMaterialData>) => void }) {
+function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material: ProjectIssuedMaterialData; onClose: () => void; onSubmit: (data: Partial<ProjectIssuedMaterialData>) => void; isSaving?: boolean }) {
   const [formData, setFormData] = useState<Partial<ProjectIssuedMaterialData>>(material);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1132,9 +1167,11 @@ function EditMaterialForm({ material, onClose, onSubmit }: { material: ProjectIs
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              disabled={isSaving}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Update Material
+              {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isSaving ? 'Updating...' : 'Update Material'}
             </button>
           </div>
         </form>
@@ -1147,11 +1184,13 @@ function EditMaterialForm({ material, onClose, onSubmit }: { material: ProjectIs
 function ImportCSVForm({ 
   onClose, 
   onSubmit, 
-  onDownloadTemplate 
+  onDownloadTemplate,
+  isImporting
 }: { 
   onClose: () => void; 
   onSubmit: (file: File) => void;
   onDownloadTemplate: () => void;
+  isImporting?: boolean;
 }) {
   const [file, setFile] = useState<File | null>(null);
 
@@ -1204,9 +1243,11 @@ function ImportCSVForm({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              disabled={isImporting}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Import
+              {isImporting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isImporting ? 'Importing...' : 'Import'}
             </button>
           </div>
         </form>
@@ -1219,11 +1260,13 @@ function ImportCSVForm({
 function ImportIssuesForm({ 
   onClose, 
   onSubmit, 
-  onDownloadTemplate 
+  onDownloadTemplate,
+  isImporting
 }: { 
   onClose: () => void; 
   onSubmit: (file: File) => void;
   onDownloadTemplate: () => void;
+  isImporting?: boolean;
 }) {
   const [file, setFile] = useState<File | null>(null);
 
@@ -1282,9 +1325,11 @@ function ImportIssuesForm({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+              disabled={isImporting}
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Import Issues
+              {isImporting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isImporting ? 'Importing...' : 'Import Issues'}
             </button>
           </div>
         </form>
@@ -1297,11 +1342,13 @@ function ImportIssuesForm({
 function TransferMaterialForm({ 
   material, 
   onClose, 
-  onSubmit 
+  onSubmit,
+  isSaving
 }: { 
   material: ProjectIssuedMaterialData; 
   onClose: () => void; 
-  onSubmit: (data: any) => void 
+  onSubmit: (data: any) => void;
+  isSaving?: boolean;
 }) {
   const [formData, setFormData] = useState({
     warehouseLocation: '',
@@ -1437,9 +1484,11 @@ function TransferMaterialForm({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              disabled={isSaving}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Transfer Material
+              {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isSaving ? 'Transferring...' : 'Transfer Material'}
             </button>
           </div>
         </form>
