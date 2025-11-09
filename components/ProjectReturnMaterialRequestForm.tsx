@@ -16,7 +16,8 @@ export default function ProjectReturnMaterialRequestForm({
   materialDescription, 
   availableQuantity, 
   onClose, 
-  onSubmit 
+  onSubmit,
+  isSaving
 }: ProjectReturnMaterialRequestFormProps) {
   const [formData, setFormData] = useState({
     projectName: '',

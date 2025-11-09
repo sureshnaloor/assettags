@@ -16,7 +16,8 @@ export default function MaterialRequestForm({
   materialDescription, 
   availableQuantity, 
   onClose, 
-  onSubmit 
+  onSubmit,
+  isSaving
 }: MaterialRequestFormProps) {
   const [formData, setFormData] = useState({
     drawingNumber: '',
