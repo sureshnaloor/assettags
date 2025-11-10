@@ -494,44 +494,52 @@ export default function ProjectReturnMaterialsPage() {
         </div>
         
         {/* Action Icons */}
-        <div className="flex flex-wrap gap-2 sm:gap-3">
+        <div className="flex flex-nowrap gap-6 sm:gap-8 w-1/3">
           <Link
             href="/projectreturn-materials/requests"
-            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors group relative"
+            className="flex flex-col items-center gap-1 group"
             title="Requests Pending"
           >
-            <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+            <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+              <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <span className="text-xs text-purple-600 dark:text-purple-400 text-center whitespace-nowrap">
               Requests Pending
             </span>
           </Link>
           <Link
             href="/disposed-materials"
-            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors group relative"
+            className="flex flex-col items-center gap-1 group"
             title="Disposed Materials"
           >
-            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+            <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <span className="text-xs text-red-600 dark:text-red-400 text-center whitespace-nowrap">
               Disposed Materials
             </span>
           </Link>
           <button
             onClick={() => setShowImportForm(true)}
-            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors group relative"
+            className="flex flex-col items-center gap-1 group"
             title="Import CSV"
           >
-            <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+            <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <span className="text-xs text-green-600 dark:text-green-400 text-center whitespace-nowrap">
               Import CSV
             </span>
           </button>
           <button
             onClick={() => setShowAddForm(true)}
-            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors group relative"
+            className="flex flex-col items-center gap-1 group"
             title="Add Material"
           >
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs sm:text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+            <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <span className="text-xs text-blue-600 dark:text-blue-400 text-center whitespace-nowrap">
               Add Material
             </span>
           </button>
