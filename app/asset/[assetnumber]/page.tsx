@@ -67,6 +67,8 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
         assetmanufacturer: updatedAsset.assetmanufacturer,
         assetserialnumber: updatedAsset.assetserialnumber,
         accessories: updatedAsset.accessories,
+        legacyassetnumber: updatedAsset.legacyassetnumber,
+        anyotheridentifier: updatedAsset.anyotheridentifier,
       };
 
       const res = await fetch(`/api/assets/${params.assetnumber}`, {

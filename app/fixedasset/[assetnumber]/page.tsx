@@ -62,6 +62,8 @@ export default function FixedAssetPage() {
         assetmanufacturer: updatedAsset.assetmanufacturer,
         assetserialnumber: updatedAsset.assetserialnumber,
         accessories: updatedAsset.accessories,
+        legacyassetnumber: updatedAsset.legacyassetnumber,
+        anyotheridentifier: updatedAsset.anyotheridentifier,
       };
 
       const res = await fetch(`/api/fixedassets/${params?.assetnumber}`, {

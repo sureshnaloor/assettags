@@ -12,6 +12,8 @@ export interface AssetData {
   assetmanufacturer?: string;
   assetserialnumber?: string;
   accessories?: string;
+  legacyassetnumber?: string;
+  anyotheridentifier?: string;
   
 }
 

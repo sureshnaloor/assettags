@@ -294,6 +294,8 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
         assetmanufacturer: editedAsset.assetmanufacturer,
         assetserialnumber: editedAsset.assetserialnumber,
         accessories: editedAsset.accessories,
+        legacyassetnumber: editedAsset.legacyassetnumber,
+        anyotheridentifier: editedAsset.anyotheridentifier,
       };
 
       // Store payload for confirmation
@@ -592,6 +594,44 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
               className="text-[12px] text-gray-900 dark:text-white prose prose-sm dark:prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: asset.accessories || '' }}
             />
+          )}
+        </div>
+
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Legacy Asset Number</label>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editedAsset.legacyassetnumber || ''}
+              onChange={(e) => setEditedAsset(prev => ({
+                ...prev,
+                legacyassetnumber: e.target.value
+              }))}
+              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
+                       border border-gray-300 dark:border-slate-500
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+            />
+          ) : (
+            <div className="text-[12px] text-gray-900 dark:text-white">{asset.legacyassetnumber || '-'}</div>
+          )}
+        </div>
+
+        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Any Other Identifier</label>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editedAsset.anyotheridentifier || ''}
+              onChange={(e) => setEditedAsset(prev => ({
+                ...prev,
+                anyotheridentifier: e.target.value
+              }))}
+              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
+                       border border-gray-300 dark:border-slate-500
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+            />
+          ) : (
+            <div className="text-[12px] text-gray-900 dark:text-white">{asset.anyotheridentifier || '-'}</div>
           )}
         </div>
       </div>
