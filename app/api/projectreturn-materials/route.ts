@@ -36,11 +36,16 @@ export async function GET(request: Request) {
     const materialId = searchParams.get('materialId');
     const materialCode = searchParams.get('materialCode');
     const materialDescription = searchParams.get('materialDescription');
+    const includeDisposed = searchParams.get('includeDisposed') === 'true';
 
     const { db } = await connectToDatabase();
     
     // Build query based on provided parameters
-    const query: any = { disposed: { $ne: true } }; // Exclude disposed materials
+    const query: any = {};
+    // Only exclude disposed materials if includeDisposed is not true
+    if (!includeDisposed) {
+      query.disposed = { $ne: true };
+    }
     if (materialId?.trim()) {
       query.materialid = { $regex: materialId, $options: 'i' };
     }

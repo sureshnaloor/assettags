@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { 
   ColumnDef,
   SortingState,
@@ -18,6 +18,8 @@ export default function ProjectReturnMaterialsPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
+  const [materialCodeFilter, setMaterialCodeFilter] = useState('');
+  const [materialDescriptionFilter, setMaterialDescriptionFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<ProjectReturnMaterialData | null>(null);
@@ -51,10 +53,22 @@ export default function ProjectReturnMaterialsPage() {
   // Get unique warehouse locations for filter dropdown
   const uniqueLocations = Array.from(new Set(data.map(material => material.warehouseLocation).filter(Boolean)));
 
-  // Filter data based on location filter
-  const filteredData = locationFilter === 'all' 
-    ? data 
-    : data.filter(material => material.warehouseLocation === locationFilter);
+  // Filter data based on location filter, material code, and material description
+  const filteredData = data.filter(material => {
+    // Location filter
+    if (locationFilter !== 'all' && material.warehouseLocation !== locationFilter) {
+      return false;
+    }
+    // Material code filter
+    if (materialCodeFilter && !material.materialCode?.toLowerCase().includes(materialCodeFilter.toLowerCase())) {
+      return false;
+    }
+    // Material description filter
+    if (materialDescriptionFilter && !material.materialDescription?.toLowerCase().includes(materialDescriptionFilter.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
 
   const handleAddMaterial = async (materialData: Partial<ProjectReturnMaterialData>) => {
     setIsSaving(true);
@@ -566,15 +580,30 @@ export default function ProjectReturnMaterialsPage() {
               ))}
             </select>
           </div>
+        </div>
+        {/* Search Boxes */}
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Search Materials
+              Search by Material Code
             </label>
             <input
               type="text"
-              value={globalFilter ?? ''}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search materials..."
+              value={materialCodeFilter}
+              onChange={(e) => setMaterialCodeFilter(e.target.value)}
+              placeholder="Search by material code..."
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Search by Material Description
+            </label>
+            <input
+              type="text"
+              value={materialDescriptionFilter}
+              onChange={(e) => setMaterialDescriptionFilter(e.target.value)}
+              placeholder="Search by material description..."
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -873,6 +902,16 @@ export default function ProjectReturnMaterialsPage() {
         </div>
       )}
 
+      {/* Edit Material Form Modal */}
+      {editingMaterial && (
+        <EditMaterialForm
+          material={editingMaterial}
+          onClose={() => setEditingMaterial(null)}
+          onSubmit={handleUpdateMaterial}
+          isSaving={isSaving}
+        />
+      )}
+
       {/* Dispose Material Modal */}
       {showDisposeModal && materialToDispose && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -985,6 +1024,213 @@ export default function ProjectReturnMaterialsPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Edit Material Form Component
+function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material: ProjectReturnMaterialData; onClose: () => void; onSubmit: (data: Partial<ProjectReturnMaterialData>) => void; isSaving?: boolean }) {
+  const [formData, setFormData] = useState<Partial<ProjectReturnMaterialData>>(material);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Edit Project Return Material</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Material ID
+              </label>
+              <input
+                type="text"
+                value={formData.materialid}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Material Code *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.materialCode || ''}
+                onChange={(e) => setFormData({ ...formData, materialCode: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                UOM *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.uom || ''}
+                onChange={(e) => setFormData({ ...formData, uom: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Material Description *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.materialDescription || ''}
+                onChange={(e) => setFormData({ ...formData, materialDescription: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Quantity *
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.quantity || 0}
+                onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Source Project *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.sourceProject || ''}
+                onChange={(e) => setFormData({ ...formData, sourceProject: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Source PO Number
+              </label>
+              <input
+                type="text"
+                value={formData.sourcePONumber || ''}
+                onChange={(e) => setFormData({ ...formData, sourcePONumber: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Source Issue Number
+              </label>
+              <input
+                type="text"
+                value={formData.sourceIssueNumber || ''}
+                onChange={(e) => setFormData({ ...formData, sourceIssueNumber: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Source Unit Rate
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.sourceUnitRate || 0}
+                onChange={(e) => setFormData({ ...formData, sourceUnitRate: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Warehouse Location *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.warehouseLocation || ''}
+                onChange={(e) => setFormData({ ...formData, warehouseLocation: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter warehouse location"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Yard/Room/Rack-Bin *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.yardRoomRackBin || ''}
+                onChange={(e) => setFormData({ ...formData, yardRoomRackBin: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter yard/room/rack-bin"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Received in Warehouse Date
+              </label>
+              <input
+                type="date"
+                value={formData.receivedInWarehouseDate ? new Date(formData.receivedInWarehouseDate).toISOString().split('T')[0] : ''}
+                onChange={(e) => setFormData({ ...formData, receivedInWarehouseDate: e.target.value ? new Date(e.target.value) : undefined })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Consignment Note Number
+              </label>
+              <input
+                type="text"
+                value={formData.consignmentNoteNumber || ''}
+                onChange={(e) => setFormData({ ...formData, consignmentNoteNumber: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Enter consignment note number"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Remarks
+              </label>
+              <textarea
+                value={formData.remarks || ''}
+                onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isSaving ? 'Updating...' : 'Update Material'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
