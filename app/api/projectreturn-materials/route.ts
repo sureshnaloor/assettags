@@ -36,6 +36,7 @@ export async function GET(request: Request) {
     const materialId = searchParams.get('materialId');
     const materialCode = searchParams.get('materialCode');
     const materialDescription = searchParams.get('materialDescription');
+    const sourceProject = searchParams.get('sourceProject');
     const includeDisposed = searchParams.get('includeDisposed') === 'true';
 
     const { db } = await connectToDatabase();
@@ -54,6 +55,9 @@ export async function GET(request: Request) {
     }
     if (materialDescription?.trim()) {
       query.materialDescription = { $regex: materialDescription, $options: 'i' };
+    }
+    if (sourceProject?.trim()) {
+      query.sourceProject = sourceProject;
     }
 
     const materials = await db

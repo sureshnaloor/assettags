@@ -50,6 +50,8 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
   ],
   materials: [
     { name: 'List all returned materials', href: '/projectreturn-materials/list-all-returned-materials' },
+    { name: 'Returned materials by project', href: '/projectreturn-materials/by-project' },
+    { name: 'List of projectreturn-materials issued to wbs', href: '/projectreturn-materials/issues-by-wbs' },
     { name: 'List of all reco for disposal materials', href: '/projectreturn-materials/list-all-reco-for-disposal-materials' },
     { name: 'Under disposal materials', href: '/projectreturn-materials/under-disposal-materials' },
     { name: 'Future use', href: '#' },

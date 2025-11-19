@@ -54,7 +54,10 @@ export interface ProjReturnMaterialIssue {
   _id?: string;
   materialid: string;
   projectName: string;
-  requestor: string;
+  budgetedWBS?: string;
+  requestor?: string;
+  requestorEmpNumber?: string;
+  requestorName?: string;
   qtyRequested: number;
   issuerName: string;
   issueQuantity: number;
