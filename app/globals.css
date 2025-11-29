@@ -212,3 +212,16 @@ body {
 .dark .slider-thumb::-moz-range-thumb:hover {
   background: #3b82f6;
 }
+
+/* React DatePicker Calendar Z-Index Fix */
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+.react-datepicker {
+  z-index: 9999 !important;
+}
+
+.react-datepicker__portal {
+  z-index: 9999 !important;
+}

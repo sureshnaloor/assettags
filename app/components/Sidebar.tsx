@@ -26,6 +26,7 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
   mme: [
     { name: 'MME', href: '#' },
     { name: 'Unidentified MME & LVA', href: '/mme/unidentified' },
+    { name: 'Without Custodian', href: '/mme/without-custodian' },
     { name: 'Search by Serial Number', href: '/mme-search-by-serial-number' },
     { name: 'Search by Manufacturer', href: '/mme-search-by-manufacturer' },
     { name: 'Search by Model', href: '/mme-search-by-model' },
@@ -36,6 +37,7 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
   assets: [
     { name: 'Assets', href: '#' },
     { name: 'Unidentified Assets', href: '/assets/unidentified' },
+    { name: 'Without Custodian', href: '/fixedasset/without-custodian' },
     { name: 'Search by manufacturer', href: '/assets-search-by-manufacturer' },
     { name: 'Search by model', href: '/assets-search-by-model' },
     { name: 'Search by category', href: '/assets-search-by-category' },
