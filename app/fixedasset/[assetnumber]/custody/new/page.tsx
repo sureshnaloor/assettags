@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
@@ -16,6 +16,16 @@ interface PageProps {
 
 // Update the component definition
 export default function NewCustodyPage() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Array<{
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    radius: number;
+  }>>([]);
+  const animationFrameRef = useRef<number>();
+
   const router = useRouter();
   const params = useParams() as { assetnumber: string };
   
@@ -36,6 +46,86 @@ export default function NewCustodyPage() {
 
   useEffect(() => {
     fetchProjects();
+  }, []);
+
+  // Animated particle background
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+
+    particlesRef.current = [];
+    for (let i = 0; i < 50; i++) {
+      particlesRef.current.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 3 + 1
+      });
+    }
+
+    const animate = () => {
+      if (!ctx || !canvas) return;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particlesRef.current.forEach((particle, i) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(45, 212, 191, 0.6)';
+        ctx.fill();
+
+        particlesRef.current.forEach((otherParticle, j) => {
+          if (i !== j) {
+            const dx = particle.x - otherParticle.x;
+            const dy = particle.y - otherParticle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.moveTo(particle.x, particle.y);
+              ctx.lineTo(otherParticle.x, otherParticle.y);
+              ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        });
+      });
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const handleResize = () => {
+      resizeCanvas();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, []);
 
   const fetchProjects = async () => {
@@ -118,16 +208,17 @@ export default function NewCustodyPage() {
   };
 
   return (
-    <div className="relative flex flex-col min-h-screen text-zinc-100">
-      <div className="fixed inset-0 z-0 bg-[conic-gradient(at_top_right,_#111111,_#1e40af,_#eeef46)] opacity-50" />
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+      {/* Animated background canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-10" />
       
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-20 flex flex-col min-h-screen">
         <main className="flex-1 container mx-auto p-6">
-          <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold text-zinc-100 mb-6">New Custody Record</h3>
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl p-6 max-w-2xl mx-auto">
+            <h3 className="text-2xl font-semibold text-white mb-6 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">New Custody Record</h3>
             
             {error && (
-              <div className="bg-red-500/20 text-red-100 px-4 py-2 rounded-lg text-sm mb-6">
+              <div className="bg-red-500/20 text-red-300 px-4 py-2 rounded-lg text-sm mb-6 border border-red-400/30">
                 {error}
               </div>
             )}
@@ -135,7 +226,7 @@ export default function NewCustodyPage() {
             <div className="space-y-6">
               {/* Employee Selection */}
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-white mb-1">
                   Employee Number
                 </label>
                 <AsyncSelect
@@ -154,26 +245,28 @@ export default function NewCustodyPage() {
                   styles={{
                     control: (base) => ({
                       ...base,
-                      background: 'rgb(51 65 85 / 0.5)',
-                      borderColor: 'rgb(71 85 105)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(12px)',
+                      borderColor: 'rgba(255, 255, 255, 0.2)',
                     }),
                     menu: (base) => ({
                       ...base,
-                      background: 'rgb(30 41 59)',
-                      border: '1px solid rgb(71 85 105)'
+                      background: 'rgba(26, 35, 50, 0.95)',
+                      backdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
                     }),
                     option: (base, state) => ({
                       ...base,
-                      backgroundColor: state.isFocused ? 'rgb(51 65 85)' : 'transparent',
-                      color: 'rgb(226 232 240)',
+                      backgroundColor: state.isFocused ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                      color: 'rgb(255, 255, 255)',
                     }),
                     singleValue: (base) => ({
                       ...base,
-                      color: 'rgb(226 232 240)'
+                      color: 'rgb(255, 255, 255)'
                     }),
                     input: (base) => ({
                       ...base,
-                      color: 'rgb(226 232 240)'
+                      color: 'rgb(255, 255, 255)'
                     })
                   }}
                   className="text-sm"
@@ -184,11 +277,11 @@ export default function NewCustodyPage() {
 
               {/* Location Type Selection */}
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-white mb-1">
                   Location Type
                 </label>
                 <div className="flex gap-4">
-                  <label className="flex items-center">
+                    <label className="flex items-center text-white">
                     <input
                       type="radio"
                       value="warehouse"
@@ -205,7 +298,7 @@ export default function NewCustodyPage() {
                     />
                     Warehouse
                   </label>
-                  <label className="flex items-center">
+                  <label className="flex items-center text-white">
                     <input
                       type="radio"
                       value="department"
@@ -221,7 +314,7 @@ export default function NewCustodyPage() {
                     />
                     Department
                   </label>
-                  <label className="flex items-center">
+                  <label className="flex items-center text-white">
                     <input
                       type="radio"
                       value="camp/office"
@@ -244,11 +337,11 @@ export default function NewCustodyPage() {
               {locationType === 'warehouse' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-white mb-1">
                       Warehouse Location
                     </label>
                     <div className="flex gap-4">
-                      <label className="flex items-center">
+                      <label className="flex items-center text-white">
                         <input
                           type="radio"
                           value="Dammam"
@@ -261,7 +354,7 @@ export default function NewCustodyPage() {
                         />
                         Dammam
                       </label>
-                      <label className="flex items-center">
+                      <label className="flex items-center text-white">
                         <input
                           type="radio"
                           value="Jubail"
@@ -277,7 +370,7 @@ export default function NewCustodyPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-white mb-1">
                       Room/Rack/Bin Location
                     </label>
                     <input
@@ -287,7 +380,7 @@ export default function NewCustodyPage() {
                         ...prev,
                         warehouseLocation: e.target.value
                       }))}
-                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                     />
                   </div>
                 </>
@@ -296,7 +389,7 @@ export default function NewCustodyPage() {
               {locationType === 'department' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-white mb-1">
                       Location
                     </label>
                     <select
@@ -305,9 +398,9 @@ export default function NewCustodyPage() {
                         ...prev,
                         departmentLocation: e.target.value
                       }))}
-                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                     >
-                      <option value="">Select Location</option>
+                      <option value="" className="bg-[#1a2332]">Select Location</option>
                       <option value="Dammam">Dammam</option>
                       <option value="Jubail">Jubail</option>
                       <option value="Riyadh">Riyadh</option>
@@ -325,7 +418,7 @@ export default function NewCustodyPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-white mb-1">
                       Project
                     </label>
                     <Select
@@ -345,26 +438,28 @@ export default function NewCustodyPage() {
                       styles={{
                         control: (base) => ({
                           ...base,
-                          background: 'rgb(51 65 85 / 0.5)',
-                          borderColor: 'rgb(71 85 105)',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          backdropFilter: 'blur(12px)',
+                          borderColor: 'rgba(255, 255, 255, 0.2)',
                         }),
                         menu: (base) => ({
                           ...base,
-                          background: 'rgb(30 41 59)',
-                          border: '1px solid rgb(71 85 105)'
+                          background: 'rgba(26, 35, 50, 0.95)',
+                          backdropFilter: 'blur(12px)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)'
                         }),
                         option: (base, state) => ({
                           ...base,
-                          backgroundColor: state.isFocused ? 'rgb(51 65 85)' : 'transparent',
-                          color: 'rgb(226 232 240)',
+                          backgroundColor: state.isFocused ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                          color: 'rgb(255, 255, 255)',
                         }),
                         singleValue: (base) => ({
                           ...base,
-                          color: 'rgb(226 232 240)'
+                          color: 'rgb(255, 255, 255)'
                         }),
                         input: (base) => ({
                           ...base,
-                          color: 'rgb(226 232 240)'
+                          color: 'rgb(255, 255, 255)'
                         })
                       }}
                       className="text-sm"
@@ -379,7 +474,7 @@ export default function NewCustodyPage() {
               {locationType === 'camp/office' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-white mb-1">
                       Location
                     </label>
                     <select
@@ -388,9 +483,9 @@ export default function NewCustodyPage() {
                         ...prev,
                         departmentLocation: e.target.value
                       }))}
-                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                     >
-                      <option value="">Select Location</option>
+                      <option value="" className="bg-[#1a2332]">Select Location</option>
                       <option value="Dammam">Dammam</option>
                       <option value="Jubail">Jubail</option>
                       <option value="Riyadh">Riyadh</option>
@@ -399,7 +494,7 @@ export default function NewCustodyPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    <label className="block text-sm font-medium text-white mb-1">
                       Building/Room/Occupant
                     </label>
                     <input
@@ -409,7 +504,7 @@ export default function NewCustodyPage() {
                         ...prev,
                         campOfficeLocation: e.target.value
                       }))}
-                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                       placeholder="Enter building, room, or occupant details..."
                     />
                   </div>
@@ -418,7 +513,7 @@ export default function NewCustodyPage() {
 
               {/* Custody From Date */}
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-white mb-1">
                   Custody From Date <span className="text-red-400">*</span>
                 </label>
                 <DatePicker
@@ -431,7 +526,7 @@ export default function NewCustodyPage() {
                       }));
                     }
                   }}
-                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                   dateFormat="yyyy-MM-dd"
                   required
                 />
@@ -439,7 +534,7 @@ export default function NewCustodyPage() {
 
               {/* Custody To Date */}
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-white mb-1">
                   Custody To Date
                 </label>
                 <DatePicker
@@ -448,7 +543,7 @@ export default function NewCustodyPage() {
                     ...prev,
                     custodyto: date
                   }))}
-                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                   dateFormat="yyyy-MM-dd"
                   isClearable
                   minDate={formData.custodyfrom || undefined}
@@ -457,7 +552,7 @@ export default function NewCustodyPage() {
 
               {/* Gatepass Document */}
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-white mb-1">
                   Gatepass Document Number
                 </label>
                 <input
@@ -467,24 +562,24 @@ export default function NewCustodyPage() {
                     ...prev,
                     documentnumber: e.target.value
                   }))}
-                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                   placeholder="Enter gatepass document number..."
                 />
               </div>
             </div>
 
-            <div className="mt-8 border-t border-slate-700 pt-6">
+            <div className="mt-8 border-t border-white/20 pt-6">
               <div className="flex gap-4">
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-3 rounded-md text-sm font-medium transition-colors"
+                  className="flex-1 bg-teal-500 hover:bg-teal-600 disabled:bg-teal-300 text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                 >
                   {isSaving ? 'Saving...' : 'Save'}
                 </button>
                 <button
                   onClick={() => router.back()}
-                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white px-4 py-3 rounded-md text-sm font-medium transition-colors"
+                  className="flex-1 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                 >
                   Cancel
                 </button>

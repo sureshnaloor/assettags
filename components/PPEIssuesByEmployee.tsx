@@ -265,8 +265,8 @@ export default function PPEIssuesByEmployee({
   return (
     <div className="space-y-6">
       {showSearch && (
-        <Card className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border-l-4 border-emerald-400 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 text-emerald-800">Search Employee</h3>
+        <div className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl">
+          <h3 className="text-lg font-semibold mb-4 text-white">Search Employee</h3>
           <div className="space-y-4">
             <div className="relative">
               <Input
@@ -274,12 +274,12 @@ export default function PPEIssuesByEmployee({
                 placeholder="Enter employee number or name (min 5 characters for name)"
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full"
+                className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
               />
               {/^\d+$/.test(searchTerm) && (
                 <Button 
                   onClick={handleDirectSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-teal-500 hover:bg-teal-600 text-white"
                   size="sm"
                 >
                   Search
@@ -289,15 +289,15 @@ export default function PPEIssuesByEmployee({
 
             {/* Search Results */}
             {showSearchResults && searchResults.length > 0 && (
-              <div className="border border-emerald-200 rounded-lg max-h-60 overflow-y-auto bg-white shadow-md">
+              <div className="border border-white/20 rounded-lg max-h-60 overflow-y-auto bg-white/10 backdrop-blur-lg shadow-md">
                 {searchResults.map((employee) => (
                   <div
                     key={employee.empno}
-                    className="p-3 hover:bg-emerald-50 cursor-pointer border-b border-emerald-100 last:border-b-0 transition-colors duration-200"
+                    className="p-3 hover:bg-white/20 cursor-pointer border-b border-white/10 last:border-b-0 transition-colors duration-200"
                     onClick={() => handleEmployeeSelect(employee)}
                   >
-                    <div className="font-medium text-sm text-gray-800">{employee.empname}</div>
-                    <div className="text-xs text-gray-600">
+                    <div className="font-medium text-sm text-white">{employee.empname}</div>
+                    <div className="text-xs text-white/80">
                       {employee.empno} • {employee.department || 'No Department'}
                     </div>
                   </div>
@@ -306,75 +306,75 @@ export default function PPEIssuesByEmployee({
             )}
 
             {error && (
-              <div className="text-red-600 text-sm">{error}</div>
+              <div className="text-red-300 text-sm">{error}</div>
             )}
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Selected Employee Info */}
       {selectedEmployee && (
-        <Card className="p-6 bg-gradient-to-br from-slate-50 to-gray-50 border-l-4 border-slate-400 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 text-slate-800">Selected Employee</h3>
+        <div className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl">
+          <h3 className="text-lg font-semibold mb-4 text-white">Selected Employee</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-              <label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Name</label>
-              <p className="text-sm font-semibold text-slate-800 mt-1">{selectedEmployee.empname}</p>
+            <div className="bg-white/5 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-white/10">
+              <label className="text-xs font-medium text-white/70 uppercase tracking-wider">Name</label>
+              <p className="text-sm font-semibold text-white mt-1">{selectedEmployee.empname}</p>
             </div>
-            <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-              <label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Employee Number</label>
-              <p className="text-sm font-semibold text-slate-800 mt-1">{selectedEmployee.empno}</p>
+            <div className="bg-white/5 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-white/10">
+              <label className="text-xs font-medium text-white/70 uppercase tracking-wider">Employee Number</label>
+              <p className="text-sm font-semibold text-white mt-1">{selectedEmployee.empno}</p>
             </div>
             {selectedEmployee.department && (
-              <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-                <label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Department</label>
-                <p className="text-sm font-semibold text-slate-800 mt-1">{selectedEmployee.department}</p>
+              <div className="bg-white/5 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-white/10">
+                <label className="text-xs font-medium text-white/70 uppercase tracking-wider">Department</label>
+                <p className="text-sm font-semibold text-white mt-1">{selectedEmployee.department}</p>
               </div>
             )}
             {selectedEmployee.designation && (
-              <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-                <label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Designation</label>
-                <p className="text-sm font-semibold text-slate-800 mt-1">{selectedEmployee.designation}</p>
+              <div className="bg-white/5 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-white/10">
+                <label className="text-xs font-medium text-white/70 uppercase tracking-wider">Designation</label>
+                <p className="text-sm font-semibold text-white mt-1">{selectedEmployee.designation}</p>
               </div>
             )}
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Past PPE Issues Table */}
       {selectedEmployee && (
-        <Card className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-l-4 border-amber-400 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 text-amber-800">Past PPE Issues (Historical Data)</h3>
+        <div className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl">
+          <h3 className="text-lg font-semibold mb-4 text-white">Past PPE Issues (Historical Data)</h3>
           
           {loading ? (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600"></div>
-              <p className="mt-2 text-sm text-amber-600">Loading historical PPE issues...</p>
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-teal-400"></div>
+              <p className="mt-2 text-sm text-white/80">Loading historical PPE issues...</p>
             </div>
           ) : ppeIssues.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-amber-200 rounded-lg overflow-hidden shadow-md">
+              <table className="w-full border-collapse border border-white/20 rounded-lg overflow-hidden shadow-md">
                 <thead>
-                  <tr className="bg-gradient-to-r from-amber-100 to-orange-100">
-                    <th className="border border-amber-200 px-3 py-2 text-left text-xs font-semibold text-amber-800 uppercase tracking-wider">Date of Issue</th>
-                    <th className="border border-amber-200 px-3 py-2 text-left text-xs font-semibold text-amber-800 uppercase tracking-wider">PPE Name</th>
-                    <th className="border border-amber-200 px-3 py-2 text-center text-xs font-semibold text-amber-800 uppercase tracking-wider">Quantity</th>
-                    <th className="border border-amber-200 px-3 py-2 text-center text-xs font-semibold text-amber-800 uppercase tracking-wider">Size</th>
+                  <tr className="bg-white/10 backdrop-blur-md border-white/20">
+                    <th className="border border-white/20 px-3 py-2 text-left text-xs font-semibold text-white uppercase tracking-wider">Date of Issue</th>
+                    <th className="border border-white/20 px-3 py-2 text-left text-xs font-semibold text-white uppercase tracking-wider">PPE Name</th>
+                    <th className="border border-white/20 px-3 py-2 text-center text-xs font-semibold text-white uppercase tracking-wider">Quantity</th>
+                    <th className="border border-white/20 px-3 py-2 text-center text-xs font-semibold text-white uppercase tracking-wider">Size</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white">
+                <tbody className="bg-white/5">
                   {ppeIssues.map((issue, index) => (
-                    <tr key={issue._id || index} className="hover:bg-amber-50 hover:shadow-md transition-all duration-200 border-b border-amber-100">
-                      <td className="border border-amber-200 px-3 py-2 text-xs text-gray-700">
+                    <tr key={issue._id || index} className="hover:bg-white/10 hover:backdrop-blur-sm transition-all duration-200 border-b border-white/10">
+                      <td className="border border-white/20 px-3 py-2 text-xs text-white">
                         {formatDate(issue.dateOfIssue)}
                       </td>
-                      <td className="border border-amber-200 px-3 py-2 text-xs text-gray-700">
+                      <td className="border border-white/20 px-3 py-2 text-xs text-white">
                         {String(issue.ppeName || '')}
                       </td>
-                      <td className="border border-amber-200 px-3 py-2 text-center text-xs font-medium text-amber-700">
+                      <td className="border border-white/20 px-3 py-2 text-center text-xs font-medium text-teal-300">
                         {typeof issue.quantityIssued === 'number' ? issue.quantityIssued : String(issue.quantityIssued || 0)}
                       </td>
-                      <td className="border border-amber-200 px-3 py-2 text-center text-xs font-medium text-amber-700">
+                      <td className="border border-white/20 px-3 py-2 text-center text-xs font-medium text-teal-300">
                         {String(issue.size || '-')}
                       </td>
                     </tr>
@@ -383,75 +383,75 @@ export default function PPEIssuesByEmployee({
               </table>
             </div>
           ) : (
-            <div className="text-center py-8 text-amber-600">
+            <div className="text-center py-8 text-white/80">
               <p className="text-sm">No historical PPE issues found for this employee.</p>
             </div>
           )}
-        </Card>
+        </div>
       )}
 
       {/* New PPE Issues Table */}
       {selectedEmployee && (
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-blue-400 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 text-blue-800">New PPE Issues (Current System)</h3>
+        <div className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl">
+          <h3 className="text-lg font-semibold mb-4 text-white">New PPE Issues (Current System)</h3>
           
           {newIssuesLoading ? (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-sm text-blue-600">Loading current PPE issues...</p>
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-teal-400"></div>
+              <p className="mt-2 text-sm text-white/80">Loading current PPE issues...</p>
             </div>
           ) : newPpeIssues.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-blue-200 rounded-lg overflow-hidden shadow-md">
+              <table className="w-full border-collapse border border-white/20 rounded-lg overflow-hidden shadow-md">
                 <thead>
-                  <tr className="bg-gradient-to-r from-blue-100 to-indigo-100">
-                    <th className="border border-blue-200 px-3 py-2 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Date of Issue</th>
-                    <th className="border border-blue-200 px-3 py-2 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">PPE Name</th>
-                    <th className="border border-blue-200 px-3 py-2 text-center text-xs font-semibold text-blue-800 uppercase tracking-wider">Quantity</th>
-                    <th className="border border-blue-200 px-3 py-2 text-center text-xs font-semibold text-blue-800 uppercase tracking-wider">Size</th>
-                    <th className="border border-blue-200 px-3 py-2 text-center text-xs font-semibold text-blue-800 uppercase tracking-wider">First Issue</th>
-                    <th className="border border-blue-200 px-3 py-2 text-center text-xs font-semibold text-blue-800 uppercase tracking-wider">Issue Type</th>
-                    <th className="border border-blue-200 px-3 py-2 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Issued By</th>
-                    <th className="border border-blue-200 px-3 py-2 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Remarks</th>
+                  <tr className="bg-white/10 backdrop-blur-md border-white/20">
+                    <th className="border border-white/20 px-3 py-2 text-left text-xs font-semibold text-white uppercase tracking-wider">Date of Issue</th>
+                    <th className="border border-white/20 px-3 py-2 text-left text-xs font-semibold text-white uppercase tracking-wider">PPE Name</th>
+                    <th className="border border-white/20 px-3 py-2 text-center text-xs font-semibold text-white uppercase tracking-wider">Quantity</th>
+                    <th className="border border-white/20 px-3 py-2 text-center text-xs font-semibold text-white uppercase tracking-wider">Size</th>
+                    <th className="border border-white/20 px-3 py-2 text-center text-xs font-semibold text-white uppercase tracking-wider">First Issue</th>
+                    <th className="border border-white/20 px-3 py-2 text-center text-xs font-semibold text-white uppercase tracking-wider">Issue Type</th>
+                    <th className="border border-white/20 px-3 py-2 text-left text-xs font-semibold text-white uppercase tracking-wider">Issued By</th>
+                    <th className="border border-white/20 px-3 py-2 text-left text-xs font-semibold text-white uppercase tracking-wider">Remarks</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white">
+                <tbody className="bg-white/5">
                   {newPpeIssues.map((issue, index) => (
-                    <tr key={issue._id || index} className="hover:bg-blue-50 hover:shadow-md transition-all duration-200 border-b border-blue-100">
-                      <td className="border border-blue-200 px-3 py-2 text-xs text-gray-700">
+                    <tr key={issue._id || index} className="hover:bg-white/10 hover:backdrop-blur-sm transition-all duration-200 border-b border-white/10">
+                      <td className="border border-white/20 px-3 py-2 text-xs text-white">
                         {formatDate(issue.dateOfIssue)}
                       </td>
-                      <td className="border border-blue-200 px-3 py-2 text-xs text-gray-700">
+                      <td className="border border-white/20 px-3 py-2 text-xs text-white">
                         {String(issue.ppeName || '')}
                       </td>
-                      <td className="border border-blue-200 px-3 py-2 text-center text-xs font-medium text-blue-700">
+                      <td className="border border-white/20 px-3 py-2 text-center text-xs font-medium text-teal-300">
                         {typeof issue.quantityIssued === 'number' ? issue.quantityIssued : String(issue.quantityIssued || 0)}
                       </td>
-                      <td className="border border-blue-200 px-3 py-2 text-center text-xs font-medium text-blue-700">
+                      <td className="border border-white/20 px-3 py-2 text-center text-xs font-medium text-teal-300">
                         {String(issue.size || '-')}
                       </td>
-                      <td className="border border-blue-200 px-3 py-2 text-center text-xs">
+                      <td className="border border-white/20 px-3 py-2 text-center text-xs">
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                           issue.isFirstIssue 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-green-500/20 text-green-300 border border-green-400/30' 
+                            : 'bg-white/10 text-white/70 border border-white/20'
                         }`}>
                           {String(issue.isFirstIssue ? 'Yes' : 'No')}
                         </span>
                       </td>
-                      <td className="border border-blue-200 px-3 py-2 text-center text-xs">
+                      <td className="border border-white/20 px-3 py-2 text-center text-xs">
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                           issue.issueAgainstDue 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-teal-500/20 text-teal-300 border border-teal-400/30' 
+                            : 'bg-red-500/20 text-red-300 border border-red-400/30'
                         }`}>
                           {String(issue.issueAgainstDue ? 'Due' : 'Damage')}
                         </span>
                       </td>
-                      <td className="border border-blue-200 px-3 py-2 text-xs text-gray-700">
+                      <td className="border border-white/20 px-3 py-2 text-xs text-white">
                         {String(issue.issuedByName || '')}
                       </td>
-                      <td className="border border-blue-200 px-3 py-2 text-xs text-gray-700">
+                      <td className="border border-white/20 px-3 py-2 text-xs text-white">
                         {String(issue.remarks || '-')}
                       </td>
                     </tr>
@@ -460,11 +460,11 @@ export default function PPEIssuesByEmployee({
               </table>
             </div>
           ) : (
-            <div className="text-center py-8 text-blue-600">
+            <div className="text-center py-8 text-white/80">
               <p className="text-sm">No current PPE issues found for this employee.</p>
             </div>
           )}
-        </Card>
+        </div>
       )}
     </div>
   );

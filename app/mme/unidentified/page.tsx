@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   ColumnDef,
   SortingState,
@@ -17,6 +17,15 @@ export default function UnidentifiedMMEPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState<UnidentifiedItem | null>(null);
   const [deleteItem, setDeleteItem] = useState<UnidentifiedItem | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Array<{
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    radius: number;
+  }>>([]);
+  const animationFrameRef = useRef<number>();
 
   const fetchItems = async () => {
     try {
@@ -34,6 +43,86 @@ export default function UnidentifiedMMEPage() {
 
   useEffect(() => {
     fetchItems();
+  }, []);
+
+  // Animated particle background
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+
+    particlesRef.current = [];
+    for (let i = 0; i < 50; i++) {
+      particlesRef.current.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 3 + 1
+      });
+    }
+
+    const animate = () => {
+      if (!ctx || !canvas) return;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particlesRef.current.forEach((particle, i) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(45, 212, 191, 0.6)';
+        ctx.fill();
+
+        particlesRef.current.forEach((otherParticle, j) => {
+          if (i !== j) {
+            const dx = particle.x - otherParticle.x;
+            const dy = particle.y - otherParticle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.moveTo(particle.x, particle.y);
+              ctx.lineTo(otherParticle.x, otherParticle.y);
+              ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        });
+      });
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const handleResize = () => {
+      resizeCanvas();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, []);
 
   const handleAdd = async (itemData: Partial<UnidentifiedItem>) => {
@@ -178,14 +267,14 @@ export default function UnidentifiedMMEPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setEditingItem(row.original)}
-            className="p-1 text-blue-600 hover:text-blue-800"
+            className="p-1 text-teal-400 hover:text-teal-300 transition-colors"
             title="Edit"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => setDeleteItem(row.original)}
-            className="p-1 text-red-600 hover:text-red-800"
+            className="p-1 text-red-400 hover:text-red-300 transition-colors"
             title="Delete"
           >
             <Trash2 className="h-4 w-4" />
@@ -196,40 +285,54 @@ export default function UnidentifiedMMEPage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="flex items-center justify-between">
-        <h1 className="flex-1 text-xl font-semibold text-slate-800 dark:text-slate-200">
-          Unidentified MME & LVA
-        </h1>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add New
-        </button>
-      </div>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+      {/* Animated background canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-10" />
+      
+      {/* Main content */}
+      <div className="relative z-20 flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+                  Unidentified MME & LVA
+                </h1>
+                <p className="text-white/80 text-lg">Manage unidentified MME equipment</p>
+              </div>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-teal-400 hover:bg-teal-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <Plus className="h-5 w-5" />
+                Add New
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <div className="rounded-xl border border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm shadow-xl">
-        {loading ? (
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : data.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-            No unidentified items found. Click "Add New" to create one.
-          </div>
-        ) : (
-          <ResponsiveTanStackTable
-            data={data}
-            columns={columns}
-            sorting={sorting}
-            setSorting={setSorting}
-            columnFilters={columnFilters}
-            setColumnFilters={setColumnFilters}
-            getRowId={(row) => row._id || ''}
-          />
-        )}
+        <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-xl">
+          {loading ? (
+            <div className="flex justify-center items-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-400"></div>
+            </div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-8 text-white/70">
+              No unidentified items found. Click "Add New" to create one.
+            </div>
+          ) : (
+            <ResponsiveTanStackTable
+              data={data}
+              columns={columns}
+              sorting={sorting}
+              setSorting={setSorting}
+              columnFilters={columnFilters}
+              setColumnFilters={setColumnFilters}
+              getRowId={(row) => row._id || ''}
+            />
+          )}
+        </div>
       </div>
 
       {showAddModal && (
@@ -352,27 +455,27 @@ function ItemFormModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <h2 className="text-xl font-bold mb-4 text-white">
           {item ? 'Edit Unidentified MME' : 'Add Unidentified MME'}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-white mb-1">
                 Asset Description/Name
               </label>
               <input
                 type="text"
                 value={formData.assetdescription}
                 onChange={(e) => setFormData({ ...formData, assetdescription: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
                 placeholder="Enter asset description or name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-white mb-1">
                 Manufacturer *
               </label>
               <input
@@ -380,7 +483,7 @@ function ItemFormModal({
                 required
                 value={formData.assetmanufacturer}
                 onChange={(e) => setFormData({ ...formData, assetmanufacturer: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -392,7 +495,7 @@ function ItemFormModal({
                 required
                 value={formData.assetmodel}
                 onChange={(e) => setFormData({ ...formData, assetmodel: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -404,7 +507,7 @@ function ItemFormModal({
                 required
                 value={formData.assetserialnumber}
                 onChange={(e) => setFormData({ ...formData, assetserialnumber: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -415,7 +518,7 @@ function ItemFormModal({
                 type="text"
                 value={formData.possibleassetnumber}
                 onChange={(e) => setFormData({ ...formData, possibleassetnumber: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -427,7 +530,7 @@ function ItemFormModal({
                 step="0.01"
                 value={formData.assetvalue || ''}
                 onChange={(e) => setFormData({ ...formData, assetvalue: e.target.value ? parseFloat(e.target.value) : undefined })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -438,7 +541,7 @@ function ItemFormModal({
                 type="text"
                 value={formData.assettype}
                 onChange={(e) => setFormData({ ...formData, assettype: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -449,7 +552,7 @@ function ItemFormModal({
                 value={formData.assetcategory}
                 onChange={(e) => setFormData({ ...formData, assetcategory: e.target.value, assetsubcategory: '' })}
                 disabled={loadingCategories}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               >
                 <option value="">Select Category...</option>
                 {categories.map((category) => (
@@ -467,7 +570,7 @@ function ItemFormModal({
                 value={formData.assetsubcategory}
                 onChange={(e) => setFormData({ ...formData, assetsubcategory: e.target.value })}
                 disabled={loadingSubcategories || !formData.assetcategory || subcategories.length === 0}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">Select Subcategory...</option>
                 {subcategories.map((subcategory) => (
@@ -485,7 +588,7 @@ function ItemFormModal({
                 type="text"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -496,7 +599,7 @@ function ItemFormModal({
                 type="date"
                 value={formData.locationdate}
                 onChange={(e) => setFormData({ ...formData, locationdate: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -507,7 +610,7 @@ function ItemFormModal({
                 type="text"
                 value={formData.custodianuser}
                 onChange={(e) => setFormData({ ...formData, custodianuser: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
             <div>
@@ -518,7 +621,7 @@ function ItemFormModal({
                 type="text"
                 value={formData.custodianname}
                 onChange={(e) => setFormData({ ...formData, custodianname: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               />
             </div>
           </div>
@@ -526,13 +629,13 @@ function ItemFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="px-4 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+              className="px-4 py-2 bg-teal-400 hover:bg-teal-500 text-white rounded-lg transition-all"
             >
               {item ? 'Update' : 'Create'}
             </button>
@@ -554,30 +657,30 @@ function DeleteConfirmModal({
   onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-3xl max-w-md shadow-2xl">
+        <h2 className="text-xl font-bold mb-4 text-white">
           Confirm Delete
         </h2>
-        <p className="mb-4 text-gray-700 dark:text-gray-300">
+        <p className="mb-4 text-white/80">
           Are you sure you want to delete this item?
           <br />
-          <strong>Manufacturer:</strong> {item.assetmanufacturer}
+          <strong className="text-white">Manufacturer:</strong> {item.assetmanufacturer}
           <br />
-          <strong>Model:</strong> {item.assetmodel}
+          <strong className="text-white">Model:</strong> {item.assetmodel}
           <br />
-          <strong>Serial Number:</strong> {item.assetserialnumber}
+          <strong className="text-white">Serial Number:</strong> {item.assetserialnumber}
         </p>
         <div className="flex gap-4 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="px-4 py-2 border border-white/20 rounded-lg bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-all"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+            className="px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-lg transition-all"
           >
             Delete
           </button>

@@ -51,13 +51,13 @@ export function AssetStatusChart() {
       ctx.fill()
 
       // Draw value on top of bar
-      ctx.fillStyle = document.documentElement.classList.contains('dark') ? "#ffffff" : "#000000"
+      ctx.fillStyle = "#ffffff"
       ctx.font = "bold 14px Inter, system-ui, sans-serif"
       ctx.textAlign = "center"
       ctx.fillText(item.value.toString(), x + barWidth / 2, y - 10)
 
       // Draw label below bar
-      ctx.fillStyle = document.documentElement.classList.contains('dark') ? "#9ca3af" : "#6b7280"
+      ctx.fillStyle = "#ffffff"
       ctx.font = "12px Inter, system-ui, sans-serif"
       ctx.textAlign = "center"
       ctx.fillText(item.label, x + barWidth / 2, chartHeight - 10)

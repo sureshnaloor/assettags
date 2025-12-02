@@ -55,16 +55,16 @@ export function RecentActivities() {
   return (
     <div className="space-y-4">
       {activities.map((activity) => (
-        <div key={activity.id} className="flex items-start gap-4 rounded-lg border p-3">
-          <div className="rounded-full bg-muted p-2">
-            <activity.icon className="h-4 w-4" />
+        <div key={activity.id} className="flex items-start gap-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm p-3 hover:bg-white/10 transition-all duration-200">
+          <div className="rounded-full bg-white/10 p-2 border border-white/20">
+            <activity.icon className="h-4 w-4 text-teal-400" />
           </div>
           <div className="flex-1 space-y-1">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">{activity.asset}</p>
-              <span className="text-xs text-muted-foreground">{activity.timestamp}</span>
+              <p className="text-sm font-medium text-white">{activity.asset}</p>
+              <span className="text-xs text-white/70">{activity.timestamp}</span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/80">
               {activity.type === "movement" && (
                 <>
                   Moved from {activity.from} to {activity.to} by {activity.user}

@@ -71,20 +71,24 @@ export function MaintenanceSchedule() {
   return (
     <div className="space-y-4">
       {maintenanceItems.map((item) => (
-        <div key={item.id} className="flex items-start gap-4 rounded-lg border p-3">
-          <div className="rounded-full bg-muted p-2">{getStatusIcon(item.status)}</div>
+        <div key={item.id} className="flex items-start gap-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm p-3 hover:bg-white/10 transition-all duration-200">
+          <div className="rounded-full bg-white/10 p-2 border border-white/20">{getStatusIcon(item.status)}</div>
           <div className="flex-1 space-y-1">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">{item.asset}</p>
-              <span className="text-xs text-muted-foreground">
+              <p className="text-sm font-medium text-white">{item.asset}</p>
+              <span className="text-xs text-white/70">
                 {item.date}, {item.time}
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/80">
               {item.type} maintenance - {item.technician}
             </p>
           </div>
-          <Button variant="outline" size="sm" className="h-8">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 hover:text-teal-400"
+          >
             Details
           </Button>
         </div>

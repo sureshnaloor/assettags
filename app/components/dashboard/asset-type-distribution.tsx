@@ -76,7 +76,7 @@ export function AssetTypeDistribution() {
       ctx.fillRect(legendX, legendY, 12, 12)
 
       // Draw label
-      ctx.fillStyle = "#000"
+      ctx.fillStyle = "#fff"
       ctx.font = "12px Inter, system-ui, sans-serif"
       ctx.textAlign = "left"
       ctx.textBaseline = "middle"

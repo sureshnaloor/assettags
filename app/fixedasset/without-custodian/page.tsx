@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   ColumnDef,
   SortingState,
@@ -28,6 +28,16 @@ interface FixedAsset {
 }
 
 export default function FixedAssetWithoutCustodianPage() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Array<{
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    radius: number;
+  }>>([]);
+  const animationFrameRef = useRef<number>();
+
   const [data, setData] = useState<FixedAsset[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -141,7 +151,7 @@ export default function FixedAssetWithoutCustodianPage() {
       cell: ({ row }) => (
         <Link 
           href={`/fixedasset/${row.original.assetnumber}`}
-          className="text-blue-400 hover:text-blue-300"
+          className="text-teal-400 hover:text-teal-300 transition-colors"
         >
           {row.original.assetnumber}
         </Link>
@@ -158,7 +168,7 @@ export default function FixedAssetWithoutCustodianPage() {
           <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
-      cell: ({ row }) => <div className="max-w-[300px] truncate text-[12px] text-slate-800 dark:text-slate-400">{row.getValue('assetdescription')}</div>,
+      cell: ({ row }) => <div className="max-w-[300px] truncate text-[12px] text-white">{row.getValue('assetdescription')}</div>,
     },
     {
       accessorKey: 'assetcategory',
@@ -221,41 +231,130 @@ export default function FixedAssetWithoutCustodianPage() {
     }
   ];
 
+  // Animated particle background
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+
+    particlesRef.current = [];
+    for (let i = 0; i < 50; i++) {
+      particlesRef.current.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 3 + 1
+      });
+    }
+
+    const animate = () => {
+      if (!ctx || !canvas) return;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particlesRef.current.forEach((particle, i) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(45, 212, 191, 0.6)';
+        ctx.fill();
+
+        particlesRef.current.forEach((otherParticle, j) => {
+          if (i !== j) {
+            const dx = particle.x - otherParticle.x;
+            const dy = particle.y - otherParticle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.moveTo(particle.x, particle.y);
+              ctx.lineTo(otherParticle.x, otherParticle.y);
+              ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        });
+      });
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const handleResize = () => {
+      resizeCanvas();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="flex items-center gap-4">
-        <h1 className="flex-1 text-xl font-semibold text-slate-800 dark:text-slate-200">Fixed Assets Without Custodian</h1>
-      </div>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+      {/* Animated background canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-10" />
       
-      {/* User Message - Above Filters */}
-      {!hasSearched && (
-        <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-          <p className="text-sm text-blue-800 dark:text-blue-200">
-            Please set your filters (acquisition value range, date range, and category) and click Search to view fixed assets without custodian information.
-          </p>
+      {/* Main content */}
+      <div className="relative z-20 flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
+        {/* Header Section */}
+        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-xl">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent mb-2">
+            Fixed Assets Without Custodian
+          </h1>
+          <p className="text-white/80 text-lg">Search for fixed assets without custodian information</p>
         </div>
-      )}
       
-      {/* Filters Section */}
-      <div className="mb-6 p-6 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg relative" style={{ zIndex: 1 }}>
-        <div className="space-y-4">
-          {/* Value Range Slider */}
-          <div>
-            <label className="block text-sm font-medium mb-3 text-slate-700 dark:text-slate-300">
-              Acquisition Value Range: {minValue.toLocaleString()} - {maxValue.toLocaleString()} SAR
-            </label>
-            <div className="relative h-8 slider-container-fixedasset" style={{ zIndex: 10 }}>
-              {/* Background track */}
-              <div className="absolute top-4 left-0 right-0 h-2 bg-slate-200 dark:bg-slate-600 rounded-lg pointer-events-none"></div>
-              
-              {/* Active range track */}
-              <div 
-                className="absolute top-4 h-2 bg-blue-500 rounded-lg pointer-events-none"
-                style={{
-                  left: `${(minValue / 1000000) * 100}%`,
-                  width: `${((maxValue - minValue) / 1000000) * 100}%`
-                }}
-              ></div>
+        {/* User Message - Above Filters */}
+        {!hasSearched && (
+          <div className="mb-4 p-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl">
+            <p className="text-sm text-white/80">
+              Please set your filters (acquisition value range, date range, and category) and click Search to view fixed assets without custodian information.
+            </p>
+          </div>
+        )}
+      
+        {/* Filters Section */}
+        <div className="mb-6 p-6 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl relative" style={{ zIndex: 1 }}>
+          <div className="space-y-4">
+            {/* Value Range Slider */}
+            <div>
+              <label className="block text-sm font-medium mb-3 text-white">
+                Acquisition Value Range: {minValue.toLocaleString()} - {maxValue.toLocaleString()} SAR
+              </label>
+              <div className="relative h-8 slider-container-fixedasset" style={{ zIndex: 10 }}>
+                {/* Background track */}
+                <div className="absolute top-4 left-0 right-0 h-2 bg-white/20 rounded-lg pointer-events-none"></div>
+                
+                {/* Active range track */}
+                <div 
+                  className="absolute top-4 h-2 bg-teal-500 rounded-lg pointer-events-none"
+                  style={{
+                    left: `${(minValue / 1000000) * 100}%`,
+                    width: `${((maxValue - minValue) / 1000000) * 100}%`
+                  }}
+                ></div>
               
               {/* Track click handler */}
               <div 
@@ -285,7 +384,7 @@ export default function FixedAssetWithoutCustodianPage() {
               
               {/* Min value thumb */}
               <div 
-                className="absolute top-2 w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg cursor-pointer hover:bg-blue-600 transition-colors z-30"
+                className="absolute top-2 w-4 h-4 bg-teal-500 rounded-full border-2 border-white shadow-lg cursor-pointer hover:bg-teal-600 transition-colors z-30"
                 style={{ left: `calc(${(minValue / 1000000) * 100}% - 8px)`, pointerEvents: 'auto' }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
@@ -295,7 +394,7 @@ export default function FixedAssetWithoutCustodianPage() {
               
               {/* Max value thumb */}
               <div 
-                className="absolute top-2 w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg cursor-pointer hover:bg-blue-600 transition-colors z-30"
+                className="absolute top-2 w-4 h-4 bg-teal-500 rounded-full border-2 border-white shadow-lg cursor-pointer hover:bg-teal-600 transition-colors z-30"
                 style={{ left: `calc(${(maxValue / 1000000) * 100}% - 8px)`, pointerEvents: 'auto' }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
@@ -303,7 +402,7 @@ export default function FixedAssetWithoutCustodianPage() {
                 }}
               ></div>
             </div>
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <div className="flex justify-between text-xs text-white/70 mt-1">
               <span>0 SAR</span>
               <span>1,000,000 SAR</span>
             </div>
@@ -312,7 +411,7 @@ export default function FixedAssetWithoutCustodianPage() {
           {/* Date Range and Category */}
           <div className="flex gap-4 items-end">
             <div className="flex-1 max-w-[200px]">
-              <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+              <label className="block text-sm font-medium mb-2 text-white">
                 From Date
               </label>
               <div className="relative" style={{ zIndex: 1000 }}>
@@ -323,7 +422,7 @@ export default function FixedAssetWithoutCustodianPage() {
                 startDate={minDate || undefined}
                 endDate={maxDate || undefined}
                 maxDate={maxDate || undefined}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/90 dark:bg-slate-700/90 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
+                  className="w-full px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                   dateFormat="yyyy-MM-dd"
                   isClearable
                   placeholderText="Select start date"
@@ -332,7 +431,7 @@ export default function FixedAssetWithoutCustodianPage() {
               </div>
             </div>
             <div className="flex-1 max-w-[200px]">
-              <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+              <label className="block text-sm font-medium mb-2 text-white">
                 To Date
               </label>
               <div className="relative" style={{ zIndex: 1000 }}>
@@ -343,7 +442,7 @@ export default function FixedAssetWithoutCustodianPage() {
                 startDate={minDate || undefined}
                 endDate={maxDate || undefined}
                 minDate={minDate || undefined}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/90 dark:bg-slate-700/90 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
+                  className="w-full px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                   dateFormat="yyyy-MM-dd"
                   isClearable
                   placeholderText="Select end date"
@@ -352,18 +451,18 @@ export default function FixedAssetWithoutCustodianPage() {
               </div>
             </div>
             <div className="flex-1 max-w-[200px]">
-              <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+              <label className="block text-sm font-medium mb-2 text-white">
                 Asset Category
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/90 dark:bg-slate-700/90 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
+                className="w-full px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                 disabled={loadingCategories}
               >
-                <option value="">All Categories</option>
+                <option value="" className="bg-[#1a2332]">All Categories</option>
                 {categories.map((category) => (
-                  <option key={category} value={category}>
+                  <option key={category} value={category} className="bg-[#1a2332]">
                     {category}
                   </option>
                 ))}
@@ -373,7 +472,7 @@ export default function FixedAssetWithoutCustodianPage() {
               <button
                 onClick={handleSearch}
                 disabled={loading}
-                className="w-full px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-xl font-medium transition-colors duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed"
+                className="w-full px-6 py-2 bg-teal-500 hover:bg-teal-600 disabled:bg-teal-300 text-white rounded-xl font-medium transition-colors duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed"
               >
                 {loading ? 'Searching...' : 'Search'}
               </button>
@@ -383,23 +482,23 @@ export default function FixedAssetWithoutCustodianPage() {
       </div>
 
       {/* Results Section with Gradient Background */}
-      <div className="rounded-xl border border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm shadow-xl">
+      <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-xl">
         {loading ? (
           <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-400"></div>
           </div>
         ) : !hasSearched ? (
-          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+          <div className="text-center py-8 text-white/80">
             No search performed yet. Use the filters above to search for fixed assets.
           </div>
         ) : data.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+          <div className="text-center py-8 text-white/80">
             No fixed assets found without custodian information matching the selected filters
           </div>
         ) : (
           <>
-            <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+            <div className="p-4 border-b border-white/20">
+              <p className="text-sm text-white/80">
                 Found {data.length} fixed asset{data.length !== 1 ? 's' : ''} without custodian information
               </p>
             </div>
@@ -415,7 +514,7 @@ export default function FixedAssetWithoutCustodianPage() {
           </>
         )}
       </div>
-      
+      </div>
     </div>
   );
 }
