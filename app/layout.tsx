@@ -4,9 +4,8 @@ import "./globals.css";
 import 'react-datepicker/dist/react-datepicker.css';
 import { Providers } from './providers';
 import { Inter } from 'next/font/google';
-import Header from './components/Header';
-import Footer from './components/Footer';
 import LayoutWrapper from './components/LayoutWrapper';
+import ConditionalLayout from './components/ConditionalLayout';
 import AuthProvider from './providers/AuthProvider';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
@@ -41,11 +40,11 @@ export default function RootLayout({
         <Providers>
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
-              <Header />
-              <LayoutWrapper>
-                {children}
-              </LayoutWrapper>
-              <Footer />
+              <ConditionalLayout>
+                <LayoutWrapper>
+                  {children}
+                </LayoutWrapper>
+              </ConditionalLayout>
             </div>
           </AuthProvider>
         </Providers>

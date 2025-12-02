@@ -14,6 +14,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const shouldShowSidebar = pathname && 
                            pathname !== '/' &&
                            pathname !== '/dashboard' &&
+                           pathname !== '/landing' &&
                            !pathname.match(/^\/asset\/[^\/]+$/) && 
                            !pathname.match(/^\/fixedasset\/[^\/]+$/) &&
                            !pathname.match(/^\/tools\/[^\/]+$/);
