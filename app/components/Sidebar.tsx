@@ -120,13 +120,13 @@ export default function Sidebar() {
   const subLinks = activeSection ? subLinksMap[activeSection] || [] : [];
 
   return (
-    <div className="hidden border-r border-slate-200/80 dark:border-slate-700/80 bg-gradient-to-b from-white/95 via-slate-50/95 to-white/95 dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95 backdrop-blur-xl shadow-xl shadow-slate-200/30 dark:shadow-slate-900/40 md:block md:w-64 self-stretch h-full">
+    <div className="hidden border-r border-white/10 bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332] backdrop-blur-xl shadow-xl md:block md:w-64 self-stretch h-full">
       <div className="flex h-full flex-col gap-3">
         <div className="flex-1 overflow-auto py-6">
           {activeSection && subLinks.length > 0 ? (
             <nav className="grid items-start px-3 text-[10px] font-semibold uppercase tracking-wider space-y-2">
               <div className="px-3 py-2 mb-4">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b border-slate-300/50 dark:border-slate-600/50 pb-2">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-white border-b border-white/20 pb-2">
                   {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}
                 </h2>
               </div>
@@ -139,37 +139,37 @@ export default function Sidebar() {
                     href={link.href}
                     className={cn(
                       "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-300 border hover:scale-105",
-                      "text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-gradient-to-r hover:from-slate-100/80 hover:to-slate-50/80 dark:hover:from-slate-700/80 dark:hover:to-slate-600/80 hover:shadow-md hover:shadow-slate-200/40 dark:hover:shadow-slate-800/40 border-transparent hover:border-slate-200/40 dark:hover:border-slate-600/40",
-                      isActive && "bg-gradient-to-r from-slate-200/80 to-slate-100/80 dark:from-slate-700/80 dark:to-slate-600/80 text-slate-800 dark:text-slate-200 shadow-lg shadow-slate-200/50 dark:shadow-slate-800/50 border-slate-300/50 dark:border-slate-600/50"
+                      "text-white/80 hover:text-white hover:bg-white/10 hover:backdrop-blur-md hover:shadow-md hover:shadow-black/20 border-transparent hover:border-white/20",
+                      isActive && "bg-white/10 backdrop-blur-md text-white shadow-lg shadow-black/30 border-white/20"
                     )}
                   >
-                    <FileText className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6" />
+                    <FileText className="h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6 text-teal-400" />
                     <span className="font-bold tracking-widest">{link.name}</span>
                   </Link>
                 );
               })}
             </nav>
           ) : (
-            <div className="flex items-center justify-center h-full text-slate-400 dark:text-slate-600 text-xs">
-              <p>Select a navigation item to see related links</p>
+            <div className="flex items-center justify-center h-full text-white/60 text-xs px-4">
+              <p className="text-center">Select a navigation item to see related links</p>
             </div>
           )}
         </div>
 
         {/* Footer with time and location */}
-        <div className="border-t border-slate-200/60 dark:border-slate-700/70 px-4 py-4 space-y-2">
-          <div className="text-[10px] text-slate-600 dark:text-slate-400">
+        <div className="border-t border-white/10 px-4 py-4 space-y-2 bg-white/5 backdrop-blur-md">
+          <div className="text-[10px] text-white/80">
             <div className="font-semibold uppercase tracking-wider mb-1">Time</div>
-            <div className="text-xs font-mono">{currentTime || 'Loading...'}</div>
+            <div className="text-xs font-mono text-white">{currentTime || 'Loading...'}</div>
           </div>
-          <div className="text-[10px] text-slate-600 dark:text-slate-400">
+          <div className="text-[10px] text-white/80">
             <div className="font-semibold uppercase tracking-wider mb-1">Location</div>
             {location.lat && location.lon ? (
-              <div className="text-xs font-mono">
+              <div className="text-xs font-mono text-white">
                 <div>{location.lat.toFixed(6)}, {location.lon.toFixed(6)}</div>
               </div>
             ) : (
-              <div className="text-xs font-mono text-slate-400 dark:text-slate-600">
+              <div className="text-xs font-mono text-white/60">
                 Getting location...
               </div>
             )}
