@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import PPEStockDisplay from '@/components/PPEStockDisplay';
 
@@ -12,7 +10,7 @@ interface PPEDashboardStats {
   totalBulkIssues: number;
   totalEmployees: number;
   overdueItems: number;
-  recentIssues: number;
+  todaysIssues: number;
 }
 
 export default function PPEDashboardPage() {
@@ -22,30 +20,48 @@ export default function PPEDashboardPage() {
     totalBulkIssues: 0,
     totalEmployees: 0,
     overdueItems: 0,
-    recentIssues: 0
+    todaysIssues: 0
   });
   const [loading, setLoading] = useState(true);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Array<{
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    radius: number;
+  }>>([]);
+  const animationFrameRef = useRef<number>();
 
   // Fetch dashboard statistics
   const fetchStats = async () => {
     try {
       setLoading(true);
       
-      // Fetch all statistics in parallel
+      // Get today's date range (start and end of today)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Start of today
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999); // End of today
+      
+      const todayDateFrom = today.toISOString();
+      const todayDateTo = todayEnd.toISOString();
+      
+      // Fetch all statistics in parallel with high limits to get full data
       const [
         ppeResponse,
         issueResponse,
         bulkResponse,
         empResponse,
         overdueResponse,
-        recentResponse
+        todaysIssuesResponse
       ] = await Promise.all([
-        fetch('/api/ppe-master'),
-        fetch('/api/ppe-records'),
-        fetch('/api/ppe-bulk-issues'),
-        fetch('/api/employees'),
+        fetch('/api/ppe-master?limit=10000'),
+        fetch('/api/ppe-records?limit=10000'),
+        fetch('/api/ppe-bulk-issues?limit=10000'),
+        fetch('/api/employees?limit=10000&active=true'),
         fetch('/api/ppe-due-for-reissue?daysOverdue=0'),
-        fetch('/api/ppe-records?limit=5')
+        fetch(`/api/ppe-records?dateFrom=${todayDateFrom}&dateTo=${todayDateTo}&limit=10000`)
       ]);
 
       const [
@@ -54,23 +70,23 @@ export default function PPEDashboardPage() {
         bulkResult,
         empResult,
         overdueResult,
-        recentResult
+        todaysIssuesResult
       ] = await Promise.all([
         ppeResponse.json(),
         issueResponse.json(),
         bulkResponse.json(),
         empResponse.json(),
         overdueResponse.json(),
-        recentResponse.json()
+        todaysIssuesResponse.json()
       ]);
 
       setStats({
-        totalPPEItems: ppeResult.success ? ppeResult.data.records.length : 0,
-        totalIssueRecords: issueResult.success ? issueResult.data.records.length : 0,
-        totalBulkIssues: bulkResult.success ? bulkResult.data.records.length : 0,
-        totalEmployees: empResult.success ? empResult.data.records.filter((emp: any) => emp.active !== 'N').length : 0,
+        totalPPEItems: ppeResult.success ? (ppeResult.data.pagination?.total || ppeResult.data.records.length) : 0,
+        totalIssueRecords: issueResult.success ? (issueResult.data.pagination?.total || issueResult.data.records.length) : 0,
+        totalBulkIssues: bulkResult.success ? (bulkResult.data.pagination?.total || bulkResult.data.records.length) : 0,
+        totalEmployees: empResult.success ? (empResult.data.pagination?.total || empResult.data.records.length) : 0,
         overdueItems: overdueResult.success ? overdueResult.data.length : 0,
-        recentIssues: recentResult.success ? recentResult.data.records.length : 0
+        todaysIssues: todaysIssuesResult.success ? (todaysIssuesResult.data.pagination?.total || todaysIssuesResult.data.records.length) : 0
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -78,6 +94,90 @@ export default function PPEDashboardPage() {
       setLoading(false);
     }
   };
+
+  // Network canvas animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+
+    // Initialize particles
+    particlesRef.current = [];
+    for (let i = 0; i < 40; i++) {
+      particlesRef.current.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        radius: Math.random() * 2 + 1
+      });
+    }
+
+    const animate = () => {
+      if (!ctx || !canvas) return;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Update and draw particles
+      particlesRef.current.forEach((particle, i) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+
+        // Draw particle
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(45, 212, 191, 0.4)';
+        ctx.fill();
+
+        // Draw connections
+        particlesRef.current.forEach((otherParticle, j) => {
+          if (i !== j) {
+            const dx = particle.x - otherParticle.x;
+            const dy = particle.y - otherParticle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 120) {
+              ctx.beginPath();
+              ctx.moveTo(particle.x, particle.y);
+              ctx.lineTo(otherParticle.x, otherParticle.y);
+              ctx.strokeStyle = `rgba(45, 212, 191, ${0.2 * (1 - distance / 120)})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        });
+      });
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const handleResize = () => {
+      resizeCanvas();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     fetchStats();
@@ -117,165 +217,162 @@ export default function PPEDashboardPage() {
   ];
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">PPE Management Dashboard</h1>
-        <p className="text-gray-600">Overview of Personal Protective Equipment management system</p>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total PPE Items</CardTitle>
-            <div className="h-4 w-4 text-blue-600">🛡️</div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : stats.totalPPEItems}</div>
-            <p className="text-xs text-muted-foreground">
-              Active PPE items in master
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Issue Records</CardTitle>
-            <div className="h-4 w-4 text-green-600">📋</div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : stats.totalIssueRecords}</div>
-            <p className="text-xs text-muted-foreground">
-              Individual PPE issues
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bulk Issues</CardTitle>
-            <div className="h-4 w-4 text-purple-600">📦</div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : stats.totalBulkIssues}</div>
-            <p className="text-xs text-muted-foreground">
-              Bulk PPE issues to departments
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Employees</CardTitle>
-            <div className="h-4 w-4 text-orange-600">👥</div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : stats.totalEmployees}</div>
-            <p className="text-xs text-muted-foreground">
-              Active employees in system
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue Items</CardTitle>
-            <div className="h-4 w-4 text-red-600">⚠️</div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : stats.overdueItems}</div>
-            <p className="text-xs text-muted-foreground">
-              PPE items due for reissue
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recent Issues</CardTitle>
-            <div className="h-4 w-4 text-gray-600">🕒</div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loading ? '...' : stats.recentIssues}</div>
-            <p className="text-xs text-muted-foreground">
-              Recent PPE issues (last 5)
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {quickActions.map((action, index) => (
-            <Link key={index} href={action.href}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center text-white text-xl`}>
-                      {action.title === 'PPE Master' && '🛡️'}
-                      {action.title === 'Issue PPE' && '📋'}
-                      {action.title === 'Bulk Issues' && '📦'}
-                      {action.title === 'Employee Management' && '👥'}
-                      {action.title === 'Due for Reissue' && '⚠️'}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{action.title}</h3>
-                      <p className="text-sm text-gray-600">{action.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* System Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>System Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h4 className="font-semibold mb-2">PPE Management Features</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• PPE Master Data Management</li>
-                <li>• Individual PPE Issue Tracking</li>
-                <li>• Bulk PPE Issue Management</li>
-                <li>• Employee Management</li>
-                <li>• Due Date Tracking & Alerts</li>
-                <li>• Issue History & Reports</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Key Benefits</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Automated due date calculations</li>
-                <li>• Comprehensive issue tracking</li>
-                <li>• Bulk issue management for departments</li>
-                <li>• Employee status management</li>
-                <li>• Safety compliance tracking</li>
-                <li>• Real-time dashboard monitoring</li>
-              </ul>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+      {/* Animated background canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-10" />
+      
+      {/* Main content */}
+      <div className="relative z-20 pt-8 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Section */}
+          <div className="mb-8">
+            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+                PPE Management Dashboard
+              </h1>
+              <p className="text-white text-lg">Overview of Personal Protective Equipment management system</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Stock Overview Section */}
-      <div className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Stock Overview</CardTitle>
-            <p className="text-sm text-gray-600">Current PPE inventory levels</p>
-          </CardHeader>
-          <CardContent>
-            <PPEStockDisplay showLowStock={false} />
-          </CardContent>
-        </Card>
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Total PPE Items</h3>
+                <div className="text-2xl">🛡️</div>
+              </div>
+              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.totalPPEItems}</div>
+              <p className="text-xs text-white/80">
+                Active PPE items in master
+              </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Total Issue Records</h3>
+                <div className="text-2xl">📋</div>
+              </div>
+              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.totalIssueRecords}</div>
+              <p className="text-xs text-white/80">
+                Individual PPE issues
+              </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Bulk Issues</h3>
+                <div className="text-2xl">📦</div>
+              </div>
+              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.totalBulkIssues}</div>
+              <p className="text-xs text-white/80">
+                Bulk PPE issues to departments
+              </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Active Employees</h3>
+                <div className="text-2xl">👥</div>
+              </div>
+              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.totalEmployees}</div>
+              <p className="text-xs text-white/80">
+                Active employees in system
+              </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Overdue Items</h3>
+                <div className="text-2xl">⚠️</div>
+              </div>
+              <div className="text-4xl font-bold text-red-400 mb-2">{loading ? '...' : stats.overdueItems}</div>
+              <p className="text-xs text-white/80">
+                PPE items due for reissue
+              </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Today's Issues</h3>
+                <div className="text-2xl">🕒</div>
+              </div>
+              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.todaysIssues}</div>
+              <p className="text-xs text-white/80">
+                PPE issues issued today
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-6 text-white">Quick Actions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {quickActions.map((action, index) => (
+                <Link key={index} href={action.href}>
+                  <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-14 h-14 ${action.color} rounded-xl flex items-center justify-center text-white text-2xl shadow-lg`}>
+                        {action.title === 'PPE Master' && '🛡️'}
+                        {action.title === 'Issue PPE' && '📋'}
+                        {action.title === 'Bulk Issues' && '📦'}
+                        {action.title === 'Employee Management' && '👥'}
+                        {action.title === 'Due for Reissue' && '⚠️'}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-white text-lg">{action.title}</h3>
+                        <p className="text-sm text-white/80">{action.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* System Information */}
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 mb-8">
+            <div className="p-6 lg:p-8 border-b border-white/10">
+              <h2 className="text-2xl font-bold text-white">System Information</h2>
+            </div>
+            <div className="p-6 lg:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h4 className="font-semibold mb-4 text-white text-lg">PPE Management Features</h4>
+                  <ul className="text-sm text-white/90 space-y-2">
+                    <li>• PPE Master Data Management</li>
+                    <li>• Individual PPE Issue Tracking</li>
+                    <li>• Bulk PPE Issue Management</li>
+                    <li>• Employee Management</li>
+                    <li>• Due Date Tracking & Alerts</li>
+                    <li>• Issue History & Reports</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-4 text-white text-lg">Key Benefits</h4>
+                  <ul className="text-sm text-white/90 space-y-2">
+                    <li>• Automated due date calculations</li>
+                    <li>• Comprehensive issue tracking</li>
+                    <li>• Bulk issue management for departments</li>
+                    <li>• Employee status management</li>
+                    <li>• Safety compliance tracking</li>
+                    <li>• Real-time dashboard monitoring</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stock Overview Section */}
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
+            <div className="p-6 lg:p-8 border-b border-white/10">
+              <h2 className="text-2xl font-bold text-white mb-2">Stock Overview</h2>
+              <p className="text-white/80 text-sm">Current PPE inventory levels</p>
+            </div>
+            <div className="p-6 lg:p-8">
+              <PPEStockDisplay showLowStock={false} />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

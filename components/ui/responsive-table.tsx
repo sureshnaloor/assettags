@@ -19,6 +19,7 @@ interface ResponsiveTableProps {
   sortOrder?: 'asc' | 'desc';
   onSort?: (field: any) => void;
   className?: string;
+  variant?: 'default' | 'glassmorphic';
 }
 
 const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
@@ -27,8 +28,10 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
   sortField,
   sortOrder,
   onSort,
-  className
+  className,
+  variant = 'default'
 }) => {
+  const isGlassmorphic = variant === 'glassmorphic';
   const toggleSort = (field: string) => {
     if (onSort) {
       onSort(field);
@@ -41,16 +44,31 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
       <div className="hidden lg:block">
         <div className="relative w-full overflow-auto">
           <table className="w-full caption-bottom text-xs">
-            <thead className="[&_tr]:border-b">
-              <tr className="border-b bg-slate-50/50 dark:bg-slate-800/50 transition-colors">
+            <thead className={cn("[&_tr]:border-b", isGlassmorphic ? "border-white/10" : "")}>
+              <tr className={cn(
+                "border-b transition-colors",
+                isGlassmorphic 
+                  ? "border-white/10 bg-white/5 backdrop-blur-md"
+                  : "bg-slate-50/50 dark:bg-slate-800/50"
+              )}>
                 {columns.map((column, colIndex) => (
                   <th
                     key={column.key}
                     className={cn(
-                      "h-10 px-3 text-left align-middle font-medium text-slate-700 dark:text-slate-300 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-xs",
-                      colIndex % 2 === 0 
-                        ? "bg-slate-100/60 dark:bg-slate-700/60" 
-                        : "bg-slate-50/80 dark:bg-slate-800/80",
+                      "px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-xs",
+                      isGlassmorphic 
+                        ? cn(
+                            "h-12 font-semibold text-white/90 uppercase tracking-wider",
+                            colIndex % 2 === 0 
+                              ? "bg-white/5 backdrop-blur-sm" 
+                              : "bg-white/10 backdrop-blur-sm"
+                          )
+                        : cn(
+                            "h-10 text-slate-700 dark:text-slate-300",
+                            colIndex % 2 === 0 
+                              ? "bg-slate-100/60 dark:bg-slate-700/60" 
+                              : "bg-slate-50/80 dark:bg-slate-800/80"
+                          ),
                       column.className
                     )}
                   >
@@ -58,10 +76,15 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                       <Button
                         variant="ghost"
                         onClick={() => toggleSort(column.key)}
-                        className="flex items-center gap-1 h-auto p-0 font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs"
+                        className={cn(
+                          "flex items-center gap-1 h-auto p-0 font-medium transition-colors text-xs",
+                          isGlassmorphic
+                            ? "font-semibold text-white/90 hover:text-teal-400 uppercase tracking-wider hover:bg-white/10 rounded-lg px-2 py-1 gap-2"
+                            : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                        )}
                       >
                         {column.label}
-                        <ArrowUpDown className="h-3 w-3" />
+                        <ArrowUpDown className={cn(isGlassmorphic ? "h-3.5 w-3.5" : "h-3 w-3")} />
                       </Button>
                     ) : (
                       column.label
@@ -75,10 +98,20 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                 <tr
                   key={index}
                   className={cn(
-                    "border-b transition-all duration-200 hover:bg-slate-100/80 dark:hover:bg-slate-700/50 data-[state=selected]:bg-muted",
-                    index % 2 === 0 
-                      ? "bg-white dark:bg-slate-900" 
-                      : "bg-slate-50/30 dark:bg-slate-800/30"
+                    "border-b transition-all duration-200 data-[state=selected]:bg-muted",
+                    isGlassmorphic
+                      ? cn(
+                          "border-white/5 hover:bg-white/10 hover:backdrop-blur-sm",
+                          index % 2 === 0 
+                            ? "bg-white/5 backdrop-blur-sm" 
+                            : "bg-white/10 backdrop-blur-sm"
+                        )
+                      : cn(
+                          "hover:bg-slate-100/80 dark:hover:bg-slate-700/50",
+                          index % 2 === 0 
+                            ? "bg-white dark:bg-slate-900" 
+                            : "bg-slate-50/30 dark:bg-slate-800/30"
+                        )
                   )}
                 >
                   {columns.map((column, colIndex) => {
@@ -89,11 +122,15 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                     const getCellStyling = () => {
                       // Asset Number - Bold, monospace font
                       if (columnId.includes('assetnumber') || columnId.includes('number')) {
-                        return "font-mono font-bold text-slate-900 dark:text-slate-100 text-xs";
+                        return isGlassmorphic 
+                          ? "font-mono font-bold text-white text-xs"
+                          : "font-mono font-bold text-slate-900 dark:text-slate-100 text-xs";
                       }
                       // Description - Italic, slightly larger
                       if (columnId.includes('description') || columnId.includes('name')) {
-                        return "font-medium italic text-slate-700 dark:text-slate-300 text-xs";
+                        return isGlassmorphic
+                          ? "font-medium italic text-white text-xs"
+                          : "font-medium italic text-slate-700 dark:text-slate-300 text-xs";
                       }
                       // Status - Colored badge style
                       if (columnId.includes('status') || columnId.includes('condition')) {
@@ -101,30 +138,44 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                       }
                       // Category/Subcategory - Light weight, smaller
                       if (columnId.includes('category') || columnId.includes('subcategory')) {
-                        return "font-light text-slate-600 dark:text-slate-400 text-xs";
+                        return isGlassmorphic
+                          ? "font-light text-white/90 text-xs"
+                          : "font-light text-slate-600 dark:text-slate-400 text-xs";
                       }
                       // Value/Price - Bold, monospace, colored
                       if (columnId.includes('value') || columnId.includes('price') || columnId.includes('cost')) {
-                        return "font-mono font-bold text-green-700 dark:text-green-400 text-xs";
+                        return isGlassmorphic
+                          ? "font-mono font-bold text-teal-400 text-xs"
+                          : "font-mono font-bold text-green-700 dark:text-green-400 text-xs";
                       }
                       // Date - Light weight, smaller
                       if (columnId.includes('date') || columnId.includes('time')) {
-                        return "font-light text-slate-500 dark:text-slate-500 text-xs";
+                        return isGlassmorphic
+                          ? "font-light text-white/80 text-xs"
+                          : "font-light text-slate-500 dark:text-slate-500 text-xs";
                       }
                       // Manufacturer/Model - Medium weight
                       if (columnId.includes('manufacturer') || columnId.includes('model') || columnId.includes('brand')) {
-                        return "font-medium text-slate-700 dark:text-slate-300 text-xs";
+                        return isGlassmorphic
+                          ? "font-medium text-white text-xs"
+                          : "font-medium text-slate-700 dark:text-slate-300 text-xs";
                       }
                       // Serial Number - Monospace, smaller
                       if (columnId.includes('serial') || columnId.includes('id')) {
-                        return "font-mono font-medium text-slate-600 dark:text-slate-400 text-xs";
+                        return isGlassmorphic
+                          ? "font-mono font-medium text-white/90 text-xs"
+                          : "font-mono font-medium text-slate-600 dark:text-slate-400 text-xs";
                       }
                       // Location - Italic, smaller
                       if (columnId.includes('location') || columnId.includes('place')) {
-                        return "font-light italic text-slate-500 dark:text-slate-500 text-xs";
+                        return isGlassmorphic
+                          ? "font-light italic text-white/80 text-xs"
+                          : "font-light italic text-slate-500 dark:text-slate-500 text-xs";
                       }
                       // Default styling
-                      return "font-normal text-slate-700 dark:text-slate-300 text-xs";
+                      return isGlassmorphic
+                        ? "font-normal text-white text-xs"
+                        : "font-normal text-slate-700 dark:text-slate-300 text-xs";
                     };
 
                     return (
@@ -132,9 +183,18 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                         key={column.key}
                         className={cn(
                           "px-3 py-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-                          colIndex % 2 === 0 
-                            ? "bg-slate-50/40 dark:bg-slate-800/40" 
-                            : "bg-white/60 dark:bg-slate-900/60"
+                          isGlassmorphic
+                            ? cn(
+                                "px-4 py-3",
+                                colIndex % 2 === 0 
+                                  ? "bg-white/5 backdrop-blur-sm" 
+                                  : "bg-white/10 backdrop-blur-sm"
+                              )
+                            : cn(
+                                colIndex % 2 === 0 
+                                  ? "bg-slate-50/40 dark:bg-slate-800/40" 
+                                  : "bg-white/60 dark:bg-slate-900/60"
+                              )
                         )}
                       >
                         <div className={getCellStyling()}>
@@ -151,15 +211,25 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
       </div>
 
       {/* Mobile/Tablet Card View */}
-      <div className="lg:hidden space-y-3">
+      <div className={cn("lg:hidden", isGlassmorphic ? "space-y-4" : "space-y-3")}>
         {data.map((item, index) => (
           <div
             key={index}
             className={cn(
-              "border rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-md",
-              index % 2 === 0 
-                ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" 
-                : "bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50"
+              "border rounded-lg p-4 shadow-sm transition-all duration-200",
+              isGlassmorphic
+                ? cn(
+                    "border-white/20 rounded-2xl p-5 backdrop-blur-lg shadow-xl hover:bg-white/15 hover:shadow-2xl",
+                    index % 2 === 0 
+                      ? "bg-white/10 backdrop-blur-lg" 
+                      : "bg-white/15 backdrop-blur-lg"
+                  )
+                : cn(
+                    "hover:shadow-md",
+                    index % 2 === 0 
+                      ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" 
+                      : "bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50"
+                  )
             )}
           >
             <div className="space-y-3">
@@ -168,34 +238,57 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                   key={column.key}
                   className={cn(
                     "flex flex-col sm:flex-row sm:items-center",
-                    colIndex === 0 && "border-b pb-2 mb-2"
+                    colIndex === 0 && (isGlassmorphic ? "border-b border-white/10 pb-3 mb-3" : "border-b pb-2 mb-2")
                   )}
                 >
-                  <div className="text-xs font-medium text-muted-foreground sm:w-1/3 sm:pr-4">
+                  <div className={cn(
+                    "text-xs font-medium sm:w-1/3 sm:pr-4",
+                    isGlassmorphic
+                      ? "font-semibold text-white/70 uppercase tracking-wider"
+                      : "text-muted-foreground"
+                  )}>
                     {column.label}:
                   </div>
                   <div className={cn(
                     "text-xs sm:w-2/3 sm:pl-4",
                     // Apply similar styling logic for mobile cards
                     column.key.includes('assetnumber') || column.key.includes('number') 
-                      ? "font-mono font-bold text-slate-900 dark:text-slate-100" 
+                      ? isGlassmorphic
+                        ? "font-mono font-bold text-white"
+                        : "font-mono font-bold text-slate-900 dark:text-slate-100"
                       : column.key.includes('description') || column.key.includes('name')
-                      ? "font-medium italic text-slate-700 dark:text-slate-300"
+                      ? isGlassmorphic
+                        ? "font-medium italic text-white"
+                        : "font-medium italic text-slate-700 dark:text-slate-300"
                       : column.key.includes('status') || column.key.includes('condition')
                       ? "font-semibold text-xs uppercase tracking-wide"
                       : column.key.includes('category') || column.key.includes('subcategory')
-                      ? "font-light text-slate-600 dark:text-slate-400 text-xs"
+                      ? isGlassmorphic
+                        ? "font-light text-white/90 text-xs"
+                        : "font-light text-slate-600 dark:text-slate-400 text-xs"
                       : column.key.includes('value') || column.key.includes('price') || column.key.includes('cost')
-                      ? "font-mono font-bold text-green-700 dark:text-green-400"
+                      ? isGlassmorphic
+                        ? "font-mono font-bold text-teal-400"
+                        : "font-mono font-bold text-green-700 dark:text-green-400"
                       : column.key.includes('date') || column.key.includes('time')
-                      ? "font-light text-slate-500 dark:text-slate-500 text-xs"
+                      ? isGlassmorphic
+                        ? "font-light text-white/80 text-xs"
+                        : "font-light text-slate-500 dark:text-slate-500 text-xs"
                       : column.key.includes('manufacturer') || column.key.includes('model') || column.key.includes('brand')
-                      ? "font-medium text-slate-700 dark:text-slate-300"
+                      ? isGlassmorphic
+                        ? "font-medium text-white"
+                        : "font-medium text-slate-700 dark:text-slate-300"
                       : column.key.includes('serial') || column.key.includes('id')
-                      ? "font-mono font-medium text-slate-600 dark:text-slate-400 text-xs"
+                      ? isGlassmorphic
+                        ? "font-mono font-medium text-white/90 text-xs"
+                        : "font-mono font-medium text-slate-600 dark:text-slate-400 text-xs"
                       : column.key.includes('location') || column.key.includes('place')
-                      ? "font-light italic text-slate-500 dark:text-slate-500 text-xs"
-                      : "font-normal text-slate-700 dark:text-slate-300"
+                      ? isGlassmorphic
+                        ? "font-light italic text-white/80 text-xs"
+                        : "font-light italic text-slate-500 dark:text-slate-500 text-xs"
+                      : isGlassmorphic
+                        ? "font-normal text-white"
+                        : "font-normal text-slate-700 dark:text-slate-300"
                   )}>
                     {item[column.key]}
                   </div>

@@ -153,7 +153,7 @@ export default function SearchablePPESelect({
           placeholder={placeholder}
           required={required}
           disabled={disabled}
-          className="pr-20"
+          className="pr-20 bg-white/10 backdrop-blur-md border-white/20 text-white placeholder-white/70 focus:ring-teal-400"
         />
         {selectedPPE && (
           <Button
@@ -170,9 +170,9 @@ export default function SearchablePPESelect({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-2xl max-h-60 overflow-auto">
           {loading ? (
-            <div className="p-3 text-center text-gray-500">
+            <div className="p-3 text-center text-white/80">
               Searching...
             </div>
           ) : ppeItems.length > 0 ? (
@@ -182,13 +182,13 @@ export default function SearchablePPESelect({
                   key={ppe.ppeId}
                   type="button"
                   onClick={() => handlePPESelect(ppe)}
-                  className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  className="w-full px-4 py-3 text-left hover:bg-white/10 focus:bg-white/10 focus:outline-none transition-colors border-b border-white/5 last:border-b-0"
                 >
                   <div className="flex flex-col">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-white">
                       {ppe.ppeId} - {ppe.ppeName}
                     </span>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-white/70">
                       <span>Material: {ppe.materialCode}</span>
                       {ppe.category && <span> • Category: {ppe.category}</span>}
                       <span> • Life: {ppe.life} {ppe.lifeUOM}</span>
@@ -198,11 +198,11 @@ export default function SearchablePPESelect({
               ))}
             </div>
           ) : searchTerm.length >= 2 && !selectedPPE ? (
-            <div className="p-3 text-center text-gray-500">
+            <div className="p-3 text-center text-white/80">
               No PPE items found
             </div>
           ) : searchTerm.length < 2 ? (
-            <div className="p-3 text-center text-gray-500">
+            <div className="p-3 text-center text-white/80">
               Type at least 2 characters to search
             </div>
           ) : null}

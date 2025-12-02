@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState, useRef } from 'react';
 import { format } from 'date-fns';
-import Loading from '@/app/components/Loading';
 import ResponsiveTable from '@/components/ui/responsive-table';
 import Link from 'next/link';
 
@@ -28,6 +26,99 @@ export default function ExpiredCalibrationsReport() {
     const [error, setError] = useState<string | null>(null);
     const [sortField, setSortField] = useState<SortField>('calibrationtodate');
     const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const particlesRef = useRef<Array<{
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        radius: number;
+    }>>([]);
+    const animationFrameRef = useRef<number>();
+
+    // Network canvas animation
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+
+        resizeCanvas();
+
+        // Initialize particles
+        particlesRef.current = [];
+        for (let i = 0; i < 40; i++) {
+            particlesRef.current.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                radius: Math.random() * 2 + 1
+            });
+        }
+
+        const animate = () => {
+            if (!ctx || !canvas) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw particles
+            particlesRef.current.forEach((particle, i) => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+
+                if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+                if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+
+                // Draw particle with amber/red tint for expired theme
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(251, 146, 60, 0.4)';
+                ctx.fill();
+
+                // Draw connections
+                particlesRef.current.forEach((otherParticle, j) => {
+                    if (i !== j) {
+                        const dx = particle.x - otherParticle.x;
+                        const dy = particle.y - otherParticle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 120) {
+                            ctx.beginPath();
+                            ctx.moveTo(particle.x, particle.y);
+                            ctx.lineTo(otherParticle.x, otherParticle.y);
+                            ctx.strokeStyle = `rgba(251, 146, 60, ${0.2 * (1 - distance / 120)})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                });
+            });
+
+            animationFrameRef.current = requestAnimationFrame(animate);
+        };
+
+        animate();
+
+        const handleResize = () => {
+            resizeCanvas();
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+            }
+        };
+    }, []);
 
     const fetchExpiredCalibrations = async () => {
         try {
@@ -58,16 +149,24 @@ export default function ExpiredCalibrationsReport() {
     };
 
     if (loading) return (
-        <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+            <canvas ref={canvasRef} className="absolute inset-0 z-10" />
+            <div className="relative z-20 flex justify-center items-center min-h-screen">
+                <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-400 mx-auto"></div>
+                    <p className="text-white mt-4 text-center">Loading expired calibrations...</p>
+                </div>
             </div>
         </div>
     );
+    
     if (error) return (
-        <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
-            <div className="text-red-500 dark:text-red-400 text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                Error: {error}
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+            <canvas ref={canvasRef} className="absolute inset-0 z-10" />
+            <div className="relative z-20 flex justify-center items-center min-h-screen px-4">
+                <div className="bg-red-500/20 backdrop-blur-lg border border-red-400/30 rounded-2xl p-8 max-w-md">
+                    <p className="text-red-300 text-center font-medium">Error: {error}</p>
+                </div>
             </div>
         </div>
     );
@@ -79,7 +178,7 @@ export default function ExpiredCalibrationsReport() {
         { key: 'assetmanufacturer', label: 'Manufacturer' },
         { key: 'assetstatus', label: 'Status' },
         { key: 'calibrationdate', label: 'Calibration Date' },
-        { key: 'calibrationtodate', label: 'Valid Until', sortable: true },
+        { key: 'calibrationtodate', label: 'Expired On', sortable: true },
         { key: 'calibratedby', label: 'Calibrated By' },
         { key: 'calibcertificate', label: 'Certificate No.' },
     ];
@@ -89,27 +188,27 @@ export default function ExpiredCalibrationsReport() {
         assetnumber: (
             <Link 
                 href={`/asset/${item.assetnumber}`}
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                className="text-teal-400 hover:text-teal-300 font-medium transition-colors"
             >
                 {item.assetnumber}
             </Link>
         ),
         assetmanufacturer: (
-            <span className="text-red-500 dark:text-red-400 font-medium">
+            <span className="text-teal-300 font-medium">
                 {item.assetmanufacturer}
             </span>
         ),
         assetstatus: (
-            <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                 item.assetstatus === 'Active' 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                    ? 'bg-green-500/20 text-green-300 border border-green-400/30'
                     : item.assetstatus === 'Under Repair'
-                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
                     : item.assetstatus === 'Retired'
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                    ? 'bg-red-500/20 text-red-300 border border-red-400/30'
                     : item.assetstatus === 'In Calibration'
-                    ? 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-400'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                    ? 'bg-teal-500/20 text-teal-300 border border-teal-400/30'
+                    : 'bg-white/10 text-slate-300 border border-white/20'
             }`}>
                 {item.assetstatus}
             </span>
@@ -119,20 +218,61 @@ export default function ExpiredCalibrationsReport() {
     }));
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-900 dark:to-slate-800">
-            <div className="flex items-center gap-4">
-                <h1 className="flex-1 text-xl font-semibold text-slate-800 dark:text-slate-200">Expired Calibrations Report</h1>
-            </div>
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+            {/* Animated background canvas */}
+            <canvas ref={canvasRef} className="absolute inset-0 z-10" />
             
-            <div className="rounded-xl border border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm shadow-xl">
-                <div className="p-6">
-                    <ResponsiveTable
-                        columns={columns}
-                        data={formattedData}
-                        sortField={sortField}
-                        sortOrder={sortOrder}
-                        onSort={toggleSort}
-                    />
+            {/* Main content */}
+            <div className="relative z-20 pt-8 pb-12 px-4 sm:px-6 lg:px-8">
+                {/* Header Section */}
+                <div className="max-w-7xl mx-auto mb-8">
+                    <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300 relative overflow-hidden">
+                        {/* Warning accent */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-red-500 to-amber-500"></div>
+                        
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                                <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-amber-400 to-red-400 bg-clip-text text-transparent">
+                                    Expired Calibrations Report
+                                </h1>
+                                <p className="text-white text-lg">
+                                    View all equipment with expired calibration certificates. These assets require immediate attention and recalibration.
+                                </p>
+                            </div>
+                            <div className="ml-6 bg-amber-500/20 backdrop-blur-md border border-amber-400/30 rounded-2xl p-4 flex items-center justify-center">
+                                <svg className="w-12 h-12 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-6 flex flex-wrap gap-4">
+                            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-6 py-3">
+                                <div className="text-2xl font-bold text-amber-400">{calibrations.length}</div>
+                                <div className="text-white text-sm uppercase tracking-wider">Expired Calibrations</div>
+                            </div>
+                            <div className="bg-red-500/20 backdrop-blur-md border border-red-400/30 rounded-xl px-6 py-3">
+                                <div className="text-2xl font-bold text-red-400">⚠️</div>
+                                <div className="text-white text-sm uppercase tracking-wider">Action Required</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Table Section */}
+                <div className="max-w-7xl mx-auto">
+                    <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
+                        <div className="p-6 lg:p-8">
+                            <ResponsiveTable
+                                columns={columns}
+                                data={formattedData}
+                                sortField={sortField}
+                                sortOrder={sortOrder}
+                                onSort={toggleSort}
+                                variant="glassmorphic"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
