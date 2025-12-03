@@ -10,11 +10,14 @@ interface CalibrationCompany {
   name: string;
 }
 
+import type { Theme } from '@/app/components/AssetDetails';
+
 interface CalibrationDetailsProps {
   currentCalibration: Calibration | null;
   calibrationHistory: Calibration[];
   onUpdate: (updatedCalibration: Calibration | null) => void;
   assetnumber: string;
+  theme?: Theme;
 }
 
 const VALIDITY_PERIODS = [
@@ -64,19 +67,53 @@ interface ConfirmationModalProps {
   };
 }
 
-function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: ConfirmationModalProps) {
+function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes, theme = 'default' }: ConfirmationModalProps & { theme?: Theme }) {
   if (!isOpen) return null;
+
+  const getModalStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          text: 'text-white',
+          textSecondary: 'text-white/80',
+          textTertiary: 'text-white/70',
+          buttonPrimary: 'bg-teal-500 hover:bg-teal-600',
+          buttonSecondary: 'bg-white/10 hover:bg-white/20 border border-white/20'
+        };
+      case 'light':
+        return {
+          container: 'bg-white border-2 border-blue-200',
+          text: 'text-gray-900',
+          textSecondary: 'text-gray-700',
+          textTertiary: 'text-gray-600',
+          buttonPrimary: 'bg-blue-500 hover:bg-blue-600',
+          buttonSecondary: 'bg-gray-200 hover:bg-gray-300'
+        };
+      default:
+        return {
+          container: 'bg-slate-800',
+          text: 'text-zinc-100',
+          textSecondary: 'text-zinc-300',
+          textTertiary: 'text-zinc-400',
+          buttonPrimary: 'bg-blue-600 hover:bg-blue-700',
+          buttonSecondary: 'bg-slate-600 hover:bg-slate-700'
+        };
+    }
+  };
+
+  const modalStyles = getModalStyles();
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-4 sm:pt-8 px-4 overflow-y-auto">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4">
+      <div className={`${modalStyles.container} rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4`}>
         <div className="flex items-start gap-4">
-          <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500 mt-1" />
+          <ExclamationTriangleIcon className={`h-6 w-6 ${theme === 'glassmorphic' ? 'text-yellow-400' : theme === 'light' ? 'text-yellow-600' : 'text-yellow-500'} mt-1`} />
           <div>
-            <h3 className="text-lg font-semibold text-zinc-100 mb-2">Confirm Calibration Changes</h3>
-            <div className="text-sm text-zinc-300 space-y-2">
+            <h3 className={`text-lg font-semibold ${modalStyles.text} mb-2`}>Confirm Calibration Changes</h3>
+            <div className={`text-sm ${modalStyles.textSecondary} space-y-2`}>
               <p>Are you sure you want to save the following changes?</p>
-              <ul className="list-disc list-inside space-y-1 text-zinc-400">
+              <ul className={`list-disc list-inside space-y-1 ${modalStyles.textTertiary}`}>
                 {Object.entries(changes).map(([key, value]) => 
                   value ? (
                     <li key={key}>
@@ -90,7 +127,7 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: C
               <button
                 onClick={onConfirm}
                 disabled={isSaving}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                className={`flex-1 ${modalStyles.buttonPrimary} disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2`}
               >
                 {isSaving ? (
                   <>
@@ -104,7 +141,7 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: C
               <button
                 onClick={onCancel}
                 disabled={isSaving}
-                className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                className={`flex-1 ${modalStyles.buttonSecondary} disabled:opacity-50 ${theme === 'glassmorphic' ? 'text-white' : theme === 'light' ? 'text-gray-900' : 'text-white'} px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
               >
                 Cancel
               </button>
@@ -207,7 +244,7 @@ function CalibrationAlert({ calibrationToDate, onAcknowledge, showAlert }: Calib
   );
 }
 
-export default function CalibrationDetails({ currentCalibration, calibrationHistory, onUpdate, assetnumber }: CalibrationDetailsProps) {
+export default function CalibrationDetails({ currentCalibration, calibrationHistory, onUpdate, assetnumber, theme = 'default' }: CalibrationDetailsProps) {
   const [showNewCalibrationModal, setShowNewCalibrationModal] = useState(false);
   
   const [isEditing, setIsEditing] = useState(false);
@@ -224,6 +261,92 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   const [pendingNewCalibration, setPendingNewCalibration] = useState<Partial<Calibration> | null>(null);
   const [isNewMode, setIsNewMode] = useState(false);
   const [showAlert, setShowAlert] = useState(true);
+
+  // Theme-based style helpers
+  const getContainerStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return 'bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl';
+      case 'light':
+        return 'bg-white border-2 border-blue-200 rounded-xl shadow-lg';
+      default:
+        return 'bg-gradient-to-r from-zinc-100/90 to-zinc-300/90 dark:from-zinc-800/30 dark:to-zinc-700/40 backdrop-blur-sm rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700/50';
+    }
+  };
+
+  const getFieldStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'bg-white/5 backdrop-blur-md border border-white/10 rounded-xl',
+          label: 'text-white/80',
+          text: 'text-white',
+          input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-2 focus:ring-teal-400 rounded-xl'
+        };
+      case 'light':
+        return {
+          container: 'bg-blue-50 border border-blue-200 rounded-lg',
+          label: 'text-blue-900 font-medium',
+          text: 'text-gray-900',
+          input: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg'
+        };
+      default:
+        return {
+          container: 'bg-gray-200 dark:bg-slate-700/50 rounded-md',
+          label: 'text-gray-600 dark:text-gray-300',
+          text: 'text-gray-900 dark:text-white',
+          input: 'bg-white dark:bg-slate-600 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-500 focus:ring-2 focus:ring-blue-500 rounded-md'
+        };
+    }
+  };
+
+  const getTextStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return 'text-white';
+      case 'light':
+        return 'text-gray-900';
+      default:
+        return 'text-gray-900 dark:text-gray-100';
+    }
+  };
+
+  const getButtonStyles = (color: 'blue' | 'red' | 'green') => {
+    const baseStyles = 'p-1 transition-colors';
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          blue: `${baseStyles} text-teal-400 hover:text-teal-300`,
+          red: `${baseStyles} text-red-400 hover:text-red-300`,
+          green: `${baseStyles} text-green-400 hover:text-green-300`
+        }[color];
+      case 'light':
+        return {
+          blue: `${baseStyles} text-blue-600 hover:text-blue-700`,
+          red: `${baseStyles} text-red-600 hover:text-red-700`,
+          green: `${baseStyles} text-green-600 hover:text-green-700`
+        }[color];
+      default:
+        return {
+          blue: `${baseStyles} text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300`,
+          red: `${baseStyles} text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300`,
+          green: `${baseStyles} text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300`
+        }[color];
+    }
+  };
+
+  const getErrorStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return 'bg-red-500/20 backdrop-blur-md border border-red-500/30 text-red-300';
+      case 'light':
+        return 'bg-red-50 border border-red-200 text-red-700';
+      default:
+        return 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-200';
+    }
+  };
+
+  const fieldStyles = getFieldStyles();
   
   const [editedCalibration, setEditedCalibration] = useState<Calibration>(() => {
     return {
@@ -511,7 +634,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   };
 
   return (
-    <div className="bg-gradient-to-r from-zinc-100/90 to-zinc-300/90 dark:from-zinc-800/30 dark:to-zinc-700/40 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative border border-zinc-200 dark:border-zinc-700/50">
+    <div className={`${getContainerStyles()} p-3 w-full max-w-4xl relative`}>
       {/* Always show the alert, even if currentCalibration is null */}
       <CalibrationAlert
         calibrationToDate={currentCalibration?.calibrationtodate ? new Date(currentCalibration.calibrationtodate) : null}
@@ -519,7 +642,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
         showAlert={showAlert}
       />
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <h2 className={`text-sm font-semibold ${getTextStyles()}`}>
           {isNewMode ? 'New Calibration' : 'Current Calibration'}
         </h2>
         
@@ -528,7 +651,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
             <>
               <button
                 onClick={() => setShowNewCalibrationModal(true)}
-                className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                className={getButtonStyles('blue')}
                 title="New Calibration"
               >
                 <PlusIcon className="h-5 w-5" />
@@ -536,7 +659,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
               {currentCalibration && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  className={getButtonStyles('blue')}
                 >
                   <PencilIcon className="h-5 w-5" />
                 </button>
@@ -555,7 +678,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                   }
                   resetForm();
                 }}
-                className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                className={getButtonStyles('red')}
                 disabled={isSaving}
               >
                 <XMarkIcon className="h-5 w-5" />
@@ -573,7 +696,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                     handleSave();
                   }
                 }}
-                className="p-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                className={getButtonStyles('green')}
                 disabled={isSaving}
               >
                 <CheckIcon className="h-5 w-5" />
@@ -584,15 +707,15 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       </div>
 
       {error && (
-        <div className="absolute top-0 left-0 right-0 bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-200 px-4 py-2 rounded-t-lg text-sm">
+        <div className={`absolute top-0 left-0 right-0 ${getErrorStyles()} px-4 py-2 rounded-t-lg text-sm`}>
           {error}
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-4 mt-2">
         {/* Calibrated By */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibrated By</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibrated By</label>
           {isEditing ? (
             <select
               value={editedCalibration.calibratedby || ''}
@@ -600,71 +723,65 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibratedby: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-xs p-2 ${fieldStyles.input}`}
             >
-              <option value="">Select Company</option>
+              <option value="" className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>Select Company</option>
               {calibrationCompanies.map(company => (
-                <option key={company._id} value={company.name}>
+                <option key={company._id} value={company.name} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>
                   {company.name}
                 </option>
               ))}
             </select>
           ) : (
-            <div className="text-sm text-gray-900 dark:text-white">
+            <div className={`text-sm ${fieldStyles.text}`}>
               {currentCalibration?.calibratedby || 'Not specified'}
             </div>
           )}
         </div>
 
         {/* Calibration Date */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration Date</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration Date</label>
           {isEditing ? (
             <DatePicker
               selected={editedCalibration.calibrationdate}
               onChange={handleCalibrationDateChange}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
-                       border border-gray-300 dark:border-slate-500 p-2
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-xs p-2 ${fieldStyles.input}`}
               dateFormat="yyyy-MM-dd"
             />
           ) : (
-            <div className="text-sm text-gray-900 dark:text-white">
+            <div className={`text-sm ${fieldStyles.text}`}>
               {formatDate(currentCalibration?.calibrationdate ?? null)}
             </div>
           )}
         </div>
 
         {/* Validity Period */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Validity Period</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Validity Period</label>
           {isEditing ? (
             <select
               value={selectedValidityPeriod}
               onChange={(e) => handleValidityPeriodChange(Number(e.target.value))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-xs p-2 ${fieldStyles.input}`}
             >
               {VALIDITY_PERIODS.map(period => (
-                <option key={period.months} value={period.months}>
+                <option key={period.months} value={period.months} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>
                   {period.label}
                 </option>
               ))}
             </select>
           ) : (
-            <div className="text-sm text-gray-900 dark:text-white">
+            <div className={`text-sm ${fieldStyles.text}`}>
               {`${selectedValidityPeriod} Months`}
             </div>
           )}
         </div>
 
         {/* Valid Until */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Valid Until</label>
-          <div className="text-sm text-gray-900 dark:text-white">
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Valid Until</label>
+          <div className={`text-sm ${fieldStyles.text}`}>
             {currentCalibration?.calibrationtodate 
               ? new Date(currentCalibration.calibrationtodate).toLocaleDateString() 
               : '-'}
@@ -672,8 +789,8 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
         </div>
 
         {/* Calibration PO */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration PO</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration PO</label>
           {isEditing ? (  
             <input
               type="text"
@@ -682,20 +799,18 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibrationpo: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
-                       border border-gray-300 dark:border-slate-500 p-2
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-xs p-2 ${fieldStyles.input}`}
             />
           ) : (
-            <div className="text-sm text-gray-900 dark:text-white">
+            <div className={`text-sm ${fieldStyles.text}`}>
               {currentCalibration?.calibrationpo || 'Not specified'}
             </div>
           )}
         </div>
 
         {/* Calibration File */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration File</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration File</label>
           {isEditing ? (
             <input
               type="text"
@@ -704,20 +819,18 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibfile: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
-                       border border-gray-300 dark:border-slate-500 p-2
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-xs p-2 ${fieldStyles.input}`}
             />
           ) : (
-            <div className="text-sm text-gray-900 dark:text-white">
+            <div className={`text-sm ${fieldStyles.text}`}>
               {currentCalibration?.calibfile || 'Not specified'}
             </div>
           )}
         </div>
 
         {/* Calibration certificate */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration Certificate</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration Certificate</label>
           {isEditing ? (
             <input
               type="text"
@@ -726,12 +839,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                 ...prev,
                 calibcertificate: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-xs rounded-md 
-                       border border-gray-300 dark:border-slate-500 p-2
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-xs p-2 ${fieldStyles.input}`}
             />
           ) : (
-            <div className="text-sm text-gray-900 dark:text-white">
+            <div className={`text-sm ${fieldStyles.text}`}>
               {currentCalibration?.calibcertificate || 'Not specified'}
             </div>
           )}
@@ -739,12 +850,18 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       </div>
 
       {/* History Section */}
-      <div className="mt-6 border-t border-gray-200 dark:border-slate-600/80 pt-4">
+      <div className={`mt-6 border-t ${theme === 'glassmorphic' ? 'border-white/20' : theme === 'light' ? 'border-blue-200' : 'border-gray-200 dark:border-slate-600/80'} pt-4`}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Calibration History</h3>
+          <h3 className={`text-xs font-semibold ${getTextStyles()}`}>Calibration History</h3>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            className={`text-xs transition-colors ${
+              theme === 'glassmorphic'
+                ? 'text-teal-400 hover:text-teal-300'
+                : theme === 'light'
+                ? 'text-blue-600 hover:text-blue-700'
+                : 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
+            }`}
           >
             {showHistory ? 'Hide History' : `Show History (${calibrationHistory.length} previous records)`}
           </button>
@@ -755,49 +872,48 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
             {calibrationHistory.map((record) => (
               <div 
                 key={record._id}
-                className="bg-gray-200 dark:bg-slate-700/30 rounded-md p-2 shadow-md 
-                         border border-gray-200 dark:border-slate-600/30"
+                className={`${fieldStyles.container} p-2 shadow-md`}
               >
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibrated By</label>
-                    <div className="text-sm text-gray-900 dark:text-white">{record.calibratedby}</div>
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibrated By</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>{record.calibratedby}</div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Calibration Date</label>
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration Date</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>
                       {record.calibrationdate ? new Date(record.calibrationdate).toLocaleDateString() : '-'}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Valid Until</label>
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Valid Until</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>
                       {record.calibrationtodate ? new Date(record.calibrationtodate).toLocaleDateString() : '-'}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">PO Number</label>
-                    <div className="text-sm text-gray-900 dark:text-white">{record.calibrationpo || '-'}</div>
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>PO Number</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>{record.calibrationpo || '-'}</div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Certificate</label>
-                    <div className="text-sm text-gray-900 dark:text-white">{record.calibcertificate || '-'}</div>
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Certificate</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>{record.calibcertificate || '-'}</div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">File Reference</label>
-                    <div className="text-sm text-gray-900 dark:text-white">{record.calibfile || '-'}</div>
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>File Reference</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>{record.calibfile || '-'}</div>
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Created By</label>
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Created By</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>
                       {record.createdby}
-                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">
+                      <span className={`text-xs ml-2 ${theme === 'glassmorphic' ? 'text-white/60' : theme === 'light' ? 'text-gray-500' : 'text-gray-400 dark:text-gray-500'}`}>
                         on {new Date(record.createdat).toLocaleDateString()}
                       </span>
                     </div>
@@ -814,6 +930,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
         onConfirm={handleConfirmedSave}
         onCancel={() => setShowConfirmation(false)}
         isSaving={isSaving}
+        theme={theme}
         changes={{
           calibratedby: pendingChanges?.calibratedby !== currentCalibration?.calibratedby 
             ? pendingChanges?.calibratedby 
@@ -837,39 +954,73 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       />
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-4 sm:pt-8 px-4 overflow-y-auto">
-          <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4">
-            <h3 className="text-lg font-semibold text-zinc-100 mb-4">Delete Calibration Record</h3>
-            <p className="text-sm text-zinc-300 mb-4">
-              This action will archive the calibration record. Please provide a reason:
-            </p>
-            <textarea
-              value={archiveReason}
-              onChange={(e) => setArchiveReason(e.target.value)}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2 mb-4"
-              placeholder="Reason for deletion..."
-              rows={3}
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={handleDelete}
-                disabled={!archiveReason.trim() || isSaving}
-                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                {isSaving ? 'Deleting...' : 'Delete'}
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirmation(false)}
-                disabled={isSaving}
-                className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Cancel
-              </button>
+      {showDeleteConfirmation && (() => {
+        const getDeleteModalStyles = () => {
+          switch (theme) {
+            case 'glassmorphic':
+              return {
+                container: 'bg-white/10 backdrop-blur-lg border border-white/20',
+                text: 'text-white',
+                textSecondary: 'text-white/80',
+                input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70',
+                buttonPrimary: 'bg-red-500 hover:bg-red-600',
+                buttonSecondary: 'bg-white/10 hover:bg-white/20 border border-white/20'
+              };
+            case 'light':
+              return {
+                container: 'bg-white border-2 border-blue-200',
+                text: 'text-gray-900',
+                textSecondary: 'text-gray-700',
+                input: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500',
+                buttonPrimary: 'bg-red-500 hover:bg-red-600',
+                buttonSecondary: 'bg-gray-200 hover:bg-gray-300'
+              };
+            default:
+              return {
+                container: 'bg-slate-800',
+                text: 'text-zinc-100',
+                textSecondary: 'text-zinc-300',
+                input: 'bg-slate-700/50 text-zinc-100 border-0 ring-1 ring-slate-600',
+                buttonPrimary: 'bg-red-600 hover:bg-red-700',
+                buttonSecondary: 'bg-slate-600 hover:bg-slate-700'
+              };
+          }
+        };
+        const deleteModalStyles = getDeleteModalStyles();
+        return (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-4 sm:pt-8 px-4 overflow-y-auto">
+            <div className={`${deleteModalStyles.container} rounded-lg shadow-xl p-6 max-w-2xl w-full mb-4`}>
+              <h3 className={`text-lg font-semibold ${deleteModalStyles.text} mb-4`}>Delete Calibration Record</h3>
+              <p className={`text-sm ${deleteModalStyles.textSecondary} mb-4`}>
+                This action will archive the calibration record. Please provide a reason:
+              </p>
+              <textarea
+                value={archiveReason}
+                onChange={(e) => setArchiveReason(e.target.value)}
+                className={`w-full text-sm rounded-xl p-2 mb-4 ${deleteModalStyles.input}`}
+                placeholder="Reason for deletion..."
+                rows={3}
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDelete}
+                  disabled={!archiveReason.trim() || isSaving}
+                  className={`flex-1 ${deleteModalStyles.buttonPrimary} disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
+                >
+                  {isSaving ? 'Deleting...' : 'Delete'}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirmation(false)}
+                  disabled={isSaving}
+                  className={`flex-1 ${deleteModalStyles.buttonSecondary} disabled:opacity-50 ${theme === 'glassmorphic' ? 'text-white' : theme === 'light' ? 'text-gray-900' : 'text-white'} px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Add New Confirmation Modal */}
       <NewCalibrationModal

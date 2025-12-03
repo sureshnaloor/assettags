@@ -7,11 +7,14 @@ import DatePicker from 'react-datepicker';
 import AsyncSelect from 'react-select/async';
 import Link from 'next/link';
 
+import type { Theme } from '@/app/components/AssetDetails';
+
 interface CustodyDetailsProps {
   currentCustody: Custody | null;
   custodyHistory: Custody[];
   onUpdate: (updatedCustody: Custody | null) => void;
   assetnumber: string;
+  theme?: Theme;
 }
 
 interface CustodyFormModalProps {
@@ -540,11 +543,71 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
   );
 }
 
-export default function CustodyDetails({ currentCustody, custodyHistory, onUpdate, assetnumber }: CustodyDetailsProps) {
+export default function CustodyDetails({ currentCustody, custodyHistory, onUpdate, assetnumber, theme = 'default' }: CustodyDetailsProps) {
   const [showNewCustodyModal, setShowNewCustodyModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Theme-based style helpers
+  const getContainerStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return 'bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl';
+      case 'light':
+        return 'bg-white border-2 border-blue-200 rounded-xl shadow-lg';
+      default:
+        return 'bg-stone-100/90 dark:bg-stone-800/30 backdrop-blur-sm rounded-lg shadow-lg border border-stone-200 dark:border-stone-700/50 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)]';
+    }
+  };
+
+  const getFieldStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'bg-white/5 backdrop-blur-md border border-white/10 rounded-xl',
+          label: 'text-white/80',
+          text: 'text-white'
+        };
+      case 'light':
+        return {
+          container: 'bg-blue-50 border border-blue-200 rounded-lg',
+          label: 'text-blue-900 font-medium',
+          text: 'text-gray-900'
+        };
+      default:
+        return {
+          container: 'bg-gray-200 dark:bg-slate-700/50 rounded-md',
+          label: 'text-gray-600 dark:text-gray-300',
+          text: 'text-gray-900 dark:text-white'
+        };
+    }
+  };
+
+  const getTextStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return 'text-white';
+      case 'light':
+        return 'text-gray-900';
+      default:
+        return 'text-gray-900 dark:text-gray-100';
+    }
+  };
+
+  const getButtonStyles = (color: 'blue') => {
+    const baseStyles = 'p-1 transition-colors';
+    switch (theme) {
+      case 'glassmorphic':
+        return `${baseStyles} text-teal-400 hover:text-teal-300`;
+      case 'light':
+        return `${baseStyles} text-blue-600 hover:text-blue-700`;
+      default:
+        return `${baseStyles} text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300`;
+    }
+  };
+
+  const fieldStyles = getFieldStyles();
 
   // Simple Edit Modal Component
   const EditCustodyModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
@@ -554,26 +617,60 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
 
     if (!isOpen || !currentCustody) return null;
 
+    const getModalStyles = () => {
+      switch (theme) {
+        case 'glassmorphic':
+          return {
+            container: 'bg-white/10 backdrop-blur-lg border border-white/20',
+            text: 'text-white',
+            textSecondary: 'text-white/80',
+            input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+            buttonPrimary: 'bg-teal-500 hover:bg-teal-600',
+            buttonSecondary: 'bg-white/10 hover:bg-white/20 border border-white/20'
+          };
+        case 'light':
+          return {
+            container: 'bg-white border-2 border-blue-200',
+            text: 'text-gray-900',
+            textSecondary: 'text-gray-700',
+            input: 'bg-white border-2 border-blue-300 text-gray-900',
+            buttonPrimary: 'bg-blue-500 hover:bg-blue-600',
+            buttonSecondary: 'bg-gray-200 hover:bg-gray-300'
+          };
+        default:
+          return {
+            container: 'bg-slate-800',
+            text: 'text-zinc-100',
+            textSecondary: 'text-zinc-300',
+            input: 'bg-slate-700/50 text-zinc-100 border-0 ring-1 ring-slate-600',
+            buttonPrimary: 'bg-blue-600 hover:bg-blue-700',
+            buttonSecondary: 'bg-slate-600 hover:bg-slate-700'
+          };
+      }
+    };
+
+    const modalStyles = getModalStyles();
+
     return (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center">
-        <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-          <h3 className="text-lg font-semibold text-zinc-100 mb-4">End Current Custody</h3>
+        <div className={`${modalStyles.container} rounded-lg shadow-xl p-6 max-w-md w-full mx-4`}>
+          <h3 className={`text-lg font-semibold ${modalStyles.text} mb-4`}>End Current Custody</h3>
           
           {error && (
-            <div className="bg-red-500/20 text-red-100 px-4 py-2 rounded-lg text-sm mb-4">
+            <div className={`${theme === 'glassmorphic' ? 'bg-red-500/20 text-red-300' : theme === 'light' ? 'bg-red-50 text-red-700' : 'bg-red-500/20 text-red-100'} px-4 py-2 rounded-lg text-sm mb-4`}>
               {error}
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">
-                End Date <span className="text-red-400">*</span>
+              <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>
+                End Date <span className={theme === 'glassmorphic' ? 'text-red-400' : theme === 'light' ? 'text-red-600' : 'text-red-400'}>*</span>
               </label>
               <DatePicker
                 selected={endDate}
                 onChange={(date: Date | null) => setEndDate(date)}
-                className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                className={`w-full text-sm rounded-xl p-2 ${modalStyles.input}`}
                 dateFormat="yyyy-MM-dd"
                 minDate={new Date(currentCustody.custodyfrom)}
                 maxDate={new Date()}
@@ -616,14 +713,14 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
                 }
               }}
               disabled={isSaving}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className={`flex-1 ${modalStyles.buttonPrimary} disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
             >
               {isSaving ? 'Saving...' : 'Save'}
             </button>
             <button
               onClick={onClose}
               disabled={isSaving}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className={`flex-1 ${modalStyles.buttonSecondary} disabled:opacity-50 ${theme === 'glassmorphic' ? 'text-white' : theme === 'light' ? 'text-gray-900' : 'text-white'} px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
             >
               Cancel
             </button>
@@ -637,14 +734,14 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
   const canCreateNewCustody = !currentCustody || currentCustody.custodyto !== null;
 
   return (
-    <div className="bg-stone-100/90 dark:bg-stone-800/30 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative border border-stone-200 dark:border-stone-700/50 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)]">
+    <div className={`${getContainerStyles()} p-3 w-full max-w-4xl relative`}>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Current Custody</h2>
+        <h2 className={`text-sm font-semibold ${getTextStyles()}`}>Current Custody</h2>
         <div className="flex gap-2">
           {canCreateNewCustody && (
             <Link
               href={`/fixedasset/${assetnumber}/custody/new`}
-              className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              className={getButtonStyles('blue')}
               title="New Custody Record"
             >
               <PlusIcon className="h-5 w-5" />
@@ -653,7 +750,7 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           {currentCustody && !currentCustody.custodyto && (
             <button
               onClick={() => setShowEditModal(true)}
-              className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              className={getButtonStyles('blue')}
               title="End Current Custody"
             >
               <PencilIcon className="h-5 w-5" />
@@ -666,17 +763,17 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
       {currentCustody && (
         <div className="grid grid-cols-2 gap-4 mt-2">
           {/* Employee */}
-          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Employee</label>
-            <div className="text-sm text-gray-900 dark:text-white">
+          <div className={`${fieldStyles.container} p-2`}>
+            <label className={`block text-xs font-medium ${fieldStyles.label}`}>Employee</label>
+            <div className={`text-sm ${fieldStyles.text}`}>
               {currentCustody.employeename} ({currentCustody.employeenumber})
             </div>
           </div>
 
           {/* Location Type */}
-          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location Type</label>
-            <div className="text-sm text-gray-900 dark:text-white capitalize">
+          <div className={`${fieldStyles.container} p-2`}>
+            <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location Type</label>
+            <div className={`text-sm ${fieldStyles.text} capitalize`}>
               {currentCustody.locationType}
             </div>
           </div>
@@ -685,17 +782,17 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           {currentCustody.locationType === 'warehouse' && (
             <>
               {/* Warehouse City */}
-              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Warehouse City</label>
-                <div className="text-sm text-gray-900 dark:text-white">
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Warehouse City</label>
+                <div className={`text-sm ${fieldStyles.text}`}>
                   {currentCustody.warehouseCity}
                 </div>
               </div>
 
               {/* Warehouse Location */}
-              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location</label>
-                <div className="text-sm text-gray-900 dark:text-white">
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location</label>
+                <div className={`text-sm ${fieldStyles.text}`}>
                   {currentCustody.warehouseLocation}
                 </div>
               </div>
@@ -705,17 +802,17 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           {currentCustody.locationType === 'department' && (
             <>
               {/* Department Location */}
-              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Department Location</label>
-                <div className="text-sm text-gray-900 dark:text-white">
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Department Location</label>
+                <div className={`text-sm ${fieldStyles.text}`}>
                   {currentCustody.departmentLocation}
                 </div>
               </div>
 
               {/* Project */}
-              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Project</label>
-                <div className="text-sm text-gray-900 dark:text-white">
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Project</label>
+                <div className={`text-sm ${fieldStyles.text}`}>
                   {currentCustody.project}
                 </div>
               </div>
@@ -725,17 +822,17 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           {currentCustody.locationType === 'camp/office' && (
             <>
               {/* Camp/Office Location */}
-              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location</label>
-                <div className="text-sm text-gray-900 dark:text-white">
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location</label>
+                <div className={`text-sm ${fieldStyles.text}`}>
                   {currentCustody.departmentLocation}
                 </div>
               </div>
 
               {/* Building/Room/Occupant */}
-              <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Building/Room/Occupant</label>
-                <div className="text-sm text-gray-900 dark:text-white">
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Building/Room/Occupant</label>
+                <div className={`text-sm ${fieldStyles.text}`}>
                   {currentCustody.campOfficeLocation}
                 </div>
               </div>
@@ -743,25 +840,25 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           )}
 
           {/* Custody From Date */}
-          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">From Date</label>
-            <div className="text-sm text-gray-900 dark:text-white">
+          <div className={`${fieldStyles.container} p-2`}>
+            <label className={`block text-xs font-medium ${fieldStyles.label}`}>From Date</label>
+            <div className={`text-sm ${fieldStyles.text}`}>
               {new Date(currentCustody.custodyfrom).toLocaleDateString()}
             </div>
           </div>
 
           {/* Custody To Date */}
-          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">To Date</label>
-            <div className="text-sm text-gray-900 dark:text-white">
+          <div className={`${fieldStyles.container} p-2`}>
+            <label className={`block text-xs font-medium ${fieldStyles.label}`}>To Date</label>
+            <div className={`text-sm ${fieldStyles.text}`}>
               {currentCustody.custodyto ? new Date(currentCustody.custodyto).toLocaleDateString() : 'Current'}
             </div>
           </div>
 
           {/* Gatepass Document */}
-          <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Gatepass Document</label>
-            <div className="text-sm text-gray-900 dark:text-white">
+          <div className={`${fieldStyles.container} p-2`}>
+            <label className={`block text-xs font-medium ${fieldStyles.label}`}>Gatepass Document</label>
+            <div className={`text-sm ${fieldStyles.text}`}>
               {currentCustody.documentnumber || 'Not specified'}
             </div>
           </div>
@@ -769,12 +866,18 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
       )}
 
       {/* History Section */}
-      <div className="mt-6 border-t border-gray-200 dark:border-slate-600/80 pt-4">
+      <div className={`mt-6 border-t ${theme === 'glassmorphic' ? 'border-white/20' : theme === 'light' ? 'border-blue-200' : 'border-gray-200 dark:border-slate-600/80'} pt-4`}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Custody History</h3>
+          <h3 className={`text-sm font-semibold ${getTextStyles()}`}>Custody History</h3>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            className={`text-xs transition-colors ${
+              theme === 'glassmorphic'
+                ? 'text-teal-400 hover:text-teal-300'
+                : theme === 'light'
+                ? 'text-blue-600 hover:text-blue-700'
+                : 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
+            }`}
           >
             {showHistory ? 'Hide History' : `Show History (${custodyHistory?.length || 0} records)`}
           </button>
@@ -785,21 +888,21 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
             {custodyHistory.map((record) => (
               <div 
                 key={record._id}
-                className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-3"
+                className={`${fieldStyles.container} p-3`}
               >
                 <div className="grid grid-cols-2 gap-4">
                   {/* Employee */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Employee</label>
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Employee</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>
                       {record.employeename} ({record.employeenumber})
                     </div>
                   </div>
 
                   {/* Location Type */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location Type</label>
-                    <div className="text-sm text-gray-900 dark:text-white capitalize">
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location Type</label>
+                    <div className={`text-sm ${fieldStyles.text} capitalize`}>
                       {record.locationType}
                     </div>
                   </div>
@@ -808,12 +911,12 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
                   {record.locationType === 'warehouse' && (
                     <>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Warehouse City</label>
-                        <div className="text-sm text-gray-900 dark:text-white">{record.warehouseCity}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Warehouse City</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{record.warehouseCity}</div>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location</label>
-                        <div className="text-sm text-gray-900 dark:text-white">{record.warehouseLocation}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{record.warehouseLocation}</div>
                       </div>
                     </>
                   )}
@@ -821,12 +924,12 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
                   {record.locationType === 'department' && (
                     <>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Department Location</label>
-                        <div className="text-sm text-gray-900 dark:text-white">{record.departmentLocation}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Department Location</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{record.departmentLocation}</div>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Project</label>
-                        <div className="text-sm text-gray-900 dark:text-white">{record.project}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Project</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{record.project}</div>
                       </div>
                     </>
                   )}
@@ -834,34 +937,34 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
                   {record.locationType === 'camp/office' && (
                     <>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Location</label>
-                        <div className="text-sm text-gray-900 dark:text-white">{record.departmentLocation}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{record.departmentLocation}</div>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Building/Room/Occupant</label>
-                        <div className="text-sm text-gray-900 dark:text-white">{record.campOfficeLocation}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Building/Room/Occupant</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{record.campOfficeLocation}</div>
                       </div>
                     </>
                   )}
 
                   {/* Dates */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">From Date</label>
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>From Date</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>
                       {new Date(record.custodyfrom).toLocaleDateString()}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">To Date</label>
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>To Date</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>
                       {record.custodyto ? new Date(record.custodyto).toLocaleDateString() : 'Current'}
                     </div>
                   </div>
 
                   {/* Gatepass Document */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Gatepass Document</label>
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Gatepass Document</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>
                       {record.documentnumber || 'Not specified'}
                     </div>
                   </div>

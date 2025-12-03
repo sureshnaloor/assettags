@@ -7,6 +7,8 @@ import { AssetData } from '@/types/asset';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
+export type Theme = 'default' | 'glassmorphic' | 'light';
+
 // Define separate category constants
 const MME_CATEGORIES = [
   'Select Category',
@@ -52,6 +54,7 @@ const ASSET_STATUSES = [
 interface AssetDetailsProps {
   asset: AssetData;
   onUpdate: (updatedAsset: Partial<AssetData>) => Promise<void>;
+  theme?: Theme;
 }
 
 interface ConfirmationModalProps {
@@ -92,19 +95,50 @@ function LoadingSpinner() {
   );
 }
 
-function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: ConfirmationModalProps) {
+function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes, theme = 'default' }: ConfirmationModalProps & { theme?: Theme }) {
   if (!isOpen) return null;
+
+  const getModalStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          text: 'text-white',
+          textSecondary: 'text-white/80',
+          buttonPrimary: 'bg-teal-500 hover:bg-teal-600',
+          buttonSecondary: 'bg-white/10 hover:bg-white/20 border border-white/20'
+        };
+      case 'light':
+        return {
+          container: 'bg-white border-2 border-blue-200',
+          text: 'text-gray-900',
+          textSecondary: 'text-gray-700',
+          buttonPrimary: 'bg-blue-500 hover:bg-blue-600',
+          buttonSecondary: 'bg-gray-200 hover:bg-gray-300'
+        };
+      default:
+        return {
+          container: 'bg-slate-800',
+          text: 'text-zinc-100',
+          textSecondary: 'text-zinc-300',
+          buttonPrimary: 'bg-blue-600 hover:bg-blue-700',
+          buttonSecondary: 'bg-slate-600 hover:bg-slate-700'
+        };
+    }
+  };
+
+  const modalStyles = getModalStyles();
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+      <div className={`${modalStyles.container} rounded-lg shadow-xl p-6 max-w-md w-full mx-4`}>
         <div className="flex items-start gap-4">
-          <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500 mt-1" />
+          <ExclamationTriangleIcon className={`h-6 w-6 ${theme === 'glassmorphic' ? 'text-yellow-400' : theme === 'light' ? 'text-yellow-600' : 'text-yellow-500'} mt-1`} />
           <div>
-            <h3 className="text-lg font-semibold text-zinc-100 mb-2">Confirm Changes</h3>
-            <div className="text-sm text-zinc-300 space-y-2">
+            <h3 className={`text-lg font-semibold ${modalStyles.text} mb-2`}>Confirm Changes</h3>
+            <div className={`text-sm ${modalStyles.textSecondary} space-y-2`}>
               <p>Are you sure you want to save the following changes?</p>
-              <ul className="list-disc list-inside space-y-1 text-zinc-400">
+              <ul className={`list-disc list-inside space-y-1 ${theme === 'glassmorphic' ? 'text-white/70' : theme === 'light' ? 'text-gray-600' : 'text-zinc-400'}`}>
                 {changes.category && (
                   <li>Category: {changes.category}</li>
                 )}
@@ -123,7 +157,7 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: C
               <button
                 onClick={onConfirm}
                 disabled={isSaving}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                className={`flex-1 ${modalStyles.buttonPrimary} disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2`}
               >
                 {isSaving ? (
                   <>
@@ -137,7 +171,7 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, isSaving, changes }: C
               <button
                 onClick={onCancel}
                 disabled={isSaving}
-                className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                className={`flex-1 ${modalStyles.buttonSecondary} disabled:opacity-50 ${theme === 'glassmorphic' ? 'text-white' : theme === 'light' ? 'text-gray-900' : 'text-white'} px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
               >
                 Cancel
               </button>
@@ -160,10 +194,50 @@ interface Subcategory {
   name: string;
 }
 
-export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
+export default function AssetDetails({ asset, onUpdate, theme = 'default' }: AssetDetailsProps) {
   const pathname = usePathname();
   const isFixedAsset = pathname?.includes('/fixedasset/') ?? false;
   const { data: session, status } = useSession();
+
+  // Theme-based style helpers
+  const getContainerStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return 'bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl';
+      case 'light':
+        return 'bg-white border-2 border-blue-200 rounded-xl shadow-lg';
+      default:
+        return 'bg-white dark:bg-slate-800/20 backdrop-blur-sm rounded-lg shadow-lg';
+    }
+  };
+
+  const getFieldStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'bg-white/5 backdrop-blur-md border border-white/10 rounded-xl',
+          label: 'text-white/80',
+          text: 'text-white',
+          input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-2 focus:ring-teal-400'
+        };
+      case 'light':
+        return {
+          container: 'bg-blue-50 border border-blue-200 rounded-lg',
+          label: 'text-blue-900 font-medium',
+          text: 'text-gray-900',
+          input: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        };
+      default:
+        return {
+          container: 'bg-gray-200 dark:bg-slate-700/50 rounded-md',
+          label: 'text-gray-600 dark:text-gray-300',
+          text: 'text-gray-900 dark:text-white',
+          input: 'bg-white dark:bg-slate-600 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-500 focus:ring-2 focus:ring-blue-500'
+        };
+    }
+  };
+
+  const fieldStyles = getFieldStyles();
   
   const [isEditing, setIsEditing] = useState(false);
   const [editedAsset, setEditedAsset] = useState<AssetData>(asset);
@@ -358,10 +432,45 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
     }
   }, [accessoriesEditor, isEditing]);
 
+  const getButtonStyles = (color: 'blue' | 'red' | 'green') => {
+    const baseStyles = 'p-1 transition-colors';
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          blue: `${baseStyles} text-teal-400 hover:text-teal-300`,
+          red: `${baseStyles} text-red-400 hover:text-red-300`,
+          green: `${baseStyles} text-green-400 hover:text-green-300`
+        }[color];
+      case 'light':
+        return {
+          blue: `${baseStyles} text-blue-600 hover:text-blue-700`,
+          red: `${baseStyles} text-red-600 hover:text-red-700`,
+          green: `${baseStyles} text-green-600 hover:text-green-700`
+        }[color];
+      default:
+        return {
+          blue: `${baseStyles} text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300`,
+          red: `${baseStyles} text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300`,
+          green: `${baseStyles} text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300`
+        }[color];
+    }
+  };
+
+  const getErrorStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return 'bg-red-500/20 backdrop-blur-md border border-red-500/30 text-red-300';
+      case 'light':
+        return 'bg-red-50 border border-red-200 text-red-700';
+      default:
+        return 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-200';
+    }
+  };
+
   return (
-    <div className="bg-white dark:bg-slate-800/20 backdrop-blur-sm rounded-lg shadow-lg p-3 w-full max-w-4xl relative">
+    <div className={`${getContainerStyles()} p-3 w-full max-w-4xl relative`}>
       {error && (
-        <div className="absolute top-0 left-0 right-0 bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-200 px-4 py-2 rounded-t-lg text-sm">
+        <div className={`absolute top-0 left-0 right-0 ${getErrorStyles()} px-4 py-2 rounded-t-lg text-sm`}>
           {error}
         </div>
       )}
@@ -372,7 +481,7 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
           !isEditing ? (
             <button
               onClick={handleEdit}
-              className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              className={getButtonStyles('blue')}
               title="Edit Asset Details"
             >
               <PencilIcon className="h-5 w-5" />
@@ -381,7 +490,7 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
             <>
               <button
                 onClick={handleCancel}
-                className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                className={getButtonStyles('red')}
                 title="Cancel Editing"
                 disabled={isSaving}
               >
@@ -389,7 +498,7 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
               </button>
               <button
                 onClick={handleSave}
-                className="p-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                className={getButtonStyles('green')}
                 title="Save Changes"
                 disabled={isSaving}
               >
@@ -402,30 +511,30 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
 
       <div className="grid grid-cols-2 gap-2">
         {/* Non-editable fields */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Asset Number</label>
-          <div className="text-sm font-bold text-gray-900 dark:text-white">
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Asset Number</label>
+          <div className={`text-sm font-bold ${fieldStyles.text}`}>
             {asset.assetnumber}
           </div>
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Asset Description</label>
-          <div className="text-sm font-bold text-gray-900 dark:text-white">
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Asset Description</label>
+          <div className={`text-sm font-bold ${fieldStyles.text}`}>
             {asset.assetdescription}
           </div>
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Acquisition Date</label>
-          <div className="text-[12px] text-gray-900 dark:text-white">
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Acquisition Date</label>
+          <div className={`text-[12px] ${fieldStyles.text}`}>
             {asset.acquireddate ? new Date(asset.acquireddate).toLocaleDateString() : '-'}
           </div>
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Acquisition Value</label>
-          <div className="text-[12px] text-gray-900 dark:text-white">
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Acquisition Value</label>
+          <div className={`text-[12px] ${fieldStyles.text}`}>
             {session ? (
               new Intl.NumberFormat('en-US', {
                 style: 'currency',
@@ -438,27 +547,25 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
         </div>
 
         {/* Editable fields */}
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Asset Category</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Asset Category</label>
           {isEditing ? (
             <select
               value={editedAsset.assetcategory}
               onChange={handleCategoryChange}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
             >
               {categories.map(category => (
-                <option key={category._id} value={category.name}>{category.name}</option>
+                <option key={category._id} value={category.name} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>{category.name}</option>
               ))}
             </select>
           ) : (
-            <div className="text-[12px] text-gray-900 dark:text-white">{asset.assetcategory}</div>
+            <div className={`text-[12px] ${fieldStyles.text}`}>{asset.assetcategory}</div>
           )}
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Asset Subcategory</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Asset Subcategory</label>
           {isEditing ? (
             <select
               value={editedAsset.assetsubcategory}
@@ -466,22 +573,20 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
                 ...prev,
                 assetsubcategory: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
               disabled={editedAsset.assetcategory === 'Select Category'}
             >
               {subcategories.map(subcategory => (
-                <option key={subcategory._id} value={subcategory.name}>{subcategory.name}</option>
+                <option key={subcategory._id} value={subcategory.name} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>{subcategory.name}</option>
               ))}
             </select>
           ) : (
-            <div className="text-[12px] text-gray-900 dark:text-white">{asset.assetsubcategory}</div>
+            <div className={`text-[12px] ${fieldStyles.text}`}>{asset.assetsubcategory}</div>
           )}
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Asset Status</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Asset Status</label>
           {isEditing ? (
             <select
               value={editedAsset.assetstatus}
@@ -489,32 +594,34 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
                 ...prev,
                 assetstatus: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
             >
               {ASSET_STATUSES.map(status => (
-                <option key={status} value={status}>{status}</option>
+                <option key={status} value={status} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>{status}</option>
               ))}
             </select>
           ) : (
-            <div className="text-[12px] text-gray-900 dark:text-white">{asset.assetstatus}</div>
+            <div className={`text-[12px] ${fieldStyles.text}`}>{asset.assetstatus}</div>
           )}
         </div>
 
         {/* Rich text notes field */}
-        <div className="col-span-2 bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+        <div className={`col-span-2 ${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label} mb-1`}>
             Asset Notes
           </label>
           <div className={`${
             isEditing 
-              ? 'bg-white dark:bg-slate-600 rounded-md p-2 border border-gray-200 dark:border-slate-500' 
+              ? theme === 'glassmorphic'
+                ? 'bg-white/10 backdrop-blur-md rounded-xl p-2 border border-white/20'
+                : theme === 'light'
+                ? 'bg-white rounded-lg p-2 border-2 border-blue-300'
+                : 'bg-white dark:bg-slate-600 rounded-md p-2 border border-gray-200 dark:border-slate-500'
               : ''
           }`}>
             <EditorContent 
               editor={editor} 
-              className={`prose prose-sm dark:prose-invert max-w-none ${
+              className={`prose prose-sm ${theme === 'glassmorphic' ? 'prose-invert' : theme === 'light' ? '' : 'dark:prose-invert'} max-w-none ${
                 isEditing 
                   ? 'min-h-[100px] focus:outline-none cursor-text' 
                   : 'cursor-default'
@@ -525,8 +632,8 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-2 mt-2">
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Model</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Model</label>
           {isEditing ? (
             <input
               type="text"
@@ -535,17 +642,15 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
                 ...prev,
                 assetmodel: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
             />
           ) : (
-            <div className="text-[12px] text-gray-900 dark:text-white">{asset.assetmodel}</div>
+            <div className={`text-[12px] ${fieldStyles.text}`}>{asset.assetmodel}</div>
           )}
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Manufacturer</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Manufacturer</label>
           {isEditing ? (
             <input
               type="text"
@@ -554,17 +659,15 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
                 ...prev,
                 assetmanufacturer: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
             />
           ) : (
-            <div className="text-[12px] text-gray-900 dark:text-white">{asset.assetmanufacturer}</div>
+            <div className={`text-[12px] ${fieldStyles.text}`}>{asset.assetmanufacturer}</div>
           )}
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Serial Number</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Serial Number</label>
           {isEditing ? (
             <input
               type="text"
@@ -573,32 +676,32 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
                 ...prev,
                 assetserialnumber: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
             />
           ) : (
-            <div className="text-[12px] text-gray-900 dark:text-white">{asset.assetserialnumber}</div>
+            <div className={`text-[12px] ${fieldStyles.text}`}>{asset.assetserialnumber}</div>
           )}
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Accessories</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Accessories</label>
           {isEditing ? (
-            <EditorContent 
-              editor={accessoriesEditor} 
-              className="prose prose-sm dark:prose-invert max-w-none bg-white dark:bg-slate-600 rounded-md p-2"
-            />
+            <div className={theme === 'glassmorphic' ? 'bg-white/10 backdrop-blur-md rounded-xl p-2 border border-white/20' : theme === 'light' ? 'bg-white rounded-lg p-2 border-2 border-blue-300' : 'bg-white dark:bg-slate-600 rounded-md p-2'}>
+              <EditorContent 
+                editor={accessoriesEditor} 
+                className={`prose prose-sm ${theme === 'glassmorphic' ? 'prose-invert' : theme === 'light' ? '' : 'dark:prose-invert'} max-w-none`}
+              />
+            </div>
           ) : (
             <div 
-              className="text-[12px] text-gray-900 dark:text-white prose prose-sm dark:prose-invert max-w-none"
+              className={`text-[12px] ${fieldStyles.text} prose prose-sm ${theme === 'glassmorphic' ? 'prose-invert' : theme === 'light' ? '' : 'dark:prose-invert'} max-w-none`}
               dangerouslySetInnerHTML={{ __html: asset.accessories || '' }}
             />
           )}
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Legacy Asset Number</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Legacy Asset Number</label>
           {isEditing ? (
             <input
               type="text"
@@ -607,17 +710,15 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
                 ...prev,
                 legacyassetnumber: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
             />
           ) : (
-            <div className="text-[12px] text-gray-900 dark:text-white">{asset.legacyassetnumber || '-'}</div>
+            <div className={`text-[12px] ${fieldStyles.text}`}>{asset.legacyassetnumber || '-'}</div>
           )}
         </div>
 
-        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-md p-2">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Any Other Identifier</label>
+        <div className={`${fieldStyles.container} p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Any Other Identifier</label>
           {isEditing ? (
             <input
               type="text"
@@ -626,12 +727,10 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
                 ...prev,
                 anyotheridentifier: e.target.value
               }))}
-              className="w-full bg-white dark:bg-slate-600 text-gray-900 dark:text-white text-sm rounded-md 
-                       border border-gray-300 dark:border-slate-500
-                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
             />
           ) : (
-            <div className="text-[12px] text-gray-900 dark:text-white">{asset.anyotheridentifier || '-'}</div>
+            <div className={`text-[12px] ${fieldStyles.text}`}>{asset.anyotheridentifier || '-'}</div>
           )}
         </div>
       </div>
@@ -641,6 +740,7 @@ export default function AssetDetails({ asset, onUpdate }: AssetDetailsProps) {
         onConfirm={handleConfirmedSave}
         onCancel={() => setShowConfirmation(false)}
         isSaving={isSaving}
+        theme={theme}
         changes={{
           category: pendingChanges?.assetcategory !== asset.assetcategory ? pendingChanges?.assetcategory : undefined,
           subcategory: pendingChanges?.assetsubcategory !== asset.assetsubcategory ? pendingChanges?.assetsubcategory : undefined,
