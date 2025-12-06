@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResponsiveTable from '@/components/ui/responsive-table';
 import PPEIssuesByEmployee from '@/components/PPEIssuesByEmployee';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 interface EmployeeFormData {
   empno: string;
@@ -20,6 +21,7 @@ interface EmployeeFormData {
 }
 
 export default function EmployeeManagementPage() {
+  const { theme } = useAppTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Array<{
     x: number;
@@ -83,6 +85,80 @@ export default function EmployeeManagementPage() {
     fetchEmployees();
   }, [searchTerm, empNumberSearch]);
 
+  // Theme-based styling function
+  const getBackgroundStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-white/80',
+          tabsBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          tabsTrigger: 'data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70',
+          cardBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          cardTitle: 'text-white',
+          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          inputDisabled: 'disabled:opacity-50',
+          buttonPrimary: 'bg-teal-500 hover:bg-teal-600 text-white',
+          buttonSecondary: 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
+          buttonDestructive: 'bg-red-500 hover:bg-red-600 text-white',
+          selectBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+          selectOption: 'bg-[#1a2332]',
+          spinnerColor: 'border-teal-400',
+          loadingText: 'text-white',
+          labelText: 'text-white',
+          searchInfo: 'text-white/80'
+        };
+      case 'light':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
+          headerBg: 'bg-white border-2 border-blue-200 shadow-lg',
+          headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
+          headerSubtitle: 'text-gray-700',
+          tabsBg: 'bg-white border-2 border-blue-200 shadow-md',
+          tabsTrigger: 'data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-gray-600',
+          cardBg: 'bg-white border-2 border-blue-200 shadow-md',
+          cardTitle: 'text-gray-900',
+          inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          inputDisabled: 'disabled:opacity-50',
+          buttonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
+          buttonSecondary: 'bg-gray-100 border-2 border-gray-300 text-gray-700 hover:bg-gray-200',
+          buttonDestructive: 'bg-red-600 hover:bg-red-700 text-white border-2 border-red-500',
+          selectBg: 'bg-white border-2 border-blue-300 text-gray-900',
+          selectOption: 'bg-white',
+          spinnerColor: 'border-blue-500',
+          loadingText: 'text-gray-700',
+          labelText: 'text-gray-900',
+          searchInfo: 'text-gray-600'
+        };
+      default: // dark theme
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
+          headerBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          headerTitle: 'bg-gradient-to-r from-slate-100 to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-slate-300',
+          tabsBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          tabsTrigger: 'data-[state=active]:bg-slate-700 data-[state=active]:text-slate-100 text-slate-400',
+          cardBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          cardTitle: 'text-slate-100',
+          inputBg: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
+          inputDisabled: 'disabled:opacity-50',
+          buttonPrimary: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500',
+          buttonSecondary: 'bg-slate-700/50 border border-slate-600 text-slate-200 hover:bg-slate-600',
+          buttonDestructive: 'bg-red-600 hover:bg-red-700 text-white border border-red-500',
+          selectBg: 'bg-slate-800/90 border border-slate-600 text-slate-100',
+          selectOption: 'bg-slate-800',
+          spinnerColor: 'border-teal-400',
+          loadingText: 'text-slate-300',
+          labelText: 'text-slate-200',
+          searchInfo: 'text-slate-400'
+        };
+    }
+  };
+
+  const backgroundStyles = getBackgroundStyles();
+
   // Animated particle background
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -121,9 +197,16 @@ export default function EmployeeManagementPage() {
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
+        // Draw particle - theme-based colors
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(45, 212, 191, 0.6)';
+        if (theme === 'light') {
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.4)'; // blue for light theme
+        } else if (theme === 'glassmorphic') {
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.6)'; // teal for glassmorphic
+        } else {
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.6)'; // teal for dark theme
+        }
         ctx.fill();
 
         particlesRef.current.forEach((otherParticle, j) => {
@@ -136,7 +219,11 @@ export default function EmployeeManagementPage() {
               ctx.beginPath();
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
+              if (theme === 'light') {
+                ctx.strokeStyle = `rgba(59, 130, 246, ${0.25 * (1 - distance / 100)})`;
+              } else {
+                ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
+              }
               ctx.lineWidth = 1;
               ctx.stroke();
             }
@@ -161,7 +248,7 @@ export default function EmployeeManagementPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [theme]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -268,7 +355,7 @@ export default function EmployeeManagementPage() {
         <Button 
           size="sm" 
           onClick={() => handleEdit(emp)}
-          className="bg-teal-500 hover:bg-teal-600 text-white"
+          className={backgroundStyles.buttonPrimary}
         >
           Edit
         </Button>
@@ -276,7 +363,7 @@ export default function EmployeeManagementPage() {
           size="sm" 
           variant="outline" 
           onClick={() => handleEmployeeSelect(emp)}
-          className="bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+          className={backgroundStyles.buttonSecondary}
         >
           View PPE Records
         </Button>
@@ -285,7 +372,7 @@ export default function EmployeeManagementPage() {
             size="sm" 
             variant="destructive" 
             onClick={() => handleDeactivate(emp.empno)}
-            className="bg-red-500 hover:bg-red-600 text-white"
+            className={backgroundStyles.buttonDestructive}
           >
             Deactivate
           </Button>
@@ -295,38 +382,38 @@ export default function EmployeeManagementPage() {
   }));
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+    <div className={backgroundStyles.container}>
       {/* Animated background canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 z-10" />
       
       {/* Main content */}
       <div className="relative z-20 flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
         {/* Header Section */}
-        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-xl">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent mb-2">
+        <div className={`${backgroundStyles.headerBg} rounded-2xl p-6 shadow-xl`}>
+          <h1 className={`text-4xl font-bold ${backgroundStyles.headerTitle} mb-2`}>
             Employee Management
           </h1>
-          <p className="text-white/80 text-lg">Manage employee information and status</p>
+          <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Manage employee information and status</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-1">
+          <TabsList className={`${backgroundStyles.tabsBg} rounded-xl p-1`}>
             <TabsTrigger 
               value="list"
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+              className={backgroundStyles.tabsTrigger}
             >
               Employee List
             </TabsTrigger>
             <TabsTrigger 
               value="form"
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+              className={backgroundStyles.tabsTrigger}
             >
               {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
             </TabsTrigger>
             {selectedEmployee && (
               <TabsTrigger 
                 value="ppe-records"
-                className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+                className={backgroundStyles.tabsTrigger}
               >
                 PPE Records
               </TabsTrigger>
@@ -334,9 +421,9 @@ export default function EmployeeManagementPage() {
           </TabsList>
 
         <TabsContent value="list">
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-xl">
+          <div className={`${backgroundStyles.cardBg} rounded-2xl p-6 shadow-xl`}>
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">Employee Records</h2>
+              <h2 className={`text-2xl font-semibold ${backgroundStyles.cardTitle} mb-4`}>Employee Records</h2>
               <div className="flex flex-col gap-4">
                 <div className="flex gap-4 flex-wrap">
                   <div className="flex gap-2">
@@ -350,14 +437,14 @@ export default function EmployeeManagementPage() {
                           setSearchTerm('');
                         }
                       }}
-                      className="max-w-sm bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                      className={`max-w-sm ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                     />
                     {empNumberSearch && (
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => setEmpNumberSearch('')}
-                        className="bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+                        className={backgroundStyles.buttonSecondary}
                       >
                         Clear
                       </Button>
@@ -374,14 +461,14 @@ export default function EmployeeManagementPage() {
                           setEmpNumberSearch('');
                         }
                       }}
-                      className="max-w-sm bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                      className={`max-w-sm ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                     />
                     {searchTerm && (
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => setSearchTerm('')}
-                        className="bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+                        className={backgroundStyles.buttonSecondary}
                       >
                         Clear
                       </Button>
@@ -389,7 +476,7 @@ export default function EmployeeManagementPage() {
                   </div>
                   <Button 
                     onClick={() => setActiveTab('form')}
-                    className="bg-teal-500 hover:bg-teal-600 text-white"
+                    className={backgroundStyles.buttonPrimary}
                   >
                     Add New Employee
                   </Button>
@@ -400,14 +487,14 @@ export default function EmployeeManagementPage() {
                         setEmpNumberSearch('');
                         setSearchTerm('');
                       }}
-                      className="bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+                      className={backgroundStyles.buttonSecondary}
                     >
                       Show All
                     </Button>
                   )}
                 </div>
                 {(empNumberSearch || searchTerm) && (
-                  <div className="text-sm text-white/80">
+                  <div className={`text-sm ${backgroundStyles.searchInfo}`}>
                     {empNumberSearch ? 
                       `Searching by employee number: "${empNumberSearch}"` : 
                       `Searching by name/department/designation: "${searchTerm}"`
@@ -418,25 +505,25 @@ export default function EmployeeManagementPage() {
             </div>
             <div>
               {loading ? (
-                <div className="text-center py-8 text-white">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-400 mx-auto"></div>
+                <div className={`text-center py-8 ${backgroundStyles.loadingText}`}>
+                  <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor} mx-auto`}></div>
                 </div>
               ) : (
-                <ResponsiveTable columns={columns} data={tableData} variant="glassmorphic" />
+                <ResponsiveTable columns={columns} data={tableData} variant={theme === 'light' ? 'light' : 'glassmorphic'} />
               )}
             </div>
           </div>
         </TabsContent>
 
         <TabsContent value="form">
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-xl">
-            <h2 className="text-2xl font-semibold text-white mb-6">
+          <div className={`${backgroundStyles.cardBg} rounded-2xl p-6 shadow-xl`}>
+            <h2 className={`text-2xl font-semibold ${backgroundStyles.cardTitle} mb-6`}>
               {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-white">
+                  <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                     Employee Number *
                   </label>
                   <Input
@@ -444,79 +531,79 @@ export default function EmployeeManagementPage() {
                     onChange={(e) => setFormData({ ...formData, empno: e.target.value })}
                     required
                     disabled={!!editingEmployee}
-                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all disabled:opacity-50"
+                    className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all ${backgroundStyles.inputDisabled}`}
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-white">
+                  <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                     Employee Name *
                   </label>
                   <Input
                     value={formData.empname}
                     onChange={(e) => setFormData({ ...formData, empname: e.target.value })}
                     required
-                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-white">
+                  <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                     Department
                   </label>
                   <Input
                     value={formData.department}
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-white">
+                  <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                     Designation
                   </label>
                   <Input
                     value={formData.designation}
                     onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-white">
+                  <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                     Email
                   </label>
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-white">
+                  <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                     Phone
                   </label>
                   <Input
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   />
                 </div>
                 
                 {editingEmployee && (
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-white">
+                    <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                       Status
                     </label>
                     <select
                       value={formData.active}
                       onChange={(e) => setFormData({ ...formData, active: e.target.value as 'Y' | 'N' })}
-                      className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                      className={`w-full px-4 py-2 ${backgroundStyles.selectBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                     >
-                      <option value="Y" className="bg-[#1a2332]">Active</option>
-                      <option value="N" className="bg-[#1a2332]">Inactive</option>
+                      <option value="Y" className={backgroundStyles.selectOption}>Active</option>
+                      <option value="N" className={backgroundStyles.selectOption}>Inactive</option>
                     </select>
                   </div>
                 )}
@@ -525,7 +612,7 @@ export default function EmployeeManagementPage() {
               <div className="flex gap-4">
                 <Button 
                   type="submit"
-                  className="bg-teal-500 hover:bg-teal-600 text-white"
+                  className={backgroundStyles.buttonPrimary}
                 >
                   {editingEmployee ? 'Update Employee' : 'Create Employee'}
                 </Button>
@@ -545,7 +632,7 @@ export default function EmployeeManagementPage() {
                       active: 'Y'
                     });
                   }}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+                  className={backgroundStyles.buttonSecondary}
                 >
                   Cancel
                 </Button>
@@ -555,12 +642,12 @@ export default function EmployeeManagementPage() {
         </TabsContent>
 
         <TabsContent value="ppe-records">
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-xl">
+          <div className={`${backgroundStyles.cardBg} rounded-2xl p-6 shadow-xl`}>
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-white mb-2">
+              <h2 className={`text-2xl font-semibold ${backgroundStyles.cardTitle} mb-2`}>
                 PPE Records - {selectedEmployee?.empname} ({selectedEmployee?.empno})
               </h2>
-              <p className="text-white/80">
+              <p className={backgroundStyles.headerSubtitle}>
                 View complete PPE issue history for the selected employee
               </p>
             </div>

@@ -25,6 +25,7 @@ interface ResponsiveTanStackTableProps<TData> {
   setGlobalFilter?: OnChangeFn<string>;
   className?: string;
   getRowId?: (row: TData) => string;
+  variant?: 'default' | 'glassmorphic' | 'light';
 }
 
 function ResponsiveTanStackTable<TData>({
@@ -37,8 +38,11 @@ function ResponsiveTanStackTable<TData>({
   globalFilter,
   setGlobalFilter,
   className,
-  getRowId
+  getRowId,
+  variant = 'default'
 }: ResponsiveTanStackTableProps<TData>) {
+  const isGlassmorphic = variant === 'glassmorphic';
+  const isLight = variant === 'light';
   const table = useReactTable({
     data,
     columns,
@@ -62,13 +66,27 @@ function ResponsiveTanStackTable<TData>({
       <div className="hidden lg:block">
         <div className="relative w-full overflow-auto">
           <table className="w-full caption-bottom text-sm">
-            <thead className="[&_tr]:border-b">
+            <thead className={cn("[&_tr]:border-b", isGlassmorphic ? "border-white/10" : isLight ? "border-blue-200" : "")}>
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b bg-slate-50/50 dark:bg-slate-800/50 transition-colors">
+                <tr key={headerGroup.id} className={cn(
+                  "border-b transition-colors",
+                  isGlassmorphic 
+                    ? "border-white/10 bg-white/5 backdrop-blur-md"
+                    : isLight
+                    ? "bg-blue-50/80 border-blue-200"
+                    : "bg-slate-50/50 dark:bg-slate-800/50"
+                )}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="h-12 px-4 text-left align-middle font-medium text-slate-700 dark:text-slate-300 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+                      className={cn(
+                        "h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+                        isGlassmorphic 
+                          ? "text-white/90"
+                          : isLight
+                          ? "text-gray-800"
+                          : "text-slate-700 dark:text-slate-300"
+                      )}
                     >
                       {header.isPlaceholder
                         ? null
@@ -86,10 +104,27 @@ function ResponsiveTanStackTable<TData>({
                 <tr
                   key={row.id}
                   className={cn(
-                    "border-b transition-all duration-200 hover:bg-slate-100/80 dark:hover:bg-slate-700/50 data-[state=selected]:bg-muted",
-                    index % 2 === 0 
-                      ? "bg-white dark:bg-slate-900" 
-                      : "bg-slate-50/30 dark:bg-slate-800/30"
+                    "border-b transition-all duration-200 data-[state=selected]:bg-muted",
+                    isGlassmorphic
+                      ? cn(
+                          "border-white/10",
+                          index % 2 === 0 
+                            ? "bg-white/5 backdrop-blur-sm hover:bg-white/10" 
+                            : "bg-white/10 backdrop-blur-sm hover:bg-white/15"
+                        )
+                      : isLight
+                      ? cn(
+                          "border-blue-200",
+                          index % 2 === 0 
+                            ? "bg-white hover:bg-blue-50/50" 
+                            : "bg-blue-50/30 hover:bg-blue-100/50"
+                        )
+                      : cn(
+                          "hover:bg-slate-100/80 dark:hover:bg-slate-700/50",
+                          index % 2 === 0 
+                            ? "bg-white dark:bg-slate-900" 
+                            : "bg-slate-50/30 dark:bg-slate-800/30"
+                        )
                   )}
                 >
                   {row.getVisibleCells().map((cell, cellIndex) => {
@@ -100,11 +135,19 @@ function ResponsiveTanStackTable<TData>({
                     const getCellStyling = () => {
                       // Asset Number - Bold, monospace font
                       if (columnId.includes('assetnumber') || columnId.includes('number')) {
-                        return "font-mono font-bold text-slate-900 dark:text-slate-100 text-sm";
+                        return isGlassmorphic 
+                          ? "font-mono font-bold text-white text-sm"
+                          : isLight
+                          ? "font-mono font-bold text-gray-900 text-sm"
+                          : "font-mono font-bold text-slate-900 dark:text-slate-100 text-sm";
                       }
                       // Description - Italic, slightly larger
                       if (columnId.includes('description') || columnId.includes('name')) {
-                        return "font-medium italic text-slate-700 dark:text-slate-300 text-sm";
+                        return isGlassmorphic 
+                          ? "font-medium italic text-white/90 text-sm"
+                          : isLight
+                          ? "font-medium italic text-gray-700 text-sm"
+                          : "font-medium italic text-slate-700 dark:text-slate-300 text-sm";
                       }
                       // Status - Colored badge style
                       if (columnId.includes('status') || columnId.includes('condition')) {
@@ -112,30 +155,58 @@ function ResponsiveTanStackTable<TData>({
                       }
                       // Category/Subcategory - Light weight, smaller
                       if (columnId.includes('category') || columnId.includes('subcategory')) {
-                        return "font-light text-slate-600 dark:text-slate-400 text-xs";
+                        return isGlassmorphic 
+                          ? "font-light text-white/80 text-xs"
+                          : isLight
+                          ? "font-light text-gray-600 text-xs"
+                          : "font-light text-slate-600 dark:text-slate-400 text-xs";
                       }
                       // Value/Price - Bold, monospace, colored
                       if (columnId.includes('value') || columnId.includes('price') || columnId.includes('cost')) {
-                        return "font-mono font-bold text-green-700 dark:text-green-400 text-sm";
+                        return isGlassmorphic 
+                          ? "font-mono font-bold text-teal-400 text-sm"
+                          : isLight
+                          ? "font-mono font-bold text-green-700 text-sm"
+                          : "font-mono font-bold text-green-700 dark:text-green-400 text-sm";
                       }
                       // Date - Light weight, smaller
                       if (columnId.includes('date') || columnId.includes('time')) {
-                        return "font-light text-slate-500 dark:text-slate-500 text-xs";
+                        return isGlassmorphic 
+                          ? "font-light text-white/70 text-xs"
+                          : isLight
+                          ? "font-light text-gray-500 text-xs"
+                          : "font-light text-slate-500 dark:text-slate-500 text-xs";
                       }
                       // Manufacturer/Model - Medium weight
                       if (columnId.includes('manufacturer') || columnId.includes('model') || columnId.includes('brand')) {
-                        return "font-medium text-slate-700 dark:text-slate-300 text-sm";
+                        return isGlassmorphic 
+                          ? "font-medium text-white/90 text-sm"
+                          : isLight
+                          ? "font-medium text-gray-700 text-sm"
+                          : "font-medium text-slate-700 dark:text-slate-300 text-sm";
                       }
                       // Serial Number - Monospace, smaller
                       if (columnId.includes('serial') || columnId.includes('id')) {
-                        return "font-mono font-medium text-slate-600 dark:text-slate-400 text-xs";
+                        return isGlassmorphic 
+                          ? "font-mono font-medium text-white/80 text-xs"
+                          : isLight
+                          ? "font-mono font-medium text-gray-600 text-xs"
+                          : "font-mono font-medium text-slate-600 dark:text-slate-400 text-xs";
                       }
                       // Location - Italic, smaller
                       if (columnId.includes('location') || columnId.includes('place')) {
-                        return "font-light italic text-slate-500 dark:text-slate-500 text-xs";
+                        return isGlassmorphic 
+                          ? "font-light italic text-white/70 text-xs"
+                          : isLight
+                          ? "font-light italic text-gray-500 text-xs"
+                          : "font-light italic text-slate-500 dark:text-slate-500 text-xs";
                       }
                       // Default styling
-                      return "font-normal text-slate-700 dark:text-slate-300 text-sm";
+                      return isGlassmorphic 
+                        ? "font-normal text-white/90 text-sm"
+                        : isLight
+                        ? "font-normal text-gray-700 text-sm"
+                        : "font-normal text-slate-700 dark:text-slate-300 text-sm";
                     };
 
                     return (
@@ -163,9 +234,25 @@ function ResponsiveTanStackTable<TData>({
             key={row.id}
             className={cn(
               "border rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-md",
-              index % 2 === 0 
-                ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" 
-                : "bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50"
+              isGlassmorphic
+                ? cn(
+                    "border-white/10",
+                    index % 2 === 0 
+                      ? "bg-white/5 backdrop-blur-sm border-white/10" 
+                      : "bg-white/10 backdrop-blur-sm border-white/20"
+                  )
+                : isLight
+                ? cn(
+                    "border-blue-200",
+                    index % 2 === 0 
+                      ? "bg-white border-blue-200" 
+                      : "bg-blue-50/50 border-blue-200"
+                  )
+                : cn(
+                    index % 2 === 0 
+                      ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" 
+                      : "bg-slate-50/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50"
+                  )
             )}
           >
             <div className="space-y-3">
@@ -187,31 +274,74 @@ function ResponsiveTanStackTable<TData>({
                       index === 0 && "border-b pb-2 mb-2"
                     )}
                   >
-                    <div className="text-sm font-medium text-muted-foreground sm:w-1/3 sm:pr-4">
+                    <div className={cn(
+                      "text-sm font-medium sm:w-1/3 sm:pr-4",
+                      isGlassmorphic 
+                        ? "text-white/80"
+                        : isLight
+                        ? "text-gray-600"
+                        : "text-muted-foreground"
+                    )}>
                       {headerContent}:
                     </div>
                     <div className={cn(
                       "text-sm sm:w-2/3 sm:pl-4",
                       // Apply similar styling logic for mobile cards
                       columnId.includes('assetnumber') || columnId.includes('number') 
-                        ? "font-mono font-bold text-slate-900 dark:text-slate-100" 
+                        ? isGlassmorphic 
+                          ? "font-mono font-bold text-white" 
+                          : isLight
+                          ? "font-mono font-bold text-gray-900"
+                          : "font-mono font-bold text-slate-900 dark:text-slate-100"
                         : columnId.includes('description') || columnId.includes('name')
-                        ? "font-medium italic text-slate-700 dark:text-slate-300"
+                        ? isGlassmorphic 
+                          ? "font-medium italic text-white/90"
+                          : isLight
+                          ? "font-medium italic text-gray-700"
+                          : "font-medium italic text-slate-700 dark:text-slate-300"
                         : columnId.includes('status') || columnId.includes('condition')
                         ? "font-semibold text-xs uppercase tracking-wide"
                         : columnId.includes('category') || columnId.includes('subcategory')
-                        ? "font-light text-slate-600 dark:text-slate-400 text-xs"
+                        ? isGlassmorphic 
+                          ? "font-light text-white/80 text-xs"
+                          : isLight
+                          ? "font-light text-gray-600 text-xs"
+                          : "font-light text-slate-600 dark:text-slate-400 text-xs"
                         : columnId.includes('value') || columnId.includes('price') || columnId.includes('cost')
-                        ? "font-mono font-bold text-green-700 dark:text-green-400"
+                        ? isGlassmorphic 
+                          ? "font-mono font-bold text-teal-400"
+                          : isLight
+                          ? "font-mono font-bold text-green-700"
+                          : "font-mono font-bold text-green-700 dark:text-green-400"
                         : columnId.includes('date') || columnId.includes('time')
-                        ? "font-light text-slate-500 dark:text-slate-500 text-xs"
+                        ? isGlassmorphic 
+                          ? "font-light text-white/70 text-xs"
+                          : isLight
+                          ? "font-light text-gray-500 text-xs"
+                          : "font-light text-slate-500 dark:text-slate-500 text-xs"
                         : columnId.includes('manufacturer') || columnId.includes('model') || columnId.includes('brand')
-                        ? "font-medium text-slate-700 dark:text-slate-300"
+                        ? isGlassmorphic 
+                          ? "font-medium text-white/90"
+                          : isLight
+                          ? "font-medium text-gray-700"
+                          : "font-medium text-slate-700 dark:text-slate-300"
                         : columnId.includes('serial') || columnId.includes('id')
-                        ? "font-mono font-medium text-slate-600 dark:text-slate-400 text-xs"
+                        ? isGlassmorphic 
+                          ? "font-mono font-medium text-white/80 text-xs"
+                          : isLight
+                          ? "font-mono font-medium text-gray-600 text-xs"
+                          : "font-mono font-medium text-slate-600 dark:text-slate-400 text-xs"
                         : columnId.includes('location') || columnId.includes('place')
-                        ? "font-light italic text-slate-500 dark:text-slate-500 text-xs"
-                        : "font-normal text-slate-700 dark:text-slate-300"
+                        ? isGlassmorphic 
+                          ? "font-light italic text-white/70 text-xs"
+                          : isLight
+                          ? "font-light italic text-gray-500 text-xs"
+                          : "font-light italic text-slate-500 dark:text-slate-500 text-xs"
+                        : isGlassmorphic 
+                          ? "font-normal text-white/90"
+                          : isLight
+                          ? "font-normal text-gray-700"
+                          : "font-normal text-slate-700 dark:text-slate-300"
                     )}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </div>

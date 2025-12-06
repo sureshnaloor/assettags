@@ -12,8 +12,10 @@ import { ProjectReturnMaterialData } from '@/types/projectreturnmaterials';
 import AssetQRCode from '@/components/AssetQRCode';
 import ProjectReturnMaterialRequestForm from '@/components/ProjectReturnMaterialRequestForm';
 import ProjectReturnMaterialIssueForm from '@/components/ProjectReturnMaterialIssueForm';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 export default function ProjectReturnMaterialsPage() {
+  const { theme } = useAppTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Array<{
     x: number;
@@ -46,6 +48,152 @@ export default function ProjectReturnMaterialsPage() {
   useEffect(() => {
     fetchMaterials();
   }, []);
+
+  // Theme-based styling function
+  const getBackgroundStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-white/80',
+          actionCardBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          actionIconBg: 'bg-purple-500/80 backdrop-blur-md text-white border-white/20',
+          actionIconHover: 'hover:bg-purple-500',
+          actionIconText: 'text-white/80',
+          filterCardBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          labelText: 'text-white',
+          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          selectBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+          selectOption: 'bg-[#1a2332]',
+          tableBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          spinnerColor: 'border-teal-400',
+          loadingBg: 'bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          linkColor: 'text-teal-400 hover:text-teal-300',
+          cellText: 'text-white',
+          cellSubtext: 'text-white/80',
+          badgePending: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+          badgeDefault: 'bg-white/10 text-white/80 border-white/20',
+          actionButtonRequest: 'text-orange-400 hover:text-orange-300 hover:bg-white/10',
+          actionButtonIssue: 'text-green-400 hover:text-green-300 hover:bg-white/10',
+          actionButtonEdit: 'text-teal-400 hover:text-teal-300 hover:bg-white/10',
+          actionButtonDispose: 'text-purple-400 hover:text-purple-300 hover:bg-white/10',
+          actionButtonDelete: 'text-red-400 hover:text-red-300 hover:bg-white/10',
+          modalOverlay: 'bg-black/60 backdrop-blur-sm',
+          modalBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          modalTitle: 'text-white',
+          modalInput: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          modalInputDisabled: 'bg-white/5 backdrop-blur-md border border-white/10 text-white/50',
+          modalTextarea: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          modalButtonCancel: 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white',
+          modalButtonSubmit: 'bg-teal-500 hover:bg-teal-600 text-white',
+          modalButtonImport: 'bg-green-500 hover:bg-green-600 text-white',
+          modalButtonDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          infoBoxBg: 'bg-blue-50 dark:bg-blue-900/20',
+          infoBoxText: 'text-white',
+          warningBoxBg: 'bg-yellow-500/20 backdrop-blur-md border-yellow-500/30',
+          warningBoxTitle: 'text-yellow-300',
+          warningBoxText: 'text-yellow-200/90',
+          disposeWarningBg: 'bg-red-500/20 backdrop-blur-md border-red-500/30',
+          disposeWarningText: 'text-red-300'
+        };
+      case 'light':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
+          headerBg: 'bg-white border-2 border-blue-200 shadow-lg',
+          headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
+          headerSubtitle: 'text-gray-700',
+          actionCardBg: 'bg-white border-2 border-blue-200 shadow-md',
+          actionIconBg: 'bg-purple-600 text-white border-2 border-purple-500',
+          actionIconHover: 'hover:bg-purple-700',
+          actionIconText: 'text-gray-700',
+          filterCardBg: 'bg-white border-2 border-blue-200 shadow-md',
+          labelText: 'text-gray-900',
+          inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          selectBg: 'bg-white border-2 border-blue-300 text-gray-900',
+          selectOption: 'bg-white',
+          tableBg: 'bg-white border-2 border-blue-200 shadow-md',
+          spinnerColor: 'border-blue-500',
+          loadingBg: 'bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
+          linkColor: 'text-blue-600 hover:text-blue-700',
+          cellText: 'text-gray-900',
+          cellSubtext: 'text-gray-600',
+          badgePending: 'bg-orange-100 text-orange-800 border-2 border-orange-300',
+          badgeDefault: 'bg-gray-100 text-gray-800 border-2 border-gray-300',
+          actionButtonRequest: 'text-orange-600 hover:text-orange-700 hover:bg-orange-50',
+          actionButtonIssue: 'text-green-600 hover:text-green-700 hover:bg-green-50',
+          actionButtonEdit: 'text-blue-600 hover:text-blue-700 hover:bg-blue-50',
+          actionButtonDispose: 'text-purple-600 hover:text-purple-700 hover:bg-purple-50',
+          actionButtonDelete: 'text-red-600 hover:text-red-700 hover:bg-red-50',
+          modalOverlay: 'bg-black/40 backdrop-blur-sm',
+          modalBg: 'bg-white border-2 border-blue-200 shadow-xl',
+          modalTitle: 'text-gray-900',
+          modalInput: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          modalInputDisabled: 'bg-gray-100 border-2 border-gray-300 text-gray-500',
+          modalTextarea: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500',
+          modalButtonCancel: 'bg-gray-100 border-2 border-gray-300 text-gray-700 hover:bg-gray-200',
+          modalButtonSubmit: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
+          modalButtonImport: 'bg-green-600 hover:bg-green-700 text-white border-2 border-green-500',
+          modalButtonDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          infoBoxBg: 'bg-blue-100 border-2 border-blue-300',
+          infoBoxText: 'text-gray-900',
+          warningBoxBg: 'bg-yellow-100 border-2 border-yellow-300',
+          warningBoxTitle: 'text-yellow-800',
+          warningBoxText: 'text-yellow-700',
+          disposeWarningBg: 'bg-red-100 border-2 border-red-300',
+          disposeWarningText: 'text-red-800'
+        };
+      default: // dark theme
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
+          headerBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          headerTitle: 'bg-gradient-to-r from-slate-100 to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-slate-300',
+          actionCardBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          actionIconBg: 'bg-purple-600 text-white border border-purple-500',
+          actionIconHover: 'hover:bg-purple-700',
+          actionIconText: 'text-slate-300',
+          filterCardBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          labelText: 'text-slate-200',
+          inputBg: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
+          selectBg: 'bg-slate-800/90 border border-slate-600 text-slate-100',
+          selectOption: 'bg-slate-800',
+          tableBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          spinnerColor: 'border-teal-400',
+          loadingBg: 'bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
+          linkColor: 'text-teal-400 hover:text-teal-300',
+          cellText: 'text-slate-200',
+          cellSubtext: 'text-slate-400',
+          badgePending: 'bg-orange-900/50 text-orange-300 border border-orange-700',
+          badgeDefault: 'bg-slate-700/50 text-slate-300 border border-slate-600',
+          actionButtonRequest: 'text-orange-400 hover:text-orange-300 hover:bg-slate-800',
+          actionButtonIssue: 'text-green-400 hover:text-green-300 hover:bg-slate-800',
+          actionButtonEdit: 'text-teal-400 hover:text-teal-300 hover:bg-slate-800',
+          actionButtonDispose: 'text-purple-400 hover:text-purple-300 hover:bg-slate-800',
+          actionButtonDelete: 'text-red-400 hover:text-red-300 hover:bg-slate-800',
+          modalOverlay: 'bg-black/70 backdrop-blur-sm',
+          modalBg: 'bg-slate-800/95 border border-slate-700 shadow-xl',
+          modalTitle: 'text-slate-100',
+          modalInput: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
+          modalInputDisabled: 'bg-slate-700/30 border border-slate-600/50 text-slate-500',
+          modalTextarea: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400',
+          modalButtonCancel: 'bg-slate-700/50 border border-slate-600 text-slate-200 hover:bg-slate-600',
+          modalButtonSubmit: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500',
+          modalButtonImport: 'bg-green-600 hover:bg-green-700 text-white border border-green-500',
+          modalButtonDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          infoBoxBg: 'bg-blue-900/50 border border-blue-700',
+          infoBoxText: 'text-slate-200',
+          warningBoxBg: 'bg-yellow-900/50 border border-yellow-700',
+          warningBoxTitle: 'text-yellow-300',
+          warningBoxText: 'text-yellow-200',
+          disposeWarningBg: 'bg-red-900/50 border border-red-700',
+          disposeWarningText: 'text-red-300'
+        };
+    }
+  };
+
+  const backgroundStyles = getBackgroundStyles();
 
   // Animated particle background
   useEffect(() => {
@@ -85,9 +233,16 @@ export default function ProjectReturnMaterialsPage() {
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
+        // Draw particle - theme-based colors
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(45, 212, 191, 0.6)';
+        if (theme === 'light') {
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.4)'; // blue for light theme
+        } else if (theme === 'glassmorphic') {
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.6)'; // teal for glassmorphic
+        } else {
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.6)'; // teal for dark theme
+        }
         ctx.fill();
 
         particlesRef.current.forEach((otherParticle, j) => {
@@ -100,7 +255,11 @@ export default function ProjectReturnMaterialsPage() {
               ctx.beginPath();
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
+              if (theme === 'light') {
+                ctx.strokeStyle = `rgba(59, 130, 246, ${0.25 * (1 - distance / 100)})`;
+              } else {
+                ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
+              }
               ctx.lineWidth = 1;
               ctx.stroke();
             }
@@ -125,7 +284,7 @@ export default function ProjectReturnMaterialsPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [theme]);
 
   const fetchMaterials = async () => {
     try {
@@ -405,7 +564,7 @@ export default function ProjectReturnMaterialsPage() {
       cell: ({ row }) => (
         <Link 
           href={`/projectreturn-materials/${row.getValue('materialid')}`}
-          className="text-teal-400 hover:text-teal-300 font-medium transition-colors"
+          className={`${backgroundStyles.linkColor} font-medium transition-colors`}
         >
           {row.getValue('materialid')}
         </Link>
@@ -419,10 +578,10 @@ export default function ProjectReturnMaterialsPage() {
         const materialDescription = row.original.materialDescription;
         return (
           <div className="space-y-1">
-            <div className="font-semibold text-white text-sm">
+            <div className={`font-semibold ${backgroundStyles.cellText} text-sm`}>
               {materialCode}
             </div>
-            <div className="text-white/80 text-xs max-w-xs truncate" title={materialDescription}>
+            <div className={`${backgroundStyles.cellSubtext} text-xs max-w-xs truncate`} title={materialDescription}>
               {materialDescription}
             </div>
           </div>
@@ -441,14 +600,14 @@ export default function ProjectReturnMaterialsPage() {
         const pendingRequests = row.original.pendingRequests;
         return (
           <div className="space-y-1">
-            <div className="font-semibold text-white text-sm">
+            <div className={`font-semibold ${backgroundStyles.cellText} text-sm`}>
               Qty: {quantity.toLocaleString()}
             </div>
-            <div className="text-white/80 text-xs">
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            <div className={backgroundStyles.cellSubtext + ' text-xs'}>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
                 pendingRequests > 0 
-                  ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' 
-                  : 'bg-white/10 text-white/80 border border-white/20'
+                  ? backgroundStyles.badgePending
+                  : backgroundStyles.badgeDefault
               }`}>
                 Pending: {pendingRequests.toLocaleString()}
               </span>
@@ -466,10 +625,10 @@ export default function ProjectReturnMaterialsPage() {
         const sourceIssueNumber = row.original.sourceIssueNumber;
         return (
           <div className="space-y-1">
-            <div className="font-semibold text-white text-sm">
+            <div className={`font-semibold ${backgroundStyles.cellText} text-sm`}>
               {sourceProject}
             </div>
-            <div className="text-white/80 text-xs space-y-0.5">
+            <div className={`${backgroundStyles.cellSubtext} text-xs space-y-0.5`}>
               {sourcePONumber && <div>PO: {sourcePONumber}</div>}
               {sourceIssueNumber && <div>Issue: {sourceIssueNumber}</div>}
             </div>
@@ -496,10 +655,10 @@ export default function ProjectReturnMaterialsPage() {
         const yardRoomRackBin = row.original.yardRoomRackBin;
         return (
           <div className="space-y-1">
-            <div className="font-semibold text-white text-sm max-w-xs truncate" title={warehouseLocation}>
+            <div className={`font-semibold ${backgroundStyles.cellText} text-sm max-w-xs truncate`} title={warehouseLocation}>
               {warehouseLocation}
             </div>
-            <div className="text-white/80 text-xs max-w-xs truncate" title={yardRoomRackBin}>
+            <div className={`${backgroundStyles.cellSubtext} text-xs max-w-xs truncate`} title={yardRoomRackBin}>
               {yardRoomRackBin}
             </div>
           </div>
@@ -514,10 +673,10 @@ export default function ProjectReturnMaterialsPage() {
         const consignmentNote = row.original.consignmentNoteNumber;
         return (
           <div className="space-y-1">
-            <div className="font-semibold text-white text-sm">
+            <div className={`font-semibold ${backgroundStyles.cellText} text-sm`}>
               {receivedDate ? new Date(receivedDate).toLocaleDateString() : 'Not received'}
             </div>
-            <div className="text-white/80 text-xs">
+            <div className={backgroundStyles.cellSubtext + ' text-xs'}>
               {consignmentNote ? `Note: ${consignmentNote}` : 'No note'}
             </div>
           </div>
@@ -541,35 +700,35 @@ export default function ProjectReturnMaterialsPage() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => handleRequestMaterial(row.original)}
-            className="p-1 text-orange-400 hover:text-orange-300 hover:bg-white/10 rounded transition-colors"
+            className={`p-1 ${backgroundStyles.actionButtonRequest} rounded transition-colors`}
             title="Request Material"
           >
             <Send className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleIssueMaterial(row.original)}
-            className="p-1 text-green-400 hover:text-green-300 hover:bg-white/10 rounded transition-colors"
+            className={`p-1 ${backgroundStyles.actionButtonIssue} rounded transition-colors`}
             title="Issue Material"
           >
             <Package className="h-4 w-4" />
           </button>
           <button
             onClick={() => setEditingMaterial(row.original)}
-            className="p-1 text-teal-400 hover:text-teal-300 hover:bg-white/10 rounded transition-colors"
+            className={`p-1 ${backgroundStyles.actionButtonEdit} rounded transition-colors`}
             title="Edit Material"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleDisposeMaterial(row.original)}
-            className="p-1 text-purple-400 hover:text-purple-300 hover:bg-white/10 rounded transition-colors"
+            className={`p-1 ${backgroundStyles.actionButtonDispose} rounded transition-colors`}
             title="Dispose Material"
           >
             <AlertTriangle className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleDeleteMaterial(row.original.materialid)}
-            className="p-1 text-red-400 hover:text-red-300 hover:bg-white/10 rounded transition-colors"
+            className={`p-1 ${backgroundStyles.actionButtonDelete} rounded transition-colors`}
             title="Delete Material"
           >
             <Trash2 className="h-4 w-4" />
@@ -581,14 +740,14 @@ export default function ProjectReturnMaterialsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-teal-400"></div>
+      <div className={`flex items-center justify-center min-h-screen ${backgroundStyles.loadingBg}`}>
+        <div className={`animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+    <div className={backgroundStyles.container}>
       {/* Animated background canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 z-10" />
       
@@ -596,24 +755,24 @@ export default function ProjectReturnMaterialsPage() {
       <div className="relative z-20 container mx-auto p-4 min-h-screen">
         <div className="mb-6">
           {/* Title */}
-          <div className="mb-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-xl">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent mb-2">
+          <div className={`mb-4 ${backgroundStyles.headerBg} rounded-2xl p-6 shadow-xl`}>
+            <h1 className={`text-4xl font-bold ${backgroundStyles.headerTitle} mb-2`}>
               Project Return Materials Management
             </h1>
-            <p className="text-white/80 text-lg">Manage project return materials inventory</p>
+            <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Manage project return materials inventory</p>
           </div>
         
           {/* Action Icons */}
-          <div className="flex flex-wrap gap-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 shadow-xl">
+          <div className={`flex flex-wrap gap-4 ${backgroundStyles.actionCardBg} rounded-2xl p-4 shadow-xl`}>
             <Link
               href="/projectreturn-materials/requests"
               className="flex flex-col items-center gap-1 group"
               title="Requests Pending"
             >
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-purple-500/80 backdrop-blur-md text-white rounded-xl hover:bg-purple-500 transition-colors border border-white/20">
+              <div className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${backgroundStyles.actionIconBg} rounded-xl ${backgroundStyles.actionIconHover} transition-colors`}>
                 <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <span className="text-xs text-white/80 text-center whitespace-nowrap">
+              <span className={`text-xs ${backgroundStyles.actionIconText} text-center whitespace-nowrap`}>
                 Requests Pending
               </span>
             </Link>
@@ -622,10 +781,10 @@ export default function ProjectReturnMaterialsPage() {
               className="flex flex-col items-center gap-1 group"
               title="Disposed Materials"
             >
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-red-500/80 backdrop-blur-md text-white rounded-xl hover:bg-red-500 transition-colors border border-white/20">
+              <div className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${theme === 'light' ? 'bg-red-600 border-2 border-red-500' : theme === 'glassmorphic' ? 'bg-red-500/80 backdrop-blur-md border border-white/20' : 'bg-red-600 border border-red-500'} text-white rounded-xl ${theme === 'light' ? 'hover:bg-red-700' : 'hover:bg-red-500'} transition-colors`}>
                 <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <span className="text-xs text-white/80 text-center whitespace-nowrap">
+              <span className={`text-xs ${backgroundStyles.actionIconText} text-center whitespace-nowrap`}>
                 Disposed Materials
               </span>
             </Link>
@@ -634,10 +793,10 @@ export default function ProjectReturnMaterialsPage() {
               className="flex flex-col items-center gap-1 group"
               title="Import CSV"
             >
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-green-500/80 backdrop-blur-md text-white rounded-xl hover:bg-green-500 transition-colors border border-white/20">
+              <div className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${theme === 'light' ? 'bg-green-600 border-2 border-green-500' : theme === 'glassmorphic' ? 'bg-green-500/80 backdrop-blur-md border border-white/20' : 'bg-green-600 border border-green-500'} text-white rounded-xl ${theme === 'light' ? 'hover:bg-green-700' : 'hover:bg-green-500'} transition-colors`}>
                 <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <span className="text-xs text-white/80 text-center whitespace-nowrap">
+              <span className={`text-xs ${backgroundStyles.actionIconText} text-center whitespace-nowrap`}>
                 Import CSV
               </span>
             </button>
@@ -646,10 +805,10 @@ export default function ProjectReturnMaterialsPage() {
               className="flex flex-col items-center gap-1 group"
               title="Add Material"
             >
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-teal-500/80 backdrop-blur-md text-white rounded-xl hover:bg-teal-500 transition-colors border border-white/20">
+              <div className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 ${theme === 'light' ? 'bg-blue-600 border-2 border-blue-500' : theme === 'glassmorphic' ? 'bg-teal-500/80 backdrop-blur-md border border-white/20' : 'bg-teal-600 border border-teal-500'} text-white rounded-xl ${theme === 'light' ? 'hover:bg-blue-700' : theme === 'glassmorphic' ? 'hover:bg-teal-500' : 'hover:bg-teal-700'} transition-colors`}>
                 <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <span className="text-xs text-white/80 text-center whitespace-nowrap">
+              <span className={`text-xs ${backgroundStyles.actionIconText} text-center whitespace-nowrap`}>
                 Add Material
               </span>
             </button>
@@ -658,19 +817,19 @@ export default function ProjectReturnMaterialsPage() {
 
         <div className="mb-4 space-y-4">
           {/* Location Filter */}
-          <div className="flex flex-col sm:flex-row gap-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 shadow-xl">
+          <div className={`flex flex-col sm:flex-row gap-4 ${backgroundStyles.filterCardBg} rounded-2xl p-4 shadow-xl`}>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${backgroundStyles.labelText} mb-2`}>
                 Filter by Warehouse Location
               </label>
               <select
                 value={locationFilter}
                 onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.selectBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
               >
-                <option value="all" className="bg-[#1a2332]">All Locations ({data.length})</option>
+                <option value="all" className={backgroundStyles.selectOption}>All Locations ({data.length})</option>
                 {uniqueLocations.map((location) => (
-                  <option key={location} value={location} className="bg-[#1a2332]">
+                  <option key={location} value={location} className={backgroundStyles.selectOption}>
                     {location} ({data.filter(m => m.warehouseLocation === location).length})
                   </option>
                 ))}
@@ -678,9 +837,9 @@ export default function ProjectReturnMaterialsPage() {
             </div>
           </div>
           {/* Search Boxes */}
-          <div className="flex flex-col sm:flex-row gap-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 shadow-xl">
+          <div className={`flex flex-col sm:flex-row gap-4 ${backgroundStyles.filterCardBg} rounded-2xl p-4 shadow-xl`}>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${backgroundStyles.labelText} mb-2`}>
                 Search by Material Code
               </label>
               <input
@@ -688,11 +847,11 @@ export default function ProjectReturnMaterialsPage() {
                 value={materialCodeFilter}
                 onChange={(e) => setMaterialCodeFilter(e.target.value)}
                 placeholder="Search by material code..."
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
               />
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${backgroundStyles.labelText} mb-2`}>
                 Search by Material Description
               </label>
               <input
@@ -700,13 +859,13 @@ export default function ProjectReturnMaterialsPage() {
                 value={materialDescriptionFilter}
                 onChange={(e) => setMaterialDescriptionFilter(e.target.value)}
                 placeholder="Search by material description..."
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
               />
             </div>
           </div>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-xl">
+        <div className={`${backgroundStyles.tableBg} rounded-xl shadow-xl`}>
           <ResponsiveTanStackTable
             data={filteredData}
             columns={columns}
@@ -716,14 +875,15 @@ export default function ProjectReturnMaterialsPage() {
             setColumnFilters={setColumnFilters}
             globalFilter={globalFilter}
             setGlobalFilter={setGlobalFilter}
+            variant={theme === 'light' ? 'light' : 'glassmorphic'}
           />
         </div>
 
         {/* Add Material Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-white mb-4">Add Project Return Material</h2>
+          <div className={`${backgroundStyles.modalBg} rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto`}>
+            <h2 className={`text-2xl font-bold ${backgroundStyles.modalTitle} mb-4`}>Add Project Return Material</h2>
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -746,40 +906,40 @@ export default function ProjectReturnMaterialsPage() {
             }}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Material Code *
                   </label>
                   <input
                     type="text"
                     name="materialCode"
                     required
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     UOM *
                   </label>
                   <input
                     type="text"
                     name="uom"
                     required
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Material Description *
                   </label>
                   <input
                     type="text"
                     name="materialDescription"
                     required
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Quantity *
                   </label>
                   <input
@@ -788,42 +948,42 @@ export default function ProjectReturnMaterialsPage() {
                     min="0"
                     step="0.01"
                     required
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Source Project *
                   </label>
                   <input
                     type="text"
                     name="sourceProject"
                     required
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Source PO Number
                   </label>
                   <input
                     type="text"
                     name="sourcePONumber"
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Source Issue Number
                   </label>
                   <input
                     type="text"
                     name="sourceIssueNumber"
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Source Unit Rate
                   </label>
                   <input
@@ -831,62 +991,62 @@ export default function ProjectReturnMaterialsPage() {
                     name="sourceUnitRate"
                     min="0"
                     step="0.01"
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Warehouse Location *
                   </label>
                   <input
                     type="text"
                     name="warehouseLocation"
                     required
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                     placeholder="Enter warehouse location"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Yard/Room/Rack-Bin *
                   </label>
                   <input
                     type="text"
                     name="yardRoomRackBin"
                     required
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                     placeholder="Enter yard/room/rack-bin"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Received in Warehouse Date
                   </label>
                   <input
                     type="date"
                     name="receivedInWarehouseDate"
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Consignment Note Number
                   </label>
                   <input
                     type="text"
                     name="consignmentNoteNumber"
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                     placeholder="Enter consignment note number"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Remarks
                   </label>
                   <textarea
                     name="remarks"
                     rows={3}
-                    className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                   />
                 </div>
               </div>
@@ -894,14 +1054,14 @@ export default function ProjectReturnMaterialsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white rounded-xl transition-colors"
+                  className={`px-4 py-2 ${backgroundStyles.modalButtonCancel} rounded-xl transition-colors`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className={`px-4 py-2 ${backgroundStyles.modalButtonSubmit} rounded-xl transition-colors ${backgroundStyles.modalButtonDisabled} flex items-center gap-2`}
                 >
                   {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
                   {isSaving ? 'Saving...' : 'Add Material'}
@@ -940,7 +1100,7 @@ export default function ProjectReturnMaterialsPage() {
       {showImportForm && (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-2xl font-bold mb-4 text-white">Import Project Return Materials from Excel/CSV</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${backgroundStyles.modalTitle}`}>Import Project Return Materials from Excel/CSV</h2>
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -950,26 +1110,26 @@ export default function ProjectReturnMaterialsPage() {
               }
             }} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white mb-1">
+                <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                   Excel/CSV File *
                 </label>
                 <input
                   type="file"
                   accept=".xlsx,.xls,.csv"
                   required
-                  className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                  className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                 />
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <p className="font-medium mb-2 text-white">Expected columns:</p>
-                <p className="text-xs text-white/80">Material Code*, Material Description*, UOM*, Quantity*, Source Project*, Warehouse Location*, Yard/Room/Rack-Bin*, Source PO Number, Source Issue Number, Source Unit Rate, Received in Warehouse Date, Consignment Note Number, Remarks</p>
-                <p className="text-xs text-white/60">* Required fields</p>
+                <p className={`font-medium mb-2 ${backgroundStyles.modalTitle}`}>Expected columns:</p>
+                <p className={`text-xs ${backgroundStyles.cellSubtext}`}>Material Code*, Material Description*, UOM*, Quantity*, Source Project*, Warehouse Location*, Yard/Room/Rack-Bin*, Source PO Number, Source Issue Number, Source Unit Rate, Received in Warehouse Date, Consignment Note Number, Remarks</p>
+                <p className={`text-xs ${backgroundStyles.cellSubtext}`}>* Required fields</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleDownloadTemplate}
-                  className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl transition-colors text-sm"
+                  className={`px-4 py-2 ${backgroundStyles.modalButtonSubmit} rounded-xl transition-colors text-sm`}
                 >
                   <Download className="h-4 w-4 inline mr-2" />
                   Download Template
@@ -979,14 +1139,14 @@ export default function ProjectReturnMaterialsPage() {
                 <button
                   type="button"
                   onClick={() => setShowImportForm(false)}
-                  className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white rounded-xl transition-colors"
+                  className={`px-4 py-2 ${backgroundStyles.modalButtonCancel} rounded-xl transition-colors`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isImporting}
-                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className={`px-4 py-2 ${backgroundStyles.modalButtonImport} rounded-xl transition-colors ${backgroundStyles.modalButtonDisabled} flex items-center gap-2`}
                 >
                   {isImporting && <Loader2 className="h-4 w-4 animate-spin" />}
                   {isImporting ? 'Importing...' : 'Import'}
@@ -1004,6 +1164,7 @@ export default function ProjectReturnMaterialsPage() {
             onClose={() => setEditingMaterial(null)}
             onSubmit={handleUpdateMaterial}
             isSaving={isSaving}
+            backgroundStyles={backgroundStyles}
           />
         )}
 
@@ -1016,61 +1177,61 @@ export default function ProjectReturnMaterialsPage() {
               <h2 className="text-2xl font-bold text-white">Dispose Material</h2>
             </div>
             
-            <div className="bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-xl p-4 mb-6">
-              <p className="text-red-300 font-medium">
+            <div className={`${backgroundStyles.disposeWarningBg} rounded-xl p-4 mb-6`}>
+              <p className={`${backgroundStyles.disposeWarningText} font-medium`}>
                 ⚠️ This action is irreversible and will move the material to scrap status.
               </p>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-white">Material Details</h3>
+              <h3 className={`text-lg font-medium ${backgroundStyles.modalTitle}`}>Material Details</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Material ID
                   </label>
-                  <p className="px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white">
+                  <p className={`px-3 py-2 ${backgroundStyles.modalInput} rounded-xl`}>
                     {materialToDispose.materialid}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Material Code
                   </label>
-                  <p className="px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white">
+                  <p className={`px-3 py-2 ${backgroundStyles.modalInput} rounded-xl`}>
                     {materialToDispose.materialCode}
                   </p>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Description
                   </label>
-                  <p className="px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white">
+                  <p className={`px-3 py-2 ${backgroundStyles.modalInput} rounded-xl`}>
                     {materialToDispose.materialDescription}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Unit of Measure
                   </label>
-                  <p className="px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white">
+                  <p className={`px-3 py-2 ${backgroundStyles.modalInput} rounded-xl`}>
                     {materialToDispose.uom}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Current Quantity
                   </label>
-                  <p className="px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white">
+                  <p className={`px-3 py-2 ${backgroundStyles.modalInput} rounded-xl`}>
                     {materialToDispose.quantity.toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Unit Rate
                   </label>
-                  <p className="px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white">
+                  <p className={`px-3 py-2 ${backgroundStyles.modalInput} rounded-xl`}>
                     {new Intl.NumberFormat('en-US', {
                       style: 'currency',
                       currency: 'SAR'
@@ -1078,10 +1239,10 @@ export default function ProjectReturnMaterialsPage() {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-1">
+                  <label className={`block text-sm font-medium ${backgroundStyles.modalTitle} mb-1`}>
                     Current Value
                   </label>
-                  <p className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white font-semibold">
+                  <p className={`px-3 py-2 ${backgroundStyles.modalInput} rounded-lg font-semibold`}>
                     {new Intl.NumberFormat('en-US', {
                       style: 'currency',
                       currency: 'SAR'
@@ -1101,7 +1262,7 @@ export default function ProjectReturnMaterialsPage() {
               <button
                 onClick={handleConfirmDispose}
                 disabled={isSaving}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`px-4 py-2 ${theme === 'light' ? 'bg-red-600 hover:bg-red-700 border-2 border-red-500' : 'bg-red-500 hover:bg-red-600'} text-white rounded-xl transition-colors flex items-center gap-2 ${backgroundStyles.modalButtonDisabled}`}
               >
                 {isSaving ? (
                   <>
@@ -1125,7 +1286,7 @@ export default function ProjectReturnMaterialsPage() {
 }
 
 // Edit Material Form Component
-function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material: ProjectReturnMaterialData; onClose: () => void; onSubmit: (data: Partial<ProjectReturnMaterialData>) => void; isSaving?: boolean }) {
+function EditMaterialForm({ material, onClose, onSubmit, isSaving, backgroundStyles }: { material: ProjectReturnMaterialData; onClose: () => void; onSubmit: (data: Partial<ProjectReturnMaterialData>) => void; isSaving?: boolean; backgroundStyles: Record<string, string> }) {
   const [formData, setFormData] = useState<Partial<ProjectReturnMaterialData>>(material);
 
   const handleSubmit = (e: FormEvent) => {
@@ -1159,7 +1320,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 required
                 value={formData.materialCode || ''}
                 onChange={(e) => setFormData({ ...formData, materialCode: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div>
@@ -1171,7 +1332,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 required
                 value={formData.uom || ''}
                 onChange={(e) => setFormData({ ...formData, uom: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div className="md:col-span-2">
@@ -1183,7 +1344,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 required
                 value={formData.materialDescription || ''}
                 onChange={(e) => setFormData({ ...formData, materialDescription: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div>
@@ -1197,7 +1358,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 step="0.01"
                 value={formData.quantity || 0}
                 onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) || 0 })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div>
@@ -1209,7 +1370,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 required
                 value={formData.sourceProject || ''}
                 onChange={(e) => setFormData({ ...formData, sourceProject: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div>
@@ -1220,7 +1381,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 type="text"
                 value={formData.sourcePONumber || ''}
                 onChange={(e) => setFormData({ ...formData, sourcePONumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div>
@@ -1231,7 +1392,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 type="text"
                 value={formData.sourceIssueNumber || ''}
                 onChange={(e) => setFormData({ ...formData, sourceIssueNumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div>
@@ -1244,7 +1405,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 step="0.01"
                 value={formData.sourceUnitRate || 0}
                 onChange={(e) => setFormData({ ...formData, sourceUnitRate: parseFloat(e.target.value) || 0 })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div>
@@ -1256,7 +1417,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 required
                 value={formData.warehouseLocation || ''}
                 onChange={(e) => setFormData({ ...formData, warehouseLocation: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                 placeholder="Enter warehouse location"
               />
             </div>
@@ -1269,7 +1430,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 required
                 value={formData.yardRoomRackBin || ''}
                 onChange={(e) => setFormData({ ...formData, yardRoomRackBin: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                 placeholder="Enter yard/room/rack-bin"
               />
             </div>
@@ -1281,7 +1442,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 type="date"
                 value={formData.receivedInWarehouseDate ? new Date(formData.receivedInWarehouseDate).toISOString().split('T')[0] : ''}
                 onChange={(e) => setFormData({ ...formData, receivedInWarehouseDate: e.target.value ? new Date(e.target.value) : undefined })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
             <div>
@@ -1292,7 +1453,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 type="text"
                 value={formData.consignmentNoteNumber || ''}
                 onChange={(e) => setFormData({ ...formData, consignmentNoteNumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
                 placeholder="Enter consignment note number"
               />
             </div>
@@ -1304,7 +1465,7 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
                 value={formData.remarks || ''}
                 onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${backgroundStyles.modalInput} rounded-xl transition-all`}
               />
             </div>
           </div>
@@ -1312,14 +1473,14 @@ function EditMaterialForm({ material, onClose, onSubmit, isSaving }: { material:
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              className={`px-4 py-2 ${backgroundStyles.modalButtonCancel}`}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className={`px-4 py-2 ${backgroundStyles.modalButtonSubmit} rounded-lg transition-colors ${backgroundStyles.modalButtonDisabled} flex items-center gap-2`}
             >
               {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
               {isSaving ? 'Updating...' : 'Update Material'}

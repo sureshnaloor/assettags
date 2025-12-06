@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResponsiveTable from '@/components/ui/responsive-table';
 import SearchableEmployeeSelect from '@/components/SearchableEmployeeSelect';
 import SearchablePPESelect from '@/components/SearchablePPESelect';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 interface PPEIssueFormData {
   userEmpNumber: string;
@@ -30,6 +31,7 @@ interface ItemRow {
 }
 
 export default function PPEIssueRecordsPage() {
+  const { theme } = useAppTheme();
   const [issueRecords, setIssueRecords] = useState<PPEIssueRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -80,6 +82,122 @@ export default function PPEIssueRecordsPage() {
     }
   };
 
+  // Theme-based styling function
+  const getBackgroundStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          headerHover: 'hover:bg-white/15',
+          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-white',
+          tabsBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          tabsTrigger: 'rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/70',
+          cardBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          cardHover: 'hover:bg-white/15',
+          cardTitle: 'text-white',
+          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          inputDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          buttonPrimary: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
+          buttonSecondary: 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
+          buttonDelete: 'bg-red-500/20 backdrop-blur-md border border-red-400/30 text-red-300 hover:bg-red-500/30',
+          buttonDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          spinnerColor: 'border-teal-400',
+          loadingText: 'text-white',
+          editBannerBg: 'bg-blue-500/20 backdrop-blur-md border border-blue-400/30',
+          editBannerText: 'text-blue-300',
+          tableBg: 'bg-white/5 backdrop-blur-md border border-white/20',
+          tableHeaderBg: 'bg-white/5 backdrop-blur-sm border-b border-white/10',
+          tableHeaderText: 'text-white/90',
+          tableRowBorder: 'border-b border-white/5',
+          tableRowHover: 'hover:bg-white/10',
+          tableCellText: 'text-white',
+          labelText: 'text-white',
+          labelTextSecondary: 'text-slate-300',
+          checkboxAccent: 'accent-teal-400',
+          detailLabel: 'text-teal-300',
+          detailValue: 'text-white',
+          emptyText: 'text-white/70',
+          errorText: 'text-red-300'
+        };
+      case 'light':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
+          headerBg: 'bg-white border-2 border-blue-200 shadow-lg',
+          headerHover: 'hover:bg-blue-50',
+          headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
+          headerSubtitle: 'text-gray-700',
+          tabsBg: 'bg-white border-2 border-blue-200 shadow-md',
+          tabsTrigger: 'rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-gray-600',
+          cardBg: 'bg-white border-2 border-blue-200 shadow-md',
+          cardHover: 'hover:bg-blue-50',
+          cardTitle: 'text-gray-900',
+          inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          inputDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          buttonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
+          buttonSecondary: 'bg-gray-100 border-2 border-gray-300 text-gray-700 hover:bg-gray-200',
+          buttonDelete: 'bg-red-600 hover:bg-red-700 text-white border-2 border-red-500',
+          buttonDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          spinnerColor: 'border-blue-500',
+          loadingText: 'text-gray-700',
+          editBannerBg: 'bg-blue-100 border-2 border-blue-300',
+          editBannerText: 'text-blue-800',
+          tableBg: 'bg-white border-2 border-blue-200',
+          tableHeaderBg: 'bg-blue-50 border-b-2 border-blue-200',
+          tableHeaderText: 'text-gray-900',
+          tableRowBorder: 'border-b border-gray-200',
+          tableRowHover: 'hover:bg-blue-50',
+          tableCellText: 'text-gray-900',
+          labelText: 'text-gray-900',
+          labelTextSecondary: 'text-gray-600',
+          checkboxAccent: 'accent-blue-600',
+          detailLabel: 'text-blue-700',
+          detailValue: 'text-gray-900',
+          emptyText: 'text-gray-500',
+          errorText: 'text-red-600'
+        };
+      default: // dark theme
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
+          headerBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          headerHover: 'hover:bg-slate-700/90',
+          headerTitle: 'bg-gradient-to-r from-slate-100 to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-slate-300',
+          tabsBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          tabsTrigger: 'rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-slate-700 data-[state=active]:text-slate-100 data-[state=inactive]:text-slate-400',
+          cardBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          cardHover: 'hover:bg-slate-700/90',
+          cardTitle: 'text-slate-100',
+          inputBg: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
+          inputDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          buttonPrimary: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500',
+          buttonSecondary: 'bg-slate-700/50 border border-slate-600 text-slate-200 hover:bg-slate-600',
+          buttonDelete: 'bg-red-600 hover:bg-red-700 text-white border border-red-500',
+          buttonDisabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+          spinnerColor: 'border-teal-400',
+          loadingText: 'text-slate-300',
+          editBannerBg: 'bg-blue-900/50 border border-blue-700',
+          editBannerText: 'text-blue-300',
+          tableBg: 'bg-slate-800/50 border border-slate-700',
+          tableHeaderBg: 'bg-slate-800/80 border-b border-slate-700',
+          tableHeaderText: 'text-slate-200',
+          tableRowBorder: 'border-b border-slate-700',
+          tableRowHover: 'hover:bg-slate-700/50',
+          tableCellText: 'text-slate-200',
+          labelText: 'text-slate-200',
+          labelTextSecondary: 'text-slate-400',
+          checkboxAccent: 'accent-teal-400',
+          detailLabel: 'text-teal-400',
+          detailValue: 'text-slate-200',
+          emptyText: 'text-slate-400',
+          errorText: 'text-red-400'
+        };
+    }
+  };
+
+  const backgroundStyles = getBackgroundStyles();
+
   // Network canvas animation
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -120,10 +238,16 @@ export default function PPEIssueRecordsPage() {
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
-        // Draw particle
+        // Draw particle - theme-based colors
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(45, 212, 191, 0.4)';
+        if (theme === 'light') {
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.3)'; // blue for light theme
+        } else if (theme === 'glassmorphic') {
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.4)'; // teal for glassmorphic
+        } else {
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.4)'; // teal for dark theme
+        }
         ctx.fill();
 
         // Draw connections
@@ -137,7 +261,11 @@ export default function PPEIssueRecordsPage() {
               ctx.beginPath();
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(45, 212, 191, ${0.2 * (1 - distance / 120)})`;
+              if (theme === 'light') {
+                ctx.strokeStyle = `rgba(59, 130, 246, ${0.15 * (1 - distance / 120)})`;
+              } else {
+                ctx.strokeStyle = `rgba(45, 212, 191, ${0.2 * (1 - distance / 120)})`;
+              }
               ctx.lineWidth = 1;
               ctx.stroke();
             }
@@ -162,7 +290,7 @@ export default function PPEIssueRecordsPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     fetchData();
@@ -341,7 +469,7 @@ export default function PPEIssueRecordsPage() {
     if (reservationNumber) {
       additionalDetails.push(
         <span key="reservation">
-          <span className="text-teal-300 font-medium">Reservation:</span> <span className="text-white">{reservationNumber}</span>
+          <span className={`${backgroundStyles.detailLabel} font-medium`}>Reservation:</span> <span className={backgroundStyles.detailValue}>{reservationNumber}</span>
         </span>
       );
     }
@@ -350,7 +478,7 @@ export default function PPEIssueRecordsPage() {
     if (fileReferenceNumber) {
       additionalDetails.push(
         <span key="fileref">
-          <span className="text-teal-300 font-medium">File Ref:</span> <span className="text-white">{fileReferenceNumber}</span>
+          <span className={`${backgroundStyles.detailLabel} font-medium`}>File Ref:</span> <span className={backgroundStyles.detailValue}>{fileReferenceNumber}</span>
         </span>
       );
     }
@@ -359,7 +487,7 @@ export default function PPEIssueRecordsPage() {
     if (size) {
       additionalDetails.push(
         <span key="size">
-          <span className="text-teal-300 font-medium">Size:</span> <span className="text-white">{size}</span>
+          <span className={`${backgroundStyles.detailLabel} font-medium`}>Size:</span> <span className={backgroundStyles.detailValue}>{size}</span>
         </span>
       );
     }
@@ -368,7 +496,7 @@ export default function PPEIssueRecordsPage() {
     if (remarks) {
       additionalDetails.push(
         <span key="remarks">
-          <span className="text-teal-300 font-medium">Remarks:</span> <span className="text-white">{remarks}</span>
+          <span className={`${backgroundStyles.detailLabel} font-medium`}>Remarks:</span> <span className={backgroundStyles.detailValue}>{remarks}</span>
         </span>
       );
     }
@@ -379,7 +507,7 @@ export default function PPEIssueRecordsPage() {
             {item}
           </div>
         ))}</div>
-      : <span className="text-white/70">-</span>;
+      : <span className={backgroundStyles.emptyText}>-</span>;
 
     return {
       ...record,
@@ -391,14 +519,14 @@ export default function PPEIssueRecordsPage() {
         <div className="flex gap-2">
           <button
             onClick={() => handleEdit(record)}
-            className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all duration-300 text-sm font-medium"
+            className={`px-4 py-2 ${backgroundStyles.buttonSecondary} rounded-lg transition-all duration-300 text-sm font-medium`}
           >
             Edit
           </button>
           <button
             onClick={() => handleDelete(record)}
             disabled={deleteLoadingId === record._id}
-            className="px-4 py-2 bg-red-500/20 backdrop-blur-md border border-red-400/30 rounded-lg text-red-300 hover:bg-red-500/30 transition-all duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`px-4 py-2 ${backgroundStyles.buttonDelete} rounded-lg transition-all duration-300 text-sm font-medium ${backgroundStyles.buttonDisabled}`}
           >
             {deleteLoadingId === record._id ? 'Deleting...' : 'Delete'}
           </button>
@@ -408,7 +536,7 @@ export default function PPEIssueRecordsPage() {
   });
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+    <div className={backgroundStyles.container}>
       {/* Animated background canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 z-10" />
       
@@ -417,24 +545,24 @@ export default function PPEIssueRecordsPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="mb-8">
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+            <div className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300`}>
+              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
                 PPE Issue Records
               </h1>
-              <p className="text-white text-lg">Manage Personal Protective Equipment issue records</p>
+              <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Manage Personal Protective Equipment issue records</p>
             </div>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-1 shadow-lg mb-6">
+            <TabsList className={`${backgroundStyles.tabsBg} rounded-xl p-1 shadow-lg mb-6`}>
               <TabsTrigger 
-                className="rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/70 transition-all duration-300" 
+                className={`${backgroundStyles.tabsTrigger} transition-all duration-300`}
                 value="list"
               >
                 Issue Records
               </TabsTrigger>
               <TabsTrigger 
-                className="rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/70 transition-all duration-300" 
+                className={`${backgroundStyles.tabsTrigger} transition-all duration-300`}
                 value="form"
               >
                 Issue New PPE
@@ -442,21 +570,21 @@ export default function PPEIssueRecordsPage() {
             </TabsList>
 
             <TabsContent value="list">
-              <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
-                <div className="p-6 lg:p-8 border-b border-white/10">
+              <div className={`${backgroundStyles.cardBg} rounded-3xl shadow-2xl overflow-hidden ${backgroundStyles.cardHover} transition-all duration-300`}>
+                <div className={`p-6 lg:p-8 border-b ${theme === 'light' ? 'border-blue-200' : theme === 'glassmorphic' ? 'border-white/10' : 'border-slate-700'}`}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <h2 className="text-2xl font-bold text-white">PPE Issue Records</h2>
+                    <h2 className={`text-2xl font-bold ${backgroundStyles.cardTitle}`}>PPE Issue Records</h2>
                     <div className="flex gap-4">
                       <input
                         type="text"
                         placeholder="Search issue records..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all text-sm"
+                        className={`px-4 py-2 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm`}
                       />
                       <button
                         onClick={() => setActiveTab('form')}
-                        className="px-6 py-2 bg-teal-500/20 backdrop-blur-md border border-teal-400/30 rounded-xl text-teal-300 font-semibold hover:bg-teal-500/30 hover:border-teal-400/50 transition-all duration-300 text-sm"
+                        className={`px-6 py-2 ${backgroundStyles.buttonPrimary} rounded-xl font-semibold transition-all duration-300 text-sm`}
                       >
                         Issue New PPE
                       </button>
@@ -466,11 +594,11 @@ export default function PPEIssueRecordsPage() {
                 <div className="p-6 lg:p-8">
                   {loading ? (
                     <div className="flex justify-center items-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-400"></div>
-                      <p className="text-white ml-4">Loading...</p>
+                      <div className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
+                      <p className={`${backgroundStyles.loadingText} ml-4`}>Loading...</p>
                     </div>
                   ) : (
-                    <ResponsiveTable columns={columns} data={tableData} variant="glassmorphic" />
+                    <ResponsiveTable columns={columns} data={tableData} variant={theme === 'light' ? 'light' : 'glassmorphic'} />
                   )}
                 </div>
               </div>
@@ -478,15 +606,15 @@ export default function PPEIssueRecordsPage() {
 
             <TabsContent value="form">
               {editingRecordId && (
-                <div className="mb-6 p-4 bg-blue-500/20 backdrop-blur-md border border-blue-400/30 rounded-xl">
-                  <p className="text-sm text-blue-300">
+                <div className={`mb-6 p-4 ${backgroundStyles.editBannerBg} rounded-xl`}>
+                  <p className={`text-sm ${backgroundStyles.editBannerText}`}>
                     <strong>Edit Mode:</strong> You are editing an existing PPE issue record. The date field is locked and cannot be changed.
                   </p>
                 </div>
               )}
-              <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
-                <div className="p-6 lg:p-8 border-b border-white/10">
-                  <h2 className="text-2xl font-bold text-white">
+              <div className={`${backgroundStyles.cardBg} rounded-3xl shadow-2xl overflow-hidden ${backgroundStyles.cardHover} transition-all duration-300`}>
+                <div className={`p-6 lg:p-8 border-b ${theme === 'light' ? 'border-blue-200' : theme === 'glassmorphic' ? 'border-white/10' : 'border-slate-700'}`}>
+                  <h2 className={`text-2xl font-bold ${backgroundStyles.cardTitle}`}>
                     {editingRecordId ? 'Edit PPE Issue Record' : 'Issue PPE to Employee'}
                   </h2>
                 </div>
@@ -494,7 +622,7 @@ export default function PPEIssueRecordsPage() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${backgroundStyles.labelText}`}>
                           Employee *
                         </label>
                     <SearchableEmployeeSelect
@@ -510,31 +638,31 @@ export default function PPEIssueRecordsPage() {
                       required
                     />
                         {editingRecordId && formData.userEmpName && (
-                          <p className="text-xs text-red-300 mt-2">
+                          <p className={`text-xs ${backgroundStyles.errorText} mt-2`}>
                             Existing: {formData.userEmpName} ({formData.userEmpNumber})
                           </p>
                         )}
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">Issue Date *</label>
+                        <label className={`block text-sm font-medium mb-2 ${backgroundStyles.labelText}`}>Issue Date *</label>
                         <input
                           type="date"
                           value={formData.dateOfIssue}
                           onChange={(e) => setFormData({ ...formData, dateOfIssue: e.target.value })}
                           required
                           disabled={!!editingRecordId}
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          className={`w-full px-4 py-2 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all ${backgroundStyles.inputDisabled}`}
                         />
                         {editingRecordId && (
-                          <p className="text-xs text-white/80 mt-2">Date cannot be changed when editing</p>
+                          <p className={`text-xs ${backgroundStyles.labelTextSecondary} mt-2`}>Date cannot be changed when editing</p>
                         )}
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${backgroundStyles.labelText}`}>
                           Reservation Number
                         </label>
                         <input
@@ -542,12 +670,12 @@ export default function PPEIssueRecordsPage() {
                           value={formData.reservationNumber}
                           onChange={(e) => setFormData({ ...formData, reservationNumber: e.target.value })}
                           placeholder="Enter reservation number..."
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                          className={`w-full px-4 py-2 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${backgroundStyles.labelText}`}>
                           File Reference Number
                         </label>
                         <input
@@ -555,27 +683,27 @@ export default function PPEIssueRecordsPage() {
                           value={formData.fileReferenceNumber}
                           onChange={(e) => setFormData({ ...formData, fileReferenceNumber: e.target.value })}
                           placeholder="Enter file reference number..."
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                          className={`w-full px-4 py-2 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                         />
                       </div>
                     </div>
                 
                     <div className="mt-4">
-                      <div className="overflow-auto rounded-xl border border-white/20 shadow-lg bg-white/5 backdrop-blur-md">
+                      <div className={`overflow-auto rounded-xl ${backgroundStyles.tableBg} shadow-lg`}>
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
-                              <th className="text-left p-3 text-white/90 font-semibold">PPE Item</th>
-                              <th className="text-left p-3 text-white/90 font-semibold">Quantity</th>
-                              <th className="text-left p-3 text-white/90 font-semibold">Size</th>
-                              <th className="text-left p-3 text-white/90 font-semibold">First Issue</th>
-                              <th className="text-left p-3 text-white/90 font-semibold">Issue Against Due</th>
-                              <th className="text-left p-3 text-white/90 font-semibold">Actions</th>
+                            <tr className={`${backgroundStyles.tableHeaderBg} ${backgroundStyles.tableRowBorder}`}>
+                              <th className={`text-left p-3 ${backgroundStyles.tableHeaderText} font-semibold`}>PPE Item</th>
+                              <th className={`text-left p-3 ${backgroundStyles.tableHeaderText} font-semibold`}>Quantity</th>
+                              <th className={`text-left p-3 ${backgroundStyles.tableHeaderText} font-semibold`}>Size</th>
+                              <th className={`text-left p-3 ${backgroundStyles.tableHeaderText} font-semibold`}>First Issue</th>
+                              <th className={`text-left p-3 ${backgroundStyles.tableHeaderText} font-semibold`}>Issue Against Due</th>
+                              <th className={`text-left p-3 ${backgroundStyles.tableHeaderText} font-semibold`}>Actions</th>
                             </tr>
                           </thead>
                           <tbody>
                             {itemRows.map((row, idx) => (
-                              <tr key={idx} className="border-b border-white/5 hover:bg-white/10 transition-colors">
+                              <tr key={idx} className={`${backgroundStyles.tableRowBorder} ${backgroundStyles.tableRowHover} transition-colors`}>
                                 <td className="p-3 min-w-[260px]">
                                   <SearchablePPESelect
                                     value={row.ppeId}
@@ -584,14 +712,14 @@ export default function PPEIssueRecordsPage() {
                                     required
                                   />
                                   {editingRecordId && row.ppeName && (
-                                    <p className="text-xs text-red-300 mt-2">
+                                    <p className={`text-xs ${backgroundStyles.errorText} mt-2`}>
                                       Existing: {row.ppeName} ({row.ppeId})
                                     </p>
                                   )}
                                 </td>
                                 <td className="p-3 w-[140px]">
                                   <input
-                                    className="w-full px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                                    className={`w-full px-3 py-2 ${backgroundStyles.inputBg} rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                                     type="number"
                                     min="1"
                                     value={row.quantityIssued}
@@ -600,7 +728,7 @@ export default function PPEIssueRecordsPage() {
                                 </td>
                                 <td className="p-3 w-[120px]">
                                   <input
-                                    className="w-full px-3 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                                    className={`w-full px-3 py-2 ${backgroundStyles.inputBg} rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                                     type="text"
                                     value={row.size}
                                     onChange={(e) => updateRowSize(idx, e.target.value)}
@@ -608,10 +736,10 @@ export default function PPEIssueRecordsPage() {
                                   />
                                 </td>
                                 <td className="p-3 w-[160px]">
-                                  <label className="inline-flex items-center gap-2 text-white">
+                                  <label className={`inline-flex items-center gap-2 ${backgroundStyles.labelText}`}>
                                     <input
                                       type="checkbox"
-                                      className="rounded w-4 h-4 accent-teal-400"
+                                      className={`rounded w-4 h-4 ${backgroundStyles.checkboxAccent}`}
                                       checked={row.isFirstIssue}
                                       onChange={(e) => updateRowFlag(idx, 'isFirstIssue', e.target.checked)}
                                     />
@@ -619,10 +747,10 @@ export default function PPEIssueRecordsPage() {
                                   </label>
                                 </td>
                                 <td className="p-3 w-[220px]">
-                                  <label className="inline-flex items-center gap-2 text-white">
+                                  <label className={`inline-flex items-center gap-2 ${backgroundStyles.labelText}`}>
                                     <input
                                       type="checkbox"
-                                      className="rounded w-4 h-4 accent-teal-400"
+                                      className={`rounded w-4 h-4 ${backgroundStyles.checkboxAccent}`}
                                       checked={row.issueAgainstDue}
                                       onChange={(e) => updateRowFlag(idx, 'issueAgainstDue', e.target.checked)}
                                     />
@@ -634,7 +762,7 @@ export default function PPEIssueRecordsPage() {
                                     type="button"
                                     onClick={() => removeRow(idx)}
                                     disabled={itemRows.length <= 1}
-                                    className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className={`px-4 py-2 ${backgroundStyles.buttonSecondary} rounded-lg transition-all duration-300 text-sm font-medium ${backgroundStyles.buttonDisabled}`}
                                   >
                                     Remove
                                   </button>
@@ -648,7 +776,7 @@ export default function PPEIssueRecordsPage() {
                         <button
                           type="button"
                           onClick={addRow}
-                          className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all duration-300 text-sm font-medium"
+                          className={`px-4 py-2 ${backgroundStyles.buttonSecondary} rounded-lg transition-all duration-300 text-sm font-medium`}
                         >
                           + Add row
                         </button>
@@ -656,13 +784,13 @@ export default function PPEIssueRecordsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-slate-300">
+                      <label className={`block text-sm font-medium mb-2 ${backgroundStyles.labelTextSecondary}`}>
                         Remarks
                       </label>
                       <textarea
                         value={formData.remarks}
                         onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                        className="w-full p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                        className={`w-full p-4 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                         rows={3}
                         placeholder="Enter any remarks or notes..."
                       />
@@ -672,7 +800,7 @@ export default function PPEIssueRecordsPage() {
                       <button
                         type="submit"
                         disabled={submitLoading}
-                        className="px-6 py-3 bg-teal-500/20 backdrop-blur-md border border-teal-400/30 rounded-xl text-teal-300 font-semibold hover:bg-teal-500/30 hover:border-teal-400/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`px-6 py-3 ${backgroundStyles.buttonPrimary} rounded-xl font-semibold transition-all duration-300 ${backgroundStyles.buttonDisabled}`}
                       >
                         {submitLoading ? (editingRecordId ? 'Updating...' : 'Submitting...') : (editingRecordId ? 'Update Issue' : 'Issue PPE')}
                       </button>
@@ -695,7 +823,7 @@ export default function PPEIssueRecordsPage() {
                             { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
                           ]);
                         }}
-                        className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+                        className={`px-6 py-3 ${backgroundStyles.buttonSecondary} rounded-xl transition-all duration-300 font-medium`}
                       >
                         Cancel
                       </button>

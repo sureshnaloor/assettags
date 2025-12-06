@@ -10,8 +10,10 @@ import Link from 'next/link';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 import { ToolData } from '@/types/tools';
 import AssetQRCode from '@/components/AssetQRCode';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 export default function ToolsPage() {
+  const { theme } = useAppTheme();
   const [data, setData] = useState<ToolData[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -69,10 +71,16 @@ export default function ToolsPage() {
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
-        // Draw particle
+        // Draw particle - theme-based colors
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(45, 212, 191, 0.4)';
+        if (theme === 'light') {
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.3)'; // blue for light theme
+        } else if (theme === 'glassmorphic') {
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.4)'; // teal for glassmorphic
+        } else {
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.4)'; // teal for dark theme
+        }
         ctx.fill();
 
         // Draw connections
@@ -86,7 +94,11 @@ export default function ToolsPage() {
               ctx.beginPath();
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(45, 212, 191, ${0.2 * (1 - distance / 120)})`;
+              if (theme === 'light') {
+                ctx.strokeStyle = `rgba(59, 130, 246, ${0.15 * (1 - distance / 120)})`;
+              } else {
+                ctx.strokeStyle = `rgba(45, 212, 191, ${0.2 * (1 - distance / 120)})`;
+              }
               ctx.lineWidth = 1;
               ctx.stroke();
             }
@@ -111,7 +123,93 @@ export default function ToolsPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [theme]);
+
+  // Theme-based styling function
+  const getBackgroundStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          textColor: 'text-white',
+          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          headerHover: 'hover:bg-white/15',
+          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-white',
+          buttonAdd: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
+          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          tableBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          tableHover: 'hover:bg-white/15',
+          spinnerColor: 'border-teal-400',
+          linkColor: 'text-teal-400 hover:text-teal-300',
+          actionEdit: 'text-teal-400 hover:text-teal-300',
+          actionDelete: 'text-red-400 hover:text-red-300',
+          modalOverlay: 'bg-black/60 backdrop-blur-sm',
+          modalBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          modalTitle: 'text-white',
+          modalInput: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          modalSelect: 'bg-white/10 backdrop-blur-md border border-white/20 text-white focus:ring-teal-400',
+          modalTextarea: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          modalButtonCancel: 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
+          modalButtonSubmit: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
+          modalButtonDisabled: 'bg-white/5 backdrop-blur-md border border-white/10 text-white/50 cursor-not-allowed'
+        };
+      case 'light':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
+          textColor: 'text-gray-900',
+          headerBg: 'bg-white border-2 border-blue-200 shadow-lg',
+          headerHover: 'hover:bg-blue-50',
+          headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
+          headerSubtitle: 'text-gray-700',
+          buttonAdd: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
+          inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          tableBg: 'bg-white border-2 border-blue-200 shadow-md',
+          tableHover: 'hover:bg-blue-50',
+          spinnerColor: 'border-blue-500',
+          linkColor: 'text-blue-600 hover:text-blue-700',
+          actionEdit: 'text-blue-600 hover:text-blue-700',
+          actionDelete: 'text-red-600 hover:text-red-700',
+          modalOverlay: 'bg-black/40 backdrop-blur-sm',
+          modalBg: 'bg-white border-2 border-blue-200 shadow-xl',
+          modalTitle: 'text-gray-900',
+          modalInput: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          modalSelect: 'bg-white border-2 border-blue-300 text-gray-900 focus:ring-blue-500',
+          modalTextarea: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500',
+          modalButtonCancel: 'bg-gray-100 border-2 border-gray-300 text-gray-700 hover:bg-gray-200',
+          modalButtonSubmit: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
+          modalButtonDisabled: 'bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed'
+        };
+      default: // dark theme
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
+          textColor: 'text-slate-100',
+          headerBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          headerHover: 'hover:bg-slate-700/90',
+          headerTitle: 'bg-gradient-to-r from-slate-100 to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-slate-300',
+          buttonAdd: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500',
+          inputBg: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
+          tableBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
+          tableHover: 'hover:bg-slate-700/90',
+          spinnerColor: 'border-teal-400',
+          linkColor: 'text-teal-400 hover:text-teal-300',
+          actionEdit: 'text-teal-400 hover:text-teal-300',
+          actionDelete: 'text-red-400 hover:text-red-300',
+          modalOverlay: 'bg-black/70 backdrop-blur-sm',
+          modalBg: 'bg-slate-800/95 border border-slate-700 shadow-xl',
+          modalTitle: 'text-slate-100',
+          modalInput: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
+          modalSelect: 'bg-slate-800/90 border border-slate-600 text-slate-100 focus:ring-teal-400',
+          modalTextarea: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400',
+          modalButtonCancel: 'bg-slate-700/50 border border-slate-600 text-slate-200 hover:bg-slate-600',
+          modalButtonSubmit: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500',
+          modalButtonDisabled: 'bg-slate-700/30 border border-slate-600/50 text-slate-500 cursor-not-allowed'
+        };
+    }
+  };
+
+  const backgroundStyles = getBackgroundStyles();
 
   useEffect(() => {
     fetchTools();
@@ -199,7 +297,7 @@ export default function ToolsPage() {
       cell: ({ row }) => (
         <Link 
           href={`/tools/${row.original.assetnumber}`}
-          className="text-teal-400 hover:text-teal-300 transition-colors"
+          className={`${backgroundStyles.linkColor} transition-colors`}
         >
           {row.original.assetnumber}
         </Link>
@@ -282,13 +380,13 @@ export default function ToolsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setEditingTool(row.original)}
-            className="text-teal-400 hover:text-teal-300 transition-colors"
+            className={`${backgroundStyles.actionEdit} transition-colors`}
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleDeleteTool(row.original.assetnumber)}
-            className="text-red-400 hover:text-red-300 transition-colors"
+            className={`${backgroundStyles.actionDelete} transition-colors`}
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -298,16 +396,17 @@ export default function ToolsPage() {
   ];
 
   if (loading) {
+    const styles = getBackgroundStyles();
     return (
-      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-teal-400"></div>
-        <p className="text-white ml-4">Loading...</p>
+      <div className={`${styles.container} flex items-center justify-center`}>
+        <div className={`animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 ${styles.spinnerColor}`}></div>
+        <p className={`${styles.textColor} ml-4`}>Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+    <div className={backgroundStyles.container}>
       {/* Animated background canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 z-10" />
       
@@ -316,17 +415,17 @@ export default function ToolsPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="mb-8">
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300">
+            <div className={`${backgroundStyles.headerBg} ${backgroundStyles.headerHover} rounded-3xl p-8 transition-all duration-300`}>
               <div className="flex justify-between items-center">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+                  <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
                     Tools Management
                   </h1>
-                  <p className="text-white text-lg">Manage and track your tools inventory</p>
+                  <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Manage and track your tools inventory</p>
                 </div>
                 <button
                   onClick={() => setShowAddForm(true)}
-                  className="flex items-center gap-2 px-6 py-3 bg-teal-500/20 backdrop-blur-md border border-teal-400/30 rounded-xl text-teal-300 font-semibold hover:bg-teal-500/30 hover:border-teal-400/50 transition-all duration-300"
+                  className={`flex items-center gap-2 px-6 py-3 ${backgroundStyles.buttonAdd} rounded-xl font-semibold transition-all duration-300`}
                 >
                   <Plus className="h-5 w-5" />
                   Add Tool
@@ -342,12 +441,12 @@ export default function ToolsPage() {
               value={globalFilter ?? ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
               placeholder="Search tools..."
-              className="w-full max-w-sm px-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+              className={`w-full max-w-sm px-4 py-3 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 transition-all`}
             />
           </div>
 
           {/* Table Section */}
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
+          <div className={`${backgroundStyles.tableBg} ${backgroundStyles.tableHover} rounded-3xl shadow-2xl overflow-hidden transition-all duration-300`}>
             <ResponsiveTanStackTable
               data={data}
               columns={columns}
@@ -368,6 +467,7 @@ export default function ToolsPage() {
         <AddToolForm
           onClose={() => setShowAddForm(false)}
           onSubmit={handleAddTool}
+          theme={theme}
         />
       )}
 
@@ -377,6 +477,7 @@ export default function ToolsPage() {
           tool={editingTool}
           onClose={() => setEditingTool(null)}
           onSubmit={(toolData) => handleEditTool(editingTool.assetnumber, toolData)}
+          theme={theme}
         />
       )}
     </div>
@@ -384,7 +485,52 @@ export default function ToolsPage() {
 }
 
 // Add Tool Form Component
-function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (data: Partial<ToolData>) => void }) {
+function AddToolForm({ onClose, onSubmit, theme }: { onClose: () => void; onSubmit: (data: Partial<ToolData>) => void; theme?: string }) {
+  const getModalStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          overlay: 'bg-black/60 backdrop-blur-sm',
+          bg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          title: 'text-white',
+          input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          select: 'bg-white/10 backdrop-blur-md border border-white/20 text-white focus:ring-teal-400',
+          textarea: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          buttonCancel: 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
+          buttonSubmit: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
+          buttonDisabled: 'bg-white/5 backdrop-blur-md border border-white/10 text-white/50 cursor-not-allowed',
+          label: 'text-white'
+        };
+      case 'light':
+        return {
+          overlay: 'bg-black/40 backdrop-blur-sm',
+          bg: 'bg-white border-2 border-blue-200 shadow-xl',
+          title: 'text-gray-900',
+          input: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          select: 'bg-white border-2 border-blue-300 text-gray-900 focus:ring-blue-500',
+          textarea: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500',
+          buttonCancel: 'bg-gray-100 border-2 border-gray-300 text-gray-700 hover:bg-gray-200',
+          buttonSubmit: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
+          buttonDisabled: 'bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed',
+          label: 'text-gray-700'
+        };
+      default:
+        return {
+          overlay: 'bg-black/70 backdrop-blur-sm',
+          bg: 'bg-slate-800/95 border border-slate-700 shadow-xl',
+          title: 'text-slate-100',
+          input: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
+          select: 'bg-slate-800/90 border border-slate-600 text-slate-100 focus:ring-teal-400',
+          textarea: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400',
+          buttonCancel: 'bg-slate-700/50 border border-slate-600 text-slate-200 hover:bg-slate-600',
+          buttonSubmit: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500',
+          buttonDisabled: 'bg-slate-700/30 border border-slate-600/50 text-slate-500 cursor-not-allowed',
+          label: 'text-slate-200'
+        };
+    }
+  };
+
+  const modalStyles = getModalStyles();
   const [formData, setFormData] = useState<Partial<ToolData>>({
     toolDescription: '',
     serialNumber: '',
@@ -409,13 +555,13 @@ function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        <h2 className="text-2xl font-bold mb-6 text-white">Add New Tool</h2>
+    <div className={`fixed inset-0 ${modalStyles.overlay} flex items-center justify-center z-50 p-4`}>
+      <div className={`${modalStyles.bg} rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl`}>
+        <h2 className={`text-2xl font-bold mb-6 ${modalStyles.title}`}>Add New Tool</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Description *
               </label>
               <input
@@ -423,44 +569,44 @@ function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
                 required
                 value={formData.toolDescription}
                 onChange={(e) => setFormData({ ...formData, toolDescription: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Serial Number
               </label>
               <input
                 type="text"
                 value={formData.serialNumber}
                 onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Manufacturer
               </label>
               <input
                 type="text"
                 value={formData.manufacturer}
                 onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Model Number
               </label>
               <input
                 type="text"
                 value={formData.modelNumber}
                 onChange={(e) => setFormData({ ...formData, modelNumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Cost
               </label>
               <input
@@ -468,50 +614,50 @@ function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
                 step="0.01"
                 value={formData.toolCost}
                 onChange={(e) => setFormData({ ...formData, toolCost: parseFloat(e.target.value) || 0 })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Purchase Date
               </label>
               <input
                 type="date"
                 value={formData.purchasedDate ? (formData.purchasedDate instanceof Date ? formData.purchasedDate.toISOString().split('T')[0] : formData.purchasedDate) : ''}
                 onChange={(e) => setFormData({ ...formData, purchasedDate: new Date(e.target.value) })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Purchase PO Number
               </label>
               <input
                 type="text"
                 value={formData.purchasePONumber}
                 onChange={(e) => setFormData({ ...formData, purchasePONumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Purchase Supplier
               </label>
               <input
                 type="text"
                 value={formData.purchaseSupplier}
                 onChange={(e) => setFormData({ ...formData, purchaseSupplier: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Status
               </label>
               <select
                 value={formData.toolStatus}
                 onChange={(e) => setFormData({ ...formData, toolStatus: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.select} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               >
                 <option value="Available">Available</option>
                 <option value="In Use">In Use</option>
@@ -520,13 +666,13 @@ function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Location
               </label>
               <select
                 value={formData.toolLocation}
                 onChange={(e) => setFormData({ ...formData, toolLocation: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.select} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               >
                 <option value="Warehouse">Warehouse</option>
                 <option value="Project Site">Project Site</option>
@@ -534,13 +680,13 @@ function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Condition
               </label>
               <select
                 value={formData.toolCondition}
                 onChange={(e) => setFormData({ ...formData, toolCondition: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.select} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               >
                 <option value="Excellent">Excellent</option>
                 <option value="Good">Good</option>
@@ -550,25 +696,25 @@ function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Accessories
               </label>
               <input
                 type="text"
                 value={formData.accessories}
                 onChange={(e) => setFormData({ ...formData, accessories: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Notes
               </label>
               <textarea
                 value={formData.toolNotes}
                 onChange={(e) => setFormData({ ...formData, toolNotes: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.textarea} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
           </div>
@@ -576,13 +722,13 @@ function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+              className={`px-6 py-3 ${modalStyles.buttonCancel} rounded-xl transition-all duration-300 font-medium`}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-teal-500/20 backdrop-blur-md border border-teal-400/30 rounded-xl text-teal-300 font-semibold hover:bg-teal-500/30 hover:border-teal-400/50 transition-all duration-300"
+              className={`px-6 py-3 ${modalStyles.buttonSubmit} rounded-xl font-semibold transition-all duration-300`}
             >
               Add Tool
             </button>
@@ -594,8 +740,54 @@ function AddToolForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
 }
 
 // Edit Tool Form Component
-function EditToolForm({ tool, onClose, onSubmit }: { tool: ToolData; onClose: () => void; onSubmit: (data: Partial<ToolData>) => void }) {
+function EditToolForm({ tool, onClose, onSubmit, theme }: { tool: ToolData; onClose: () => void; onSubmit: (data: Partial<ToolData>) => void; theme?: string }) {
   const [formData, setFormData] = useState<Partial<ToolData>>(tool);
+
+  const getModalStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          overlay: 'bg-black/60 backdrop-blur-sm',
+          bg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          title: 'text-white',
+          input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          select: 'bg-white/10 backdrop-blur-md border border-white/20 text-white focus:ring-teal-400',
+          textarea: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          buttonCancel: 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
+          buttonSubmit: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
+          buttonDisabled: 'bg-white/5 backdrop-blur-md border border-white/10 text-white/50 cursor-not-allowed',
+          label: 'text-white'
+        };
+      case 'light':
+        return {
+          overlay: 'bg-black/40 backdrop-blur-sm',
+          bg: 'bg-white border-2 border-blue-200 shadow-xl',
+          title: 'text-gray-900',
+          input: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          select: 'bg-white border-2 border-blue-300 text-gray-900 focus:ring-blue-500',
+          textarea: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500',
+          buttonCancel: 'bg-gray-100 border-2 border-gray-300 text-gray-700 hover:bg-gray-200',
+          buttonSubmit: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
+          buttonDisabled: 'bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed',
+          label: 'text-gray-700'
+        };
+      default:
+        return {
+          overlay: 'bg-black/70 backdrop-blur-sm',
+          bg: 'bg-slate-800/95 border border-slate-700 shadow-xl',
+          title: 'text-slate-100',
+          input: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
+          select: 'bg-slate-800/90 border border-slate-600 text-slate-100 focus:ring-teal-400',
+          textarea: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400',
+          buttonCancel: 'bg-slate-700/50 border border-slate-600 text-slate-200 hover:bg-slate-600',
+          buttonSubmit: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500',
+          buttonDisabled: 'bg-slate-700/30 border border-slate-600/50 text-slate-500 cursor-not-allowed',
+          label: 'text-slate-200'
+        };
+    }
+  };
+
+  const modalStyles = getModalStyles();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -603,24 +795,24 @@ function EditToolForm({ tool, onClose, onSubmit }: { tool: ToolData; onClose: ()
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        <h2 className="text-2xl font-bold mb-6 text-white">Edit Tool</h2>
+    <div className={`fixed inset-0 ${modalStyles.overlay} flex items-center justify-center z-50 p-4`}>
+      <div className={`${modalStyles.bg} rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl`}>
+        <h2 className={`text-2xl font-bold mb-6 ${modalStyles.title}`}>Edit Tool</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool ID
               </label>
               <input
                 type="text"
                 value={formData.assetnumber}
                 disabled
-                className="w-full px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl text-white/50 cursor-not-allowed"
+                className={`w-full px-4 py-2 ${modalStyles.buttonDisabled} rounded-xl`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Description *
               </label>
               <input
@@ -628,44 +820,44 @@ function EditToolForm({ tool, onClose, onSubmit }: { tool: ToolData; onClose: ()
                 required
                 value={formData.toolDescription}
                 onChange={(e) => setFormData({ ...formData, toolDescription: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Serial Number
               </label>
               <input
                 type="text"
                 value={formData.serialNumber}
                 onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Manufacturer
               </label>
               <input
                 type="text"
                 value={formData.manufacturer}
                 onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Model Number
               </label>
               <input
                 type="text"
                 value={formData.modelNumber}
                 onChange={(e) => setFormData({ ...formData, modelNumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Cost
               </label>
               <input
@@ -673,50 +865,50 @@ function EditToolForm({ tool, onClose, onSubmit }: { tool: ToolData; onClose: ()
                 step="0.01"
                 value={formData.toolCost}
                 onChange={(e) => setFormData({ ...formData, toolCost: parseFloat(e.target.value) || 0 })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Purchase Date
               </label>
               <input
                 type="date"
                 value={formData.purchasedDate ? new Date(formData.purchasedDate).toISOString().split('T')[0] : ''}
                 onChange={(e) => setFormData({ ...formData, purchasedDate: new Date(e.target.value) })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Purchase PO Number
               </label>
               <input
                 type="text"
                 value={formData.purchasePONumber}
                 onChange={(e) => setFormData({ ...formData, purchasePONumber: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Purchase Supplier
               </label>
               <input
                 type="text"
                 value={formData.purchaseSupplier}
                 onChange={(e) => setFormData({ ...formData, purchaseSupplier: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Status
               </label>
               <select
                 value={formData.toolStatus}
                 onChange={(e) => setFormData({ ...formData, toolStatus: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.select} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               >
                 <option value="Available">Available</option>
                 <option value="In Use">In Use</option>
@@ -725,13 +917,13 @@ function EditToolForm({ tool, onClose, onSubmit }: { tool: ToolData; onClose: ()
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Location
               </label>
               <select
                 value={formData.toolLocation}
                 onChange={(e) => setFormData({ ...formData, toolLocation: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.select} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               >
                 <option value="Warehouse">Warehouse</option>
                 <option value="Project Site">Project Site</option>
@@ -739,13 +931,13 @@ function EditToolForm({ tool, onClose, onSubmit }: { tool: ToolData; onClose: ()
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Tool Condition
               </label>
               <select
                 value={formData.toolCondition}
                 onChange={(e) => setFormData({ ...formData, toolCondition: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.select} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               >
                 <option value="Excellent">Excellent</option>
                 <option value="Good">Good</option>
@@ -755,25 +947,25 @@ function EditToolForm({ tool, onClose, onSubmit }: { tool: ToolData; onClose: ()
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Accessories
               </label>
               <input
                 type="text"
                 value={formData.accessories}
                 onChange={(e) => setFormData({ ...formData, accessories: e.target.value })}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.input} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className={`block text-sm font-medium ${modalStyles.label} mb-2`}>
                 Notes
               </label>
               <textarea
                 value={formData.toolNotes}
                 onChange={(e) => setFormData({ ...formData, toolNotes: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                className={`w-full px-4 py-2 ${modalStyles.textarea} rounded-xl focus:outline-none focus:ring-2 transition-all`}
               />
             </div>
           </div>
@@ -781,13 +973,13 @@ function EditToolForm({ tool, onClose, onSubmit }: { tool: ToolData; onClose: ()
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+              className={`px-6 py-3 ${modalStyles.buttonCancel} rounded-xl transition-all duration-300 font-medium`}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-teal-500/20 backdrop-blur-md border border-teal-400/30 rounded-xl text-teal-300 font-semibold hover:bg-teal-500/30 hover:border-teal-400/50 transition-all duration-300"
+              className={`px-6 py-3 ${modalStyles.buttonSubmit} rounded-xl font-semibold transition-all duration-300`}
             >
               Update Tool
             </button>
