@@ -2,6 +2,7 @@
 import { ThemeProvider } from 'next-themes';
 import { ToastProvider } from '@/components/ui/toaster';
 import { NavigationProvider } from '@/app/contexts/NavigationContext';
+import { ThemeProvider as AppThemeProvider } from '@/app/contexts/ThemeContext';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -10,11 +11,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       defaultTheme="light"
       enableSystem={false}
     >
-      <NavigationProvider>
-        <ToastProvider>
-          {children}
-        </ToastProvider>
-      </NavigationProvider>
+      <AppThemeProvider>
+        <NavigationProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </NavigationProvider>
+      </AppThemeProvider>
     </ThemeProvider>
   );
 } 
