@@ -12,13 +12,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Asset number and type are required' }, { status: 400 });
     }
 
-    // Fetch asset details from your existing API, with fallback via DB aggregation
-    const assetResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/assets/${assetNumber}`);
+    // Helper function to determine which collection/API to use based on first digit
+    const getAssetCollection = (assetNum: string): 'equipmentandtools' | 'fixedassets' => {
+      if (!assetNum) return 'equipmentandtools';
+      const firstDigit = String(assetNum).charAt(0);
+      // First digit 5 or 9: equipmentandtools, otherwise: fixedassets
+      return (firstDigit === '5' || firstDigit === '9') ? 'equipmentandtools' : 'fixedassets';
+    };
+
+    const collection = getAssetCollection(assetNumber);
+    const apiEndpoint = collection === 'equipmentandtools' 
+      ? `/api/assets/${assetNumber}` 
+      : `/api/fixedassets/${assetNumber}`;
+
+    // Fetch asset details from the appropriate API endpoint
+    const assetResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}${apiEndpoint}`);
     let asset: any;
     if (assetResponse.ok) {
       asset = await assetResponse.json();
     } else {
-      // Fallback: try to construct asset details by joining custody and equipment collections
+      // Fallback: try to construct asset details by joining custody and asset collections
       try {
         const { db } = await connectToDatabase();
         // Prefer starting from custody to ensure we can find asset even if details are missing
@@ -27,25 +40,25 @@ export async function GET(request: NextRequest) {
             { $match: { assetnumber: assetNumber, custodyto: null } },
             {
               $lookup: {
-                from: 'equipmentandtools',
+                from: collection,
                 let: { asset: '$assetnumber' },
                 pipeline: [
                   { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
                 ],
-                as: 'equipmentDetails'
+                as: 'assetDetails'
               }
             },
-            { $unwind: { path: '$equipmentDetails', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$assetDetails', preserveNullAndEmptyArrays: true } },
             { $sort: { custodyfrom: -1 } },
             { $limit: 1 },
             {
               $project: {
-                assetnumber: { $ifNull: ['$equipmentDetails.assetnumber', '$assetnumber'] },
-                assetdescription: '$equipmentDetails.assetdescription',
-                assetmodel: '$equipmentDetails.assetmodel',
-                assetmanufacturer: '$equipmentDetails.assetmanufacturer',
-                assetserialnumber: '$equipmentDetails.assetserialnumber',
-                assetstatus: '$equipmentDetails.assetstatus',
+                assetnumber: { $ifNull: ['$assetDetails.assetnumber', '$assetnumber'] },
+                assetdescription: '$assetDetails.assetdescription',
+                assetmodel: '$assetDetails.assetmodel',
+                assetmanufacturer: '$assetDetails.assetmanufacturer',
+                assetserialnumber: '$assetDetails.assetserialnumber',
+                assetstatus: '$assetDetails.assetstatus',
                 employeenumber: 1,
                 warehouseCity: 1
               }

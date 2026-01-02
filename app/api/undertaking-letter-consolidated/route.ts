@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
           }
         },
         {
+          // Lookup from both collections in parallel
           $lookup: {
             from: 'equipmentandtools',
             let: { asset: '$assetnumber' },
@@ -44,15 +45,46 @@ export async function GET(request: NextRequest) {
             as: 'equipmentDetails'
           }
         },
-        { $unwind: { path: '$equipmentDetails', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'fixedassets',
+            let: { asset: '$assetnumber' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
+            ],
+            as: 'fixedAssetDetails'
+          }
+        },
+        {
+          // Determine which collection to use based on first digit and pick the correct details
+          $addFields: {
+            firstDigit: { $substr: [{ $toString: '$assetnumber' }, 0, 1] }
+          }
+        },
+        {
+          $addFields: {
+            assetDetails: {
+              $cond: {
+                if: {
+                  $or: [
+                    { $eq: ['$firstDigit', '5'] },
+                    { $eq: ['$firstDigit', '9'] }
+                  ]
+                },
+                then: { $arrayElemAt: ['$equipmentDetails', 0] },
+                else: { $arrayElemAt: ['$fixedAssetDetails', 0] }
+              }
+            }
+          }
+        },
         {
           $project: {
-            assetnumber: { $ifNull: ['$equipmentDetails.assetnumber', '$assetnumber'] },
-            assetdescription: '$equipmentDetails.assetdescription',
-            assetstatus: '$equipmentDetails.assetstatus',
-            assetmodel: '$equipmentDetails.assetmodel',
-            assetmanufacturer: '$equipmentDetails.assetmanufacturer',
-            assetserialnumber: '$equipmentDetails.assetserialnumber',
+            assetnumber: { $ifNull: ['$assetDetails.assetnumber', '$assetnumber'] },
+            assetdescription: '$assetDetails.assetdescription',
+            assetstatus: '$assetDetails.assetstatus',
+            assetmodel: '$assetDetails.assetmodel',
+            assetmanufacturer: '$assetDetails.assetmanufacturer',
+            assetserialnumber: '$assetDetails.assetserialnumber',
             custodyfrom: 1,
             project: 1
           }
