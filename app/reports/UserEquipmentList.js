@@ -265,6 +265,23 @@ const UserEquipmentList = () => {
     }
   };
 
+  // Helper function to determine asset route based on first digit
+  const getAssetRoute = (assetnumber) => {
+    if (!assetnumber) return '/asset/';
+    
+    const assetStr = String(assetnumber);
+    const firstDigit = assetStr.charAt(0);
+    
+    // Determine collection based on first digit
+    // First digit 5 or 9: equipmentandtools -> /asset/
+    // First digit 6, 7, or any other number: fixedassets -> /fixedasset/
+    if (firstDigit === '5' || firstDigit === '9') {
+      return `/asset/${assetnumber}`;
+    } else {
+      return `/fixedasset/${assetnumber}`;
+    }
+  };
+
   // Theme-based styling function
   const getBackgroundStyles = () => {
     switch (theme) {
@@ -508,7 +525,9 @@ const UserEquipmentList = () => {
                       >
                         <td className="px-6 py-4">
                           <Link
-                            href={`/asset/${item.assetnumber}`}
+                            href={getAssetRoute(item.assetnumber)}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className={`${backgroundStyles.linkColor} font-medium transition-colors`}
                           >
                             {item.assetnumber}
