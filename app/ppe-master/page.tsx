@@ -418,7 +418,7 @@ export default function PPEMasterPage() {
                       <p className={`${styles.text} ml-4`}>Loading...</p>
                     </div>
                   ) : (
-                    <ResponsiveTable columns={columns} data={tableData} variant={theme === 'default' ? 'dark' : theme} />
+                    <ResponsiveTable columns={columns} data={tableData} variant={theme === 'default' ? 'default' : theme} />
                   )}
                 </div>
               </div>

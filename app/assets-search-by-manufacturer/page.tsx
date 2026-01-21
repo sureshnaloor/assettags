@@ -152,7 +152,7 @@ export default function AssetsSearchByManufacturerPage() {
         </button>
       ),
       cell: ({ row }) => (
-        <Link href={`/asset/${row.original.assetnumber}`} className="text-teal-400 hover:text-teal-300 transition-colors">
+        <Link href={`/fixedasset/${row.original.assetnumber}`} className="text-teal-400 hover:text-teal-300 transition-colors">
           {row.original.assetnumber}
         </Link>
       ),
