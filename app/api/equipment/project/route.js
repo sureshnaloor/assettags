@@ -9,17 +9,82 @@ export async function POST(request) {
     const { projectId } = body;
     const { db } = await connectToDatabase();
 
-    // Log the query we're about to execute
-    console.log('MongoDB query:', {
-      project: projectId,
-      custodyto: null
-    });
-
+    // Use aggregation pipeline to lookup asset details from both collections
     const equipment = await db.collection('equipmentcustody')
-      .find({
-        project: projectId,  // This will now match "WBS - PROJECTNAME" format
-        custodyto: null
-      })
+      .aggregate([
+        {
+          $match: {
+            project: projectId,  // This will now match "WBS - PROJECTNAME" format
+            custodyto: null
+          }
+        },
+        {
+          // Lookup from equipmentandtools collection
+          $lookup: {
+            from: 'equipmentandtools',
+            let: { asset: '$assetnumber' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
+            ],
+            as: 'equipmentDetails'
+          }
+        },
+        {
+          // Lookup from fixedassets collection
+          $lookup: {
+            from: 'fixedassets',
+            let: { asset: '$assetnumber' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
+            ],
+            as: 'fixedAssetDetails'
+          }
+        },
+        {
+          // Determine which collection to use based on first digit
+          $addFields: {
+            firstDigit: { $substr: [{ $toString: '$assetnumber' }, 0, 1] }
+          }
+        },
+        {
+          $addFields: {
+            assetDetails: {
+              $cond: {
+                if: {
+                  $or: [
+                    { $eq: ['$firstDigit', '5'] },
+                    { $eq: ['$firstDigit', '9'] }
+                  ]
+                },
+                then: { $arrayElemAt: ['$equipmentDetails', 0] },
+                else: { $arrayElemAt: ['$fixedAssetDetails', 0] }
+              }
+            }
+          }
+        },
+        {
+          // Project final fields including asset description
+          $project: {
+            _id: 1,
+            assetnumber: 1,
+            employeenumber: 1,
+            employeename: 1,
+            custodyfrom: 1,
+            custodyto: 1,
+            project: 1,
+            assetdescription: '$assetDetails.assetdescription',
+            assetstatus: '$assetDetails.assetstatus',
+            assetmodel: '$assetDetails.assetmodel',
+            assetmanufacturer: '$assetDetails.assetmanufacturer',
+            assetserialnumber: '$assetDetails.assetserialnumber'
+          }
+        },
+        {
+          $sort: {
+            assetnumber: 1
+          }
+        }
+      ])
       .toArray();
 
     // Log the results

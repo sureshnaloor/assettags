@@ -337,6 +337,23 @@ const ProjectEquipmentList = () => {
     }
   };
 
+  // Helper function to determine asset route based on first digit
+  const getAssetRoute = (assetnumber) => {
+    if (!assetnumber) return '/asset/';
+    
+    const assetStr = String(assetnumber);
+    const firstDigit = assetStr.charAt(0);
+    
+    // Determine collection based on first digit
+    // First digit 5 or 9: equipmentandtools -> /asset/
+    // First digit 6, 7, or any other number: fixedassets -> /fixedasset/
+    if (firstDigit === '5' || firstDigit === '9') {
+      return `/asset/${assetnumber}`;
+    } else {
+      return `/fixedasset/${assetnumber}`;
+    }
+  };
+
   return (
     <div className={backgroundStyles.container}>
       {/* Animated background canvas */}
@@ -472,6 +489,7 @@ const ProjectEquipmentList = () => {
                   <thead>
                     <tr className={`border-b ${backgroundStyles.tableBorder} ${backgroundStyles.tableHeaderBg}`}>
                       <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Asset Number</th>
+                      <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Asset Description</th>
                       <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Employee Number</th>
                       <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Employee Name</th>
                       <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Custody From</th>
@@ -485,14 +503,17 @@ const ProjectEquipmentList = () => {
                       >
                         <td className="px-6 py-4">
                           <Link
-                            href={`/asset/${item.assetnumber}`}
+                            href={getAssetRoute(item.assetnumber)}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className={`${backgroundStyles.linkColor} font-medium transition-colors`}
                           >
                             {item.assetnumber}
                           </Link>
                         </td>
-                        <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>{item.employeenumber}</td>
-                        <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>{item.employeename}</td>
+                        <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>{item.assetdescription || '-'}</td>
+                        <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>{item.employeenumber || '-'}</td>
+                        <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>{item.employeename || '-'}</td>
                         <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>
                           {new Date(item.custodyfrom).toLocaleDateString()}
                         </td>

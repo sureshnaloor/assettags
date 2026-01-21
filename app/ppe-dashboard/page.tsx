@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import PPEStockDisplay from '@/components/PPEStockDisplay';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 interface PPEDashboardStats {
   totalPPEItems: number;
@@ -14,6 +15,7 @@ interface PPEDashboardStats {
 }
 
 export default function PPEDashboardPage() {
+  const { theme } = useAppTheme();
   const [stats, setStats] = useState<PPEDashboardStats>({
     totalPPEItems: 0,
     totalIssueRecords: 0,
@@ -32,6 +34,53 @@ export default function PPEDashboardPage() {
     radius: number;
   }>>([]);
   const animationFrameRef = useRef<number>();
+
+  // Theme-based styling function
+  const getThemeStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          card: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          cardHover: 'hover:bg-white/15',
+          text: 'text-white',
+          textMuted: 'text-white/80',
+          title: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          accent: 'text-teal-400',
+          accentRed: 'text-red-400',
+          particleColor: 'rgba(45, 212, 191, 0.4)',
+          particleLine: 'rgba(45, 212, 191, 0.2)',
+        };
+      case 'light':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
+          card: 'bg-white border-2 border-blue-200 shadow-md',
+          cardHover: 'hover:bg-blue-50',
+          text: 'text-gray-900',
+          textMuted: 'text-gray-600',
+          title: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
+          accent: 'text-blue-600',
+          accentRed: 'text-red-600',
+          particleColor: 'rgba(37, 99, 235, 0.3)',
+          particleLine: 'rgba(37, 99, 235, 0.15)',
+        };
+      default: // dark
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
+          card: 'bg-slate-800/50 border border-slate-700',
+          cardHover: 'hover:bg-slate-800',
+          text: 'text-slate-100',
+          textMuted: 'text-slate-400',
+          title: 'bg-gradient-to-r from-slate-100 to-teal-400 bg-clip-text text-transparent',
+          accent: 'text-teal-400',
+          accentRed: 'text-red-400',
+          particleColor: 'rgba(45, 212, 191, 0.3)',
+          particleLine: 'rgba(45, 212, 191, 0.15)',
+        };
+    }
+  };
+
+  const styles = getThemeStyles();
 
   // Fetch dashboard statistics
   const fetchStats = async () => {
@@ -110,6 +159,20 @@ export default function PPEDashboardPage() {
 
     resizeCanvas();
 
+    // Get particle colors based on theme
+    const getParticleColors = () => {
+      switch (theme) {
+        case 'glassmorphic':
+          return { particle: 'rgba(45, 212, 191, 0.4)', line: 'rgba(45, 212, 191, 0.2)' };
+        case 'light':
+          return { particle: 'rgba(37, 99, 235, 0.3)', line: 'rgba(37, 99, 235, 0.15)' };
+        default: // dark
+          return { particle: 'rgba(45, 212, 191, 0.3)', line: 'rgba(45, 212, 191, 0.15)' };
+      }
+    };
+
+    const colors = getParticleColors();
+
     // Initialize particles
     particlesRef.current = [];
     for (let i = 0; i < 40; i++) {
@@ -138,7 +201,7 @@ export default function PPEDashboardPage() {
         // Draw particle
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(45, 212, 191, 0.4)';
+        ctx.fillStyle = colors.particle;
         ctx.fill();
 
         // Draw connections
@@ -152,7 +215,8 @@ export default function PPEDashboardPage() {
               ctx.beginPath();
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(45, 212, 191, ${0.2 * (1 - distance / 120)})`;
+              const alpha = parseFloat(colors.line.split(',')[3]?.replace(')', '') || '0.2');
+              ctx.strokeStyle = colors.line.replace(/[\d.]+\)$/, `${alpha * (1 - distance / 120)})`);
               ctx.lineWidth = 1;
               ctx.stroke();
             }
@@ -177,7 +241,7 @@ export default function PPEDashboardPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     fetchStats();
@@ -217,7 +281,7 @@ export default function PPEDashboardPage() {
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+    <div className={styles.container}>
       {/* Animated background canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 z-10" />
       
@@ -226,78 +290,78 @@ export default function PPEDashboardPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="mb-8">
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+            <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-8 transition-all duration-300`}>
+              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${styles.title}`}>
                 PPE Management Dashboard
               </h1>
-              <p className="text-white text-lg">Overview of Personal Protective Equipment management system</p>
+              <p className={`${styles.text} text-lg`}>Overview of Personal Protective Equipment management system</p>
             </div>
           </div>
 
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+            <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-6 transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Total PPE Items</h3>
+                <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Total PPE Items</h3>
                 <div className="text-2xl">🛡️</div>
               </div>
-              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.totalPPEItems}</div>
-              <p className="text-xs text-white/80">
+              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalPPEItems}</div>
+              <p className={`text-xs ${styles.textMuted}`}>
                 Active PPE items in master
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+            <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-6 transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Total Issue Records</h3>
+                <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Total Issue Records</h3>
                 <div className="text-2xl">📋</div>
               </div>
-              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.totalIssueRecords}</div>
-              <p className="text-xs text-white/80">
+              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalIssueRecords}</div>
+              <p className={`text-xs ${styles.textMuted}`}>
                 Individual PPE issues
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+            <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-6 transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Bulk Issues</h3>
+                <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Bulk Issues</h3>
                 <div className="text-2xl">📦</div>
               </div>
-              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.totalBulkIssues}</div>
-              <p className="text-xs text-white/80">
+              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalBulkIssues}</div>
+              <p className={`text-xs ${styles.textMuted}`}>
                 Bulk PPE issues to departments
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+            <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-6 transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Active Employees</h3>
+                <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Active Employees</h3>
                 <div className="text-2xl">👥</div>
               </div>
-              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.totalEmployees}</div>
-              <p className="text-xs text-white/80">
+              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalEmployees}</div>
+              <p className={`text-xs ${styles.textMuted}`}>
                 Active employees in system
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+            <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-6 transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Overdue Items</h3>
+                <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Overdue Items</h3>
                 <div className="text-2xl">⚠️</div>
               </div>
-              <div className="text-4xl font-bold text-red-400 mb-2">{loading ? '...' : stats.overdueItems}</div>
-              <p className="text-xs text-white/80">
+              <div className={`text-4xl font-bold ${styles.accentRed} mb-2`}>{loading ? '...' : stats.overdueItems}</div>
+              <p className={`text-xs ${styles.textMuted}`}>
                 PPE items due for reissue
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300">
+            <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-6 transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Today's Issues</h3>
+                <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Today's Issues</h3>
                 <div className="text-2xl">🕒</div>
               </div>
-              <div className="text-4xl font-bold text-teal-400 mb-2">{loading ? '...' : stats.todaysIssues}</div>
-              <p className="text-xs text-white/80">
+              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.todaysIssues}</div>
+              <p className={`text-xs ${styles.textMuted}`}>
                 PPE issues issued today
               </p>
             </div>
@@ -305,11 +369,11 @@ export default function PPEDashboardPage() {
 
           {/* Quick Actions */}
           <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-6 text-white">Quick Actions</h2>
+            <h2 className={`text-3xl font-bold mb-6 ${styles.text}`}>Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {quickActions.map((action, index) => (
                 <Link key={index} href={action.href}>
-                  <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 hover:bg-white/15 hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                  <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-6 hover:-translate-y-1 transition-all duration-300 cursor-pointer`}>
                     <div className="flex items-center space-x-4">
                       <div className={`w-14 h-14 ${action.color} rounded-xl flex items-center justify-center text-white text-2xl shadow-lg`}>
                         {action.title === 'PPE Master' && '🛡️'}
@@ -319,8 +383,8 @@ export default function PPEDashboardPage() {
                         {action.title === 'Due for Reissue' && '⚠️'}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-white text-lg">{action.title}</h3>
-                        <p className="text-sm text-white/80">{action.description}</p>
+                        <h3 className={`font-semibold ${styles.text} text-lg`}>{action.title}</h3>
+                        <p className={`text-sm ${styles.textMuted}`}>{action.description}</p>
                       </div>
                     </div>
                   </div>
@@ -330,15 +394,15 @@ export default function PPEDashboardPage() {
           </div>
 
           {/* System Information */}
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 mb-8">
-            <div className="p-6 lg:p-8 border-b border-white/10">
-              <h2 className="text-2xl font-bold text-white">System Information</h2>
+          <div className={`${styles.card} ${styles.cardHover} rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 mb-8`}>
+            <div className={`p-6 lg:p-8 border-b ${theme === 'light' ? 'border-blue-200' : theme === 'glassmorphic' ? 'border-white/10' : 'border-slate-700'}`}>
+              <h2 className={`text-2xl font-bold ${styles.text}`}>System Information</h2>
             </div>
             <div className="p-6 lg:p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <h4 className="font-semibold mb-4 text-white text-lg">PPE Management Features</h4>
-                  <ul className="text-sm text-white/90 space-y-2">
+                  <h4 className={`font-semibold mb-4 ${styles.text} text-lg`}>PPE Management Features</h4>
+                  <ul className={`text-sm ${styles.textMuted} space-y-2`}>
                     <li>• PPE Master Data Management</li>
                     <li>• Individual PPE Issue Tracking</li>
                     <li>• Bulk PPE Issue Management</li>
@@ -348,8 +412,8 @@ export default function PPEDashboardPage() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-4 text-white text-lg">Key Benefits</h4>
-                  <ul className="text-sm text-white/90 space-y-2">
+                  <h4 className={`font-semibold mb-4 ${styles.text} text-lg`}>Key Benefits</h4>
+                  <ul className={`text-sm ${styles.textMuted} space-y-2`}>
                     <li>• Automated due date calculations</li>
                     <li>• Comprehensive issue tracking</li>
                     <li>• Bulk issue management for departments</li>
@@ -363,10 +427,10 @@ export default function PPEDashboardPage() {
           </div>
 
           {/* Stock Overview Section */}
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
-            <div className="p-6 lg:p-8 border-b border-white/10">
-              <h2 className="text-2xl font-bold text-white mb-2">Stock Overview</h2>
-              <p className="text-white/80 text-sm">Current PPE inventory levels</p>
+          <div className={`${styles.card} ${styles.cardHover} rounded-3xl shadow-2xl overflow-hidden transition-all duration-300`}>
+            <div className={`p-6 lg:p-8 border-b ${theme === 'light' ? 'border-blue-200' : theme === 'glassmorphic' ? 'border-white/10' : 'border-slate-700'}`}>
+              <h2 className={`text-2xl font-bold ${styles.text} mb-2`}>Stock Overview</h2>
+              <p className={`${styles.textMuted} text-sm`}>Current PPE inventory levels</p>
             </div>
             <div className="p-6 lg:p-8">
               <PPEStockDisplay showLowStock={false} />

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PPEMaster } from '@/types/ppe';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResponsiveTable from '@/components/ui/responsive-table';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 interface PPEFormData {
   ppeId: string;
@@ -17,6 +18,7 @@ interface PPEFormData {
 }
 
 export default function PPEMasterPage() {
+  const { theme } = useAppTheme();
   const [ppeRecords, setPPERecords] = useState<PPEMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,6 +43,80 @@ export default function PPEMasterPage() {
     radius: number;
   }>>([]);
   const animationFrameRef = useRef<number>();
+
+  // Theme-based styling function
+  const getThemeStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          card: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          cardHover: 'hover:bg-white/15',
+          text: 'text-white',
+          textMuted: 'text-white/80',
+          title: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          select: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+          selectOption: 'bg-[#1a2332]',
+          buttonPrimary: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
+          buttonSecondary: 'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
+          buttonDanger: 'bg-red-500/20 backdrop-blur-md border border-red-400/30 text-red-300 hover:bg-red-500/30',
+          tabsBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          tabsActive: 'bg-white/20 text-white',
+          tabsInactive: 'text-white/70',
+          border: 'border-white/10',
+          spinner: 'border-teal-400',
+          particleColor: 'rgba(45, 212, 191, 0.4)',
+          particleLine: 'rgba(45, 212, 191, 0.2)',
+        };
+      case 'light':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
+          card: 'bg-white border-2 border-blue-200 shadow-md',
+          cardHover: 'hover:bg-blue-50',
+          text: 'text-gray-900',
+          textMuted: 'text-gray-600',
+          title: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
+          input: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          select: 'bg-white border-2 border-blue-300 text-gray-900',
+          selectOption: 'bg-white',
+          buttonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-600',
+          buttonSecondary: 'bg-gray-100 hover:bg-gray-200 text-gray-900 border-2 border-blue-200',
+          buttonDanger: 'bg-red-500 hover:bg-red-600 text-white border-2 border-red-500',
+          tabsBg: 'bg-white border-2 border-blue-200 shadow-md',
+          tabsActive: 'bg-blue-100 text-blue-900',
+          tabsInactive: 'text-gray-600',
+          border: 'border-blue-200',
+          spinner: 'border-blue-500',
+          particleColor: 'rgba(37, 99, 235, 0.3)',
+          particleLine: 'rgba(37, 99, 235, 0.15)',
+        };
+      default: // dark
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
+          card: 'bg-slate-800/50 border border-slate-700',
+          cardHover: 'hover:bg-slate-800',
+          text: 'text-slate-100',
+          textMuted: 'text-slate-400',
+          title: 'bg-gradient-to-r from-slate-100 to-teal-400 bg-clip-text text-transparent',
+          input: 'bg-slate-700 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-500',
+          select: 'bg-slate-700 border border-slate-600 text-slate-100',
+          selectOption: 'bg-slate-800',
+          buttonPrimary: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-600',
+          buttonSecondary: 'bg-slate-700 hover:bg-slate-600 text-slate-100 border border-slate-600',
+          buttonDanger: 'bg-red-600 hover:bg-red-700 text-white border border-red-600',
+          tabsBg: 'bg-slate-800/50 border border-slate-700',
+          tabsActive: 'bg-slate-700 text-slate-100',
+          tabsInactive: 'text-slate-400',
+          border: 'border-slate-700',
+          spinner: 'border-teal-400',
+          particleColor: 'rgba(45, 212, 191, 0.3)',
+          particleLine: 'rgba(45, 212, 191, 0.15)',
+        };
+    }
+  };
+
+  const styles = getThemeStyles();
 
   // Fetch PPE records
   const fetchPPERecords = async () => {
@@ -76,6 +152,20 @@ export default function PPEMasterPage() {
 
     resizeCanvas();
 
+    // Get particle colors based on theme
+    const getParticleColors = () => {
+      switch (theme) {
+        case 'glassmorphic':
+          return { particle: 'rgba(45, 212, 191, 0.4)', line: 'rgba(45, 212, 191, 0.2)' };
+        case 'light':
+          return { particle: 'rgba(37, 99, 235, 0.3)', line: 'rgba(37, 99, 235, 0.15)' };
+        default: // dark
+          return { particle: 'rgba(45, 212, 191, 0.3)', line: 'rgba(45, 212, 191, 0.15)' };
+      }
+    };
+
+    const colors = getParticleColors();
+
     // Initialize particles
     particlesRef.current = [];
     for (let i = 0; i < 40; i++) {
@@ -104,7 +194,7 @@ export default function PPEMasterPage() {
         // Draw particle
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(45, 212, 191, 0.4)';
+        ctx.fillStyle = colors.particle;
         ctx.fill();
 
         // Draw connections
@@ -118,7 +208,8 @@ export default function PPEMasterPage() {
               ctx.beginPath();
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(45, 212, 191, ${0.2 * (1 - distance / 120)})`;
+              const alpha = parseFloat(colors.line.split(',')[3]?.replace(')', '') || '0.2');
+              ctx.strokeStyle = colors.line.replace(/[\d.]+\)$/, `${alpha * (1 - distance / 120)})`);
               ctx.lineWidth = 1;
               ctx.stroke();
             }
@@ -143,7 +234,7 @@ export default function PPEMasterPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     fetchPPERecords();
@@ -250,13 +341,13 @@ export default function PPEMasterPage() {
       <div className="flex gap-2">
         <button
           onClick={() => handleEdit(ppe)}
-          className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all duration-300 text-sm font-medium"
+          className={`px-4 py-2 ${styles.buttonSecondary} rounded-lg transition-all duration-300 text-sm font-medium`}
         >
           Edit
         </button>
         <button
           onClick={() => handleDelete(ppe.ppeId)}
-          className="px-4 py-2 bg-red-500/20 backdrop-blur-md border border-red-400/30 rounded-lg text-red-300 hover:bg-red-500/30 transition-all duration-300 text-sm font-medium"
+          className={`px-4 py-2 ${styles.buttonDanger} rounded-lg transition-all duration-300 text-sm font-medium`}
         >
           Delete
         </button>
@@ -265,7 +356,7 @@ export default function PPEMasterPage() {
   }));
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
+    <div className={styles.container}>
       {/* Animated background canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 z-10" />
       
@@ -274,24 +365,24 @@ export default function PPEMasterPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="mb-8">
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+            <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-8 transition-all duration-300`}>
+              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${styles.title}`}>
                 PPE Master Management
               </h1>
-              <p className="text-white text-lg">Manage Personal Protective Equipment master data</p>
+              <p className={`${styles.text} text-lg`}>Manage Personal Protective Equipment master data</p>
             </div>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-1 shadow-lg mb-6">
+            <TabsList className={`${styles.tabsBg} rounded-xl p-1 shadow-lg mb-6`}>
               <TabsTrigger 
-                className="rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/70 transition-all duration-300" 
+                className={`rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:${styles.tabsActive} data-[state=inactive]:${styles.tabsInactive} transition-all duration-300`}
                 value="list"
               >
                 PPE List
               </TabsTrigger>
               <TabsTrigger 
-                className="rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/70 transition-all duration-300" 
+                className={`rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:${styles.tabsActive} data-[state=inactive]:${styles.tabsInactive} transition-all duration-300`}
                 value="form"
               >
                 {editingPPE ? 'Edit PPE' : 'Add New PPE'}
@@ -299,21 +390,21 @@ export default function PPEMasterPage() {
             </TabsList>
 
             <TabsContent value="list">
-              <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
-                <div className="p-6 lg:p-8 border-b border-white/10">
+              <div className={`${styles.card} ${styles.cardHover} rounded-3xl shadow-2xl overflow-hidden transition-all duration-300`}>
+                <div className={`p-6 lg:p-8 border-b ${styles.border}`}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <h2 className="text-2xl font-bold text-white">PPE Master Records</h2>
+                    <h2 className={`text-2xl font-bold ${styles.text}`}>PPE Master Records</h2>
                     <div className="flex gap-4">
                       <input
                         type="text"
                         placeholder="Search PPE records..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all text-sm"
+                        className={`px-4 py-2 ${styles.input} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm`}
                       />
                       <button
                         onClick={() => setActiveTab('form')}
-                        className="px-6 py-2 bg-teal-500/20 backdrop-blur-md border border-teal-400/30 rounded-xl text-teal-300 font-semibold hover:bg-teal-500/30 hover:border-teal-400/50 transition-all duration-300 text-sm"
+                        className={`px-6 py-2 ${styles.buttonPrimary} rounded-xl font-semibold transition-all duration-300 text-sm`}
                       >
                         Add New PPE
                       </button>
@@ -323,20 +414,20 @@ export default function PPEMasterPage() {
                 <div className="p-6 lg:p-8">
                   {loading ? (
                     <div className="flex justify-center items-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-400"></div>
-                      <p className="text-white ml-4">Loading...</p>
+                      <div className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${styles.spinner}`}></div>
+                      <p className={`${styles.text} ml-4`}>Loading...</p>
                     </div>
                   ) : (
-                    <ResponsiveTable columns={columns} data={tableData} variant="glassmorphic" />
+                    <ResponsiveTable columns={columns} data={tableData} variant={theme === 'default' ? 'dark' : theme} />
                   )}
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="form">
-              <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl overflow-hidden hover:bg-white/15 transition-all duration-300">
-                <div className="p-6 lg:p-8 border-b border-white/10">
-                  <h2 className="text-2xl font-bold text-white">
+              <div className={`${styles.card} ${styles.cardHover} rounded-3xl shadow-2xl overflow-hidden transition-all duration-300`}>
+                <div className={`p-6 lg:p-8 border-b ${styles.border}`}>
+                  <h2 className={`text-2xl font-bold ${styles.text}`}>
                     {editingPPE ? 'Edit PPE Record' : 'Add New PPE Record'}
                   </h2>
                 </div>
@@ -344,7 +435,7 @@ export default function PPEMasterPage() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${styles.text}`}>
                           PPE ID *
                         </label>
                         <input
@@ -353,12 +444,12 @@ export default function PPEMasterPage() {
                           onChange={(e) => setFormData({ ...formData, ppeId: e.target.value })}
                           required
                           disabled={!!editingPPE}
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          className={`w-full px-4 py-2 ${styles.input} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${styles.text}`}>
                           PPE Name *
                         </label>
                         <input
@@ -366,12 +457,12 @@ export default function PPEMasterPage() {
                           value={formData.ppeName}
                           onChange={(e) => setFormData({ ...formData, ppeName: e.target.value })}
                           required
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                          className={`w-full px-4 py-2 ${styles.input} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${styles.text}`}>
                           Material Code *
                         </label>
                         <input
@@ -379,24 +470,24 @@ export default function PPEMasterPage() {
                           value={formData.materialCode}
                           onChange={(e) => setFormData({ ...formData, materialCode: e.target.value })}
                           required
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                          className={`w-full px-4 py-2 ${styles.input} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${styles.text}`}>
                           Category
                         </label>
                         <input
                           type="text"
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                          className={`w-full px-4 py-2 ${styles.input} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${styles.text}`}>
                           Life *
                         </label>
                         <input
@@ -405,29 +496,29 @@ export default function PPEMasterPage() {
                           onChange={(e) => setFormData({ ...formData, life: parseInt(e.target.value) })}
                           required
                           min="1"
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                          className={`w-full px-4 py-2 ${styles.input} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-white">
+                        <label className={`block text-sm font-medium mb-2 ${styles.text}`}>
                           Life UOM *
                         </label>
                         <select
                           value={formData.lifeUOM}
                           onChange={(e) => setFormData({ ...formData, lifeUOM: e.target.value as 'week' | 'month' | 'year' })}
-                          className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                          className={`w-full px-4 py-2 ${styles.select} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                           required
                         >
-                          <option value="week" className="bg-[#1a2332]">Week</option>
-                          <option value="month" className="bg-[#1a2332]">Month</option>
-                          <option value="year" className="bg-[#1a2332]">Year</option>
+                          <option value="week" className={styles.selectOption}>Week</option>
+                          <option value="month" className={styles.selectOption}>Month</option>
+                          <option value="year" className={styles.selectOption}>Year</option>
                         </select>
                       </div>
                       
                       {!editingPPE && (
                         <div>
-                          <label className="block text-sm font-medium mb-2 text-white">
+                          <label className={`block text-sm font-medium mb-2 ${styles.text}`}>
                             Initial Stock *
                           </label>
                           <input
@@ -437,20 +528,20 @@ export default function PPEMasterPage() {
                             required
                             min="0"
                             placeholder="Enter initial stock quantity"
-                            className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                            className={`w-full px-4 py-2 ${styles.input} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                           />
                         </div>
                       )}
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-white">
+                      <label className={`block text-sm font-medium mb-2 ${styles.text}`}>
                         Description
                       </label>
                       <textarea
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                        className={`w-full p-4 ${styles.input} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                         rows={3}
                       />
                     </div>
@@ -458,7 +549,7 @@ export default function PPEMasterPage() {
                     <div className="flex gap-4">
                       <button
                         type="submit"
-                        className="px-6 py-3 bg-teal-500/20 backdrop-blur-md border border-teal-400/30 rounded-xl text-teal-300 font-semibold hover:bg-teal-500/30 hover:border-teal-400/50 transition-all duration-300"
+                        className={`px-6 py-3 ${styles.buttonPrimary} rounded-xl font-semibold transition-all duration-300`}
                       >
                         {editingPPE ? 'Update PPE' : 'Create PPE'}
                       </button>
@@ -478,7 +569,7 @@ export default function PPEMasterPage() {
                             initialStock: 0
                           });
                         }}
-                        className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+                        className={`px-6 py-3 ${styles.buttonSecondary} rounded-xl transition-all duration-300 font-medium`}
                       >
                         Cancel
                       </button>

@@ -43,11 +43,13 @@ export default function Header() {
   const [showPPEMenu, setShowPPEMenu] = useState(false);
   const [showToolsMenu, setShowToolsMenu] = useState(false);
   const [showProjectIssuedMenu, setShowProjectIssuedMenu] = useState(false);
+  const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileReportsOpen, setIsMobileReportsOpen] = useState(false);
   const [isMobilePPEOpen, setIsMobilePPEOpen] = useState(false);
   const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
   const [isMobileProjectIssuedOpen, setIsMobileProjectIssuedOpen] = useState(false);
+  const [isMobileAdminOpen, setIsMobileAdminOpen] = useState(false);
 
   // Theme-based styling function
   const getHeaderStyles = () => {
@@ -166,6 +168,11 @@ export default function Header() {
         { name: 'Project Issued Materials', href: '/projectissued-materials', icon: CubeIcon },
         { name: 'Project Return Materials', href: '/projectreturn-materials', icon: CubeIcon },
         { name: 'Disposed Materials', href: '/disposed-materials', icon: ExclamationTriangleIcon },
+      ];
+
+      const adminMenu = [
+        { name: 'Projects', href: '/admin/projects', icon: CubeIcon },
+        { name: 'Locations', href: '/admin/locations', icon: BuildingOfficeIcon },
       ];
 
   return (
@@ -410,6 +417,49 @@ export default function Header() {
                   </>
                 )}
               </div>
+
+              {/* Admin Dropdown - Only show for signed-in users */}
+              {session && (
+                <div className="relative group">
+                  <button
+                    onMouseEnter={() => setShowAdminMenu(true)}
+                    onMouseLeave={() => setShowAdminMenu(false)}
+                    onClick={() => setActiveSection('admin')}
+                    className={`flex items-center space-x-2 transition-all duration-200 px-4 py-2.5 rounded-lg text-sm font-medium border ${headerStyles.navLink}`}
+                  >
+                    <CogIcon className={`h-4 w-4 ${headerStyles.navIcon} transition-transform duration-200 group-hover:scale-110`} />
+                    <span>Admin</span>
+                    <ChevronDownIcon className={`h-4 w-4 ${headerStyles.navChevron} transition-transform duration-200 ${showAdminMenu ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showAdminMenu && (
+                    <>
+                      {/* Invisible bridge to prevent gap */}
+                      <div className="absolute left-0 top-full w-full h-2" onMouseEnter={() => setShowAdminMenu(true)} />
+                      <div
+                        onMouseEnter={() => setShowAdminMenu(true)}
+                        onMouseLeave={() => setShowAdminMenu(false)}
+                        className={`absolute left-0 top-full mt-2 w-64 rounded-lg z-50 ${headerStyles.dropdownBg} py-2 shadow-lg`}
+                      >
+                        {adminMenu.map((admin) => (
+                          <Link
+                            key={admin.name}
+                            href={admin.href}
+                            onClick={() => {
+                              setActiveSection('admin');
+                              setShowAdminMenu(false);
+                            }}
+                            className={`flex items-center space-x-3 px-4 py-2.5 text-sm font-medium ${headerStyles.dropdownItem} transition-colors duration-150`}
+                          >
+                            <admin.icon className={`h-4 w-4 ${headerStyles.dropdownIcon}`} />
+                            <span>{admin.name}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </nav>

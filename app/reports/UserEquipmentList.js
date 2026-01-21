@@ -198,13 +198,14 @@ const UserEquipmentList = () => {
     if (equipmentList.length === 0) return;
 
     const csvContent = [
-      ['Asset Number', 'Employee Number', 'Employee Name', 'Custody From', 'Project'],
+      ['Asset Number', 'Asset Description', 'Employee Number', 'Employee Name', 'Custody From', 'Project'],
       ...equipmentList.map(item => [
         item.assetnumber,
+        item.assetdescription || '',
         item.employeenumber,
         item.employeename,
         new Date(item.custodyfrom).toLocaleDateString(),
-        item.project
+        item.project || ''
       ])
     ];
 
@@ -512,6 +513,7 @@ const UserEquipmentList = () => {
                   <thead>
                     <tr className={`border-b ${backgroundStyles.tableBorder} ${backgroundStyles.tableHeaderBg}`}>
                       <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Asset Number</th>
+                      <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Asset Description</th>
                       <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Project</th>
                       <th className={`px-6 py-4 text-left text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Custody From</th>
                       <th className={`px-6 py-4 text-center text-xs font-semibold ${backgroundStyles.tableHeaderText} uppercase tracking-wider`}>Actions</th>
@@ -533,7 +535,8 @@ const UserEquipmentList = () => {
                             {item.assetnumber}
                           </Link>
                         </td>
-                        <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>{item.project}</td>
+                        <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>{item.assetdescription || '-'}</td>
+                        <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>{item.project || '-'}</td>
                         <td className={`px-6 py-4 ${backgroundStyles.tableCellText}`}>
                           {new Date(item.custodyfrom).toLocaleDateString()}
                         </td>

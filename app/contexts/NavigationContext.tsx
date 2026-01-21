@@ -12,6 +12,7 @@ type NavigationSection =
   | 'search'
   | 'employee'
   | 'ppe'
+  | 'admin'
   | null;
 
 interface NavigationContextType {

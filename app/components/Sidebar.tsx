@@ -77,6 +77,10 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
     { name: 'PPE-3', href: '#' },
     { name: 'PPE-4', href: '#' },
   ],
+  admin: [
+    { name: 'Projects', href: '/admin/projects' },
+    { name: 'Locations', href: '/admin/locations' },
+  ],
 };
 
 export default function Sidebar() {
