@@ -34,6 +34,7 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
     { name: 'Search by Category', href: '/mme-search-by-category' },
     { name: 'Search by Subcategory', href: '/mme-search-by-subcategory' },
     { name: 'Search by Year of Acquisition', href: '/mme-search-by-year-of-acquisition' },
+    { name: 'Search by Location', href: 'mme/search-by-location' },
   ],
   assets: [
     { name: 'Assets', href: '#' },
@@ -44,6 +45,7 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
     { name: 'Search by category', href: '/assets-search-by-category' },
     { name: 'Search by subcategory', href: '/assets-search-by-subcategory' },
     { name: 'Search by year of acquisition', href: '/assets-search-by-year-of-acquisition' },
+    { name: 'Search by Location', href: 'fixedasset/search-by-location' },
   ],
   tools: [
     { name: 'Tools-1', href: '#' },

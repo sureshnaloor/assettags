@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { PencilIcon, PlusIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, XMarkIcon, CheckIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 import Select from 'react-select';
 import { Custody, Employee, Project } from '@/types/custody';
 import DatePicker from 'react-datepicker';
@@ -546,6 +546,7 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
 export default function CustodyDetails({ currentCustody, custodyHistory, onUpdate, assetnumber, theme = 'default' }: CustodyDetailsProps) {
   const [showNewCustodyModal, setShowNewCustodyModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showErrorCorrectionModal, setShowErrorCorrectionModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -730,6 +731,247 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
     );
   };
 
+  // Error-correction modal: edit only Location Type, Warehouse City/Project, and Location fields (patch record)
+  const ErrorCorrectionModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+    type LocationTypeOption = 'warehouse' | 'department' | 'camp/office';
+    const [locationType, setLocationType] = useState<LocationTypeOption>('warehouse');
+    const [warehouseCity, setWarehouseCity] = useState<string>('');
+    const [warehouseLocation, setWarehouseLocation] = useState('');
+    const [departmentLocation, setDepartmentLocation] = useState('');
+    const [campOfficeLocation, setCampOfficeLocation] = useState('');
+    const [project, setProject] = useState('');
+    const [projectname, setProjectname] = useState('');
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
+    const [err, setErr] = useState<string | null>(null);
+
+    useEffect(() => {
+      if (!isOpen || !currentCustody) return;
+      setLocationType((currentCustody.locationType as LocationTypeOption) || 'warehouse');
+      setWarehouseCity(currentCustody.warehouseCity ?? '');
+      setWarehouseLocation(currentCustody.warehouseLocation ?? '');
+      setDepartmentLocation(currentCustody.departmentLocation ?? '');
+      setCampOfficeLocation(currentCustody.campOfficeLocation ?? '');
+      setProject(currentCustody.project ?? '');
+      setProjectname(currentCustody.projectname ?? '');
+      setErr(null);
+    }, [isOpen, currentCustody]);
+
+    useEffect(() => {
+      if (isOpen) {
+        fetch('/api/projects')
+          .then((res) => res.ok ? res.json() : [])
+          .then((data) => setProjects(Array.isArray(data) ? data : []))
+          .catch(() => setProjects([]));
+      }
+    }, [isOpen]);
+
+    if (!isOpen || !currentCustody || !currentCustody._id) return null;
+
+    const getModalStyles = () => {
+      switch (theme) {
+        case 'glassmorphic':
+          return {
+            container: 'bg-white/10 backdrop-blur-lg border border-white/20',
+            text: 'text-white',
+            textSecondary: 'text-white/80',
+            input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+            select: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+            buttonPrimary: 'bg-teal-500 hover:bg-teal-600',
+            buttonSecondary: 'bg-white/10 hover:bg-white/20 border border-white/20'
+          };
+        case 'light':
+          return {
+            container: 'bg-white border-2 border-blue-200',
+            text: 'text-gray-900',
+            textSecondary: 'text-gray-700',
+            input: 'bg-white border-2 border-blue-300 text-gray-900',
+            select: 'bg-white border-2 border-blue-300 text-gray-900',
+            buttonPrimary: 'bg-blue-500 hover:bg-blue-600',
+            buttonSecondary: 'bg-gray-200 hover:bg-gray-300'
+          };
+        default:
+          return {
+            container: 'bg-slate-800',
+            text: 'text-zinc-100',
+            textSecondary: 'text-zinc-300',
+            input: 'bg-slate-700/50 text-zinc-100 border-0 ring-1 ring-slate-600',
+            select: 'bg-slate-700/50 text-zinc-100 border-0 ring-1 ring-slate-600',
+            buttonPrimary: 'bg-blue-600 hover:bg-blue-700',
+            buttonSecondary: 'bg-slate-600 hover:bg-slate-700'
+          };
+      }
+    };
+
+    const modalStyles = getModalStyles();
+
+    const handleSave = async () => {
+      setErr(null);
+      if (locationType === 'warehouse' && !warehouseLocation?.trim()) {
+        setErr('Location is required for warehouse');
+        return;
+      }
+      if (locationType === 'department' && !departmentLocation?.trim()) {
+        setErr('Location is required for department');
+        return;
+      }
+      if (locationType === 'camp/office' && (!departmentLocation?.trim() && !campOfficeLocation?.trim())) {
+        setErr('At least one location field is required for camp/office');
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        const payload: Record<string, unknown> = {
+          locationType,
+          warehouseCity: locationType === 'warehouse' ? (warehouseCity || null) : null,
+          warehouseLocation: locationType === 'warehouse' ? (warehouseLocation?.trim() || null) : null,
+          departmentLocation: locationType !== 'warehouse' ? (departmentLocation?.trim() || null) : null,
+          campOfficeLocation: locationType === 'camp/office' ? (campOfficeLocation?.trim() || null) : null,
+          project: locationType === 'department' ? (project?.trim() || null) : null,
+          projectname: locationType === 'department' ? (projectname?.trim() || null) : null,
+        };
+
+        const response = await fetch(`/api/custody/${assetnumber}/${currentCustody._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) throw new Error('Failed to update custody record');
+        const updated = await response.json();
+        onUpdate(updated);
+        onClose();
+      } catch (e) {
+        console.error(e);
+        setErr('Failed to update custody record');
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center">
+        <div className={`${modalStyles.container} rounded-lg shadow-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto`}>
+          <h3 className={`text-lg font-semibold ${modalStyles.text} mb-4`}>Correct location (error correction)</h3>
+          {err && (
+            <div className={`${theme === 'glassmorphic' ? 'bg-red-500/20 text-red-300' : theme === 'light' ? 'bg-red-50 text-red-700' : 'bg-red-500/20 text-red-100'} px-4 py-2 rounded-lg text-sm mb-4`}>
+              {err}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Location Type</label>
+              <select
+                value={locationType}
+                onChange={(e) => setLocationType(e.target.value as LocationTypeOption)}
+                className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
+              >
+                <option value="warehouse" className="bg-slate-800 text-white">Warehouse</option>
+                <option value="department" className="bg-slate-800 text-white">Department</option>
+                <option value="camp/office" className="bg-slate-800 text-white">Camp/Office</option>
+              </select>
+            </div>
+
+            {locationType === 'warehouse' && (
+              <>
+                <div>
+                  <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Warehouse City</label>
+                  <select
+                    value={warehouseCity}
+                    onChange={(e) => setWarehouseCity(e.target.value)}
+                    className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
+                  >
+                    <option value="" className="bg-slate-800 text-white">Select</option>
+                    <option value="Dammam" className="bg-slate-800 text-white">Dammam</option>
+                    <option value="Jubail" className="bg-slate-800 text-white">Jubail</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Location</label>
+                  <input
+                    type="text"
+                    value={warehouseLocation}
+                    onChange={(e) => setWarehouseLocation(e.target.value)}
+                    className={`w-full text-sm rounded-xl p-2 ${modalStyles.input}`}
+                    placeholder="Room/Rack/Bin"
+                  />
+                </div>
+              </>
+            )}
+
+            {locationType === 'department' && (
+              <div>
+                <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Project</label>
+                <select
+                  value={project}
+                  onChange={(e) => {
+                    const p = projects.find((pr) => pr.wbs === e.target.value);
+                    setProject(e.target.value);
+                    setProjectname(p?.projectname ?? '');
+                  }}
+                  className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
+                >
+                  <option value="" className="bg-slate-800 text-white">Select project</option>
+                  {projects.map((pr) => (
+                    <option key={pr._id} value={pr.wbs} className="bg-slate-800 text-white">{pr.wbs} – {pr.projectname}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {(locationType === 'department' || locationType === 'camp/office') && (
+              <>
+                <div>
+                  <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>
+                    {locationType === 'department' ? 'Department Location' : 'Location'}
+                  </label>
+                  <input
+                    type="text"
+                    value={departmentLocation}
+                    onChange={(e) => setDepartmentLocation(e.target.value)}
+                    className={`w-full text-sm rounded-xl p-2 ${modalStyles.input}`}
+                    placeholder={locationType === 'department' ? 'City/Area' : 'Location'}
+                  />
+                </div>
+                {locationType === 'camp/office' && (
+                  <div>
+                    <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Building/Room/Occupant</label>
+                    <input
+                      type="text"
+                      value={campOfficeLocation}
+                      onChange={(e) => setCampOfficeLocation(e.target.value)}
+                      className={`w-full text-sm rounded-xl p-2 ${modalStyles.input}`}
+                      placeholder="Building/Room/Occupant"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className={`flex-1 ${modalStyles.buttonPrimary} disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              onClick={onClose}
+              disabled={isSaving}
+              className={`flex-1 ${modalStyles.buttonSecondary} disabled:opacity-50 ${theme === 'glassmorphic' ? 'text-white' : theme === 'light' ? 'text-gray-900' : 'text-white'} px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Check if new custody can be created
   const canCreateNewCustody = !currentCustody || currentCustody.custodyto !== null;
 
@@ -748,13 +990,22 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
             </Link>
           )}
           {currentCustody && !currentCustody.custodyto && (
-            <button
-              onClick={() => setShowEditModal(true)}
-              className={getButtonStyles('blue')}
-              title="End Current Custody"
-            >
-              <PencilIcon className="h-5 w-5" />
-            </button>
+            <>
+              <button
+                onClick={() => setShowErrorCorrectionModal(true)}
+                className={getButtonStyles('blue')}
+                title="Correct location (error correction)"
+              >
+                <WrenchScrewdriverIcon className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setShowEditModal(true)}
+                className={getButtonStyles('blue')}
+                title="End Current Custody"
+              >
+                <PencilIcon className="h-5 w-5" />
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -975,10 +1226,16 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
         )}
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Modal (End Custody) */}
       <EditCustodyModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
+      />
+
+      {/* Error-correction Modal (patch location fields only) */}
+      <ErrorCorrectionModal
+        isOpen={showErrorCorrectionModal}
+        onClose={() => setShowErrorCorrectionModal(false)}
       />
 
       {/* New Custody Modal */}
