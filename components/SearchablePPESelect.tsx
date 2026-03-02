@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { PPEMaster } from '@/types/ppe';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 interface SearchablePPESelectProps {
   value: string;
@@ -27,6 +29,40 @@ export default function SearchablePPESelect({
   const [selectedPPE, setSelectedPPE] = useState<PPEMaster | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { theme } = useAppTheme();
+
+  const isGlassmorphic = theme === 'glassmorphic';
+  const isLight = theme === 'light';
+
+  const inputStyles = isGlassmorphic
+    ? 'bg-white/10 backdrop-blur-md border-white/20 text-white placeholder-white/70 focus:ring-teal-400'
+    : isLight
+    ? 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500'
+    : 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400';
+
+  const dropdownContainerStyles = isGlassmorphic
+    ? 'bg-white/10 backdrop-blur-lg border border-white/20'
+    : isLight
+    ? 'bg-white border border-blue-200 shadow-lg'
+    : 'bg-slate-900 border border-slate-700';
+
+  const dropdownTextStyles = isGlassmorphic
+    ? 'text-white/80'
+    : isLight
+    ? 'text-gray-700'
+    : 'text-slate-200';
+
+  const dropdownItemTitleStyles = isGlassmorphic
+    ? 'font-medium text-white'
+    : isLight
+    ? 'font-medium text-gray-900'
+    : 'font-medium text-slate-100';
+
+  const dropdownItemSubtitleStyles = isGlassmorphic
+    ? 'text-sm text-white/70'
+    : isLight
+    ? 'text-sm text-gray-600'
+    : 'text-sm text-slate-300';
 
   // Fetch PPE items based on search term
   const fetchPPEItems = async (search: string) => {
@@ -153,7 +189,10 @@ export default function SearchablePPESelect({
           placeholder={placeholder}
           required={required}
           disabled={disabled}
-          className="pr-20 bg-white/10 backdrop-blur-md border-white/20 text-white placeholder-white/70 focus:ring-teal-400"
+          className={cn(
+            'pr-20',
+            inputStyles
+          )}
         />
         {selectedPPE && (
           <Button
@@ -170,9 +209,14 @@ export default function SearchablePPESelect({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-2xl max-h-60 overflow-auto">
+        <div
+          className={cn(
+            'absolute z-50 w-full mt-2 rounded-xl shadow-2xl max-h-60 overflow-auto',
+            dropdownContainerStyles
+          )}
+        >
           {loading ? (
-            <div className="p-3 text-center text-white/80">
+            <div className={cn('p-3 text-center', dropdownTextStyles)}>
               Searching...
             </div>
           ) : ppeItems.length > 0 ? (
@@ -182,13 +226,20 @@ export default function SearchablePPESelect({
                   key={ppe.ppeId}
                   type="button"
                   onClick={() => handlePPESelect(ppe)}
-                  className="w-full px-4 py-3 text-left hover:bg-white/10 focus:bg-white/10 focus:outline-none transition-colors border-b border-white/5 last:border-b-0"
+                  className={cn(
+                    'w-full px-4 py-3 text-left focus:outline-none transition-colors border-b last:border-b-0',
+                    isGlassmorphic
+                      ? 'hover:bg-white/10 focus:bg-white/10 border-white/5'
+                      : isLight
+                      ? 'hover:bg-blue-50 focus:bg-blue-50 border-blue-100'
+                      : 'hover:bg-slate-800 focus:bg-slate-800 border-slate-700'
+                  )}
                 >
                   <div className="flex flex-col">
-                    <span className="font-medium text-white">
+                    <span className={dropdownItemTitleStyles}>
                       {ppe.ppeId} - {ppe.ppeName}
                     </span>
-                    <div className="text-sm text-white/70">
+                    <div className={dropdownItemSubtitleStyles}>
                       <span>Material: {ppe.materialCode}</span>
                       {ppe.category && <span> • Category: {ppe.category}</span>}
                       <span> • Life: {ppe.life} {ppe.lifeUOM}</span>
@@ -198,11 +249,11 @@ export default function SearchablePPESelect({
               ))}
             </div>
           ) : searchTerm.length >= 2 && !selectedPPE ? (
-            <div className="p-3 text-center text-white/80">
+            <div className={cn('p-3 text-center', dropdownTextStyles)}>
               No PPE items found
             </div>
           ) : searchTerm.length < 2 ? (
-            <div className="p-3 text-center text-white/80">
+            <div className={cn('p-3 text-center', dropdownTextStyles)}>
               Type at least 2 characters to search
             </div>
           ) : null}
