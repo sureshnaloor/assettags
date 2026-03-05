@@ -376,9 +376,13 @@ export default function PPEIssueRecordsPage() {
         { ppeId: '', ppeName: '', quantityIssued: 1, size: '', isFirstIssue: true, issueAgainstDue: true },
       ]);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating PPE issue record:', error);
-      show({ title: 'Request failed', description: 'Could not complete the request', variant: 'destructive' });
+      let errorDescription = 'Could not complete the request';
+      if (error instanceof Error && error.message.includes('Insufficient stock')) {
+        errorDescription = 'Stock is not sufficient - please check if any receipt posting is pending';
+      }
+      show({ title: 'Request failed', description: errorDescription, variant: 'destructive' });
     } finally {
       setSubmitLoading(false);
     }
