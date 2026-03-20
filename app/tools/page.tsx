@@ -31,8 +31,15 @@ export default function ToolsPage() {
   }>>([]);
   const animationFrameRef = useRef<number>();
 
-  // Network canvas animation
+  // Animated particle background for glassmorphic theme only (same as /mme)
   useEffect(() => {
+    if (theme !== 'glassmorphic') {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -46,24 +53,22 @@ export default function ToolsPage() {
 
     resizeCanvas();
 
-    // Initialize particles
     particlesRef.current = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 50; i++) {
       particlesRef.current.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        radius: Math.random() * 2 + 1
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 3 + 1
       });
     }
 
     const animate = () => {
-      if (!ctx || !canvas) return;
-      
+      if (!ctx || !canvas || theme !== 'glassmorphic') return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update and draw particles
       particlesRef.current.forEach((particle, i) => {
         particle.x += particle.vx;
         particle.y += particle.vy;
@@ -71,34 +76,22 @@ export default function ToolsPage() {
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
-        // Draw particle - theme-based colors
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        if (theme === 'light') {
-          ctx.fillStyle = 'rgba(59, 130, 246, 0.3)'; // blue for light theme
-        } else if (theme === 'glassmorphic') {
-          ctx.fillStyle = 'rgba(45, 212, 191, 0.4)'; // teal for glassmorphic
-        } else {
-          ctx.fillStyle = 'rgba(45, 212, 191, 0.4)'; // teal for dark theme
-        }
+        ctx.fillStyle = 'rgba(45, 212, 191, 0.6)';
         ctx.fill();
 
-        // Draw connections
         particlesRef.current.forEach((otherParticle, j) => {
           if (i !== j) {
             const dx = particle.x - otherParticle.x;
             const dy = particle.y - otherParticle.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < 120) {
+            if (distance < 100) {
               ctx.beginPath();
               ctx.moveTo(particle.x, particle.y);
               ctx.lineTo(otherParticle.x, otherParticle.y);
-              if (theme === 'light') {
-                ctx.strokeStyle = `rgba(59, 130, 246, ${0.15 * (1 - distance / 120)})`;
-              } else {
-                ctx.strokeStyle = `rgba(45, 212, 191, ${0.2 * (1 - distance / 120)})`;
-              }
+              ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
               ctx.lineWidth = 1;
               ctx.stroke();
             }
@@ -125,7 +118,7 @@ export default function ToolsPage() {
     };
   }, [theme]);
 
-  // Theme-based styling function
+  // Page chrome aligned with /mme (glass + default share frosted panels on dark gradient)
   const getBackgroundStyles = () => {
     switch (theme) {
       case 'glassmorphic':
@@ -135,13 +128,15 @@ export default function ToolsPage() {
           headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
           headerHover: 'hover:bg-white/15',
           headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
-          headerSubtitle: 'text-white',
+          headerSubtitle: 'text-white/80',
+          searchBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
           buttonAdd: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
           inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
-          tableBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          tableBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
           tableHover: 'hover:bg-white/15',
           spinnerColor: 'border-teal-400',
           linkColor: 'text-teal-400 hover:text-teal-300',
+          cellText: 'text-white',
           actionEdit: 'text-teal-400 hover:text-teal-300',
           actionDelete: 'text-red-400 hover:text-red-300',
           modalOverlay: 'bg-black/60 backdrop-blur-sm',
@@ -162,12 +157,14 @@ export default function ToolsPage() {
           headerHover: 'hover:bg-blue-50',
           headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
           headerSubtitle: 'text-gray-700',
+          searchBg: 'bg-white border-2 border-blue-200 shadow-md',
           buttonAdd: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
           inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
-          tableBg: 'bg-white border-2 border-blue-200 shadow-md',
+          tableBg: 'border-2 border-blue-200 bg-white shadow-md',
           tableHover: 'hover:bg-blue-50',
           spinnerColor: 'border-blue-500',
           linkColor: 'text-blue-600 hover:text-blue-700',
+          cellText: 'text-gray-900',
           actionEdit: 'text-blue-600 hover:text-blue-700',
           actionDelete: 'text-red-600 hover:text-red-700',
           modalOverlay: 'bg-black/40 backdrop-blur-sm',
@@ -180,20 +177,22 @@ export default function ToolsPage() {
           modalButtonSubmit: 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500',
           modalButtonDisabled: 'bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed'
         };
-      default: // dark theme
+      default:
         return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
-          textColor: 'text-slate-100',
-          headerBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
-          headerHover: 'hover:bg-slate-700/90',
-          headerTitle: 'bg-gradient-to-r from-slate-100 to-teal-400 bg-clip-text text-transparent',
-          headerSubtitle: 'text-slate-300',
-          buttonAdd: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500',
-          inputBg: 'bg-slate-800/90 border border-slate-600 text-slate-100 placeholder-slate-400 focus:ring-teal-400 focus:border-teal-400',
-          tableBg: 'bg-slate-800/90 border border-slate-700 shadow-xl',
-          tableHover: 'hover:bg-slate-700/90',
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          textColor: 'text-white',
+          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          headerHover: 'hover:bg-white/15',
+          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-white/80',
+          searchBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          buttonAdd: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
+          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          tableBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
+          tableHover: 'hover:bg-white/15',
           spinnerColor: 'border-teal-400',
           linkColor: 'text-teal-400 hover:text-teal-300',
+          cellText: 'text-white',
           actionEdit: 'text-teal-400 hover:text-teal-300',
           actionDelete: 'text-red-400 hover:text-red-300',
           modalOverlay: 'bg-black/70 backdrop-blur-sm',
@@ -287,17 +286,17 @@ export default function ToolsPage() {
       accessorKey: 'assetnumber',
       header: ({ column }) => (
         <button
-          className="flex items-center gap-1"
+          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Tool ID
-          <ArrowUpDown className="h-4 w-4" />
+          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
         </button>
       ),
       cell: ({ row }) => (
         <Link 
           href={`/tools/${row.original.assetnumber}`}
-          className={`${backgroundStyles.linkColor} transition-colors`}
+          className={`${backgroundStyles.linkColor} transition-colors font-semibold`}
         >
           {row.original.assetnumber}
         </Link>
@@ -305,30 +304,43 @@ export default function ToolsPage() {
     },
     {
       accessorKey: 'toolDescription',
-      header: 'Description',
-      cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue('toolDescription')}</div>,
+      header: ({ column }) => (
+        <button
+          type="button"
+          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Description
+          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+        </button>
+      ),
+      cell: ({ row }) => (
+        <div className={`max-w-[300px] truncate text-[12px] ${backgroundStyles.cellText}`}>
+          {row.getValue('toolDescription')}
+        </div>
+      ),
     },
     {
       accessorKey: 'serialNumber',
-      header: 'Serial Number',
+      header: () => <span className={backgroundStyles.textColor}>Serial Number</span>,
     },
     {
       accessorKey: 'manufacturer',
-      header: 'Manufacturer',
+      header: () => <span className={backgroundStyles.textColor}>Manufacturer</span>,
     },
     {
       accessorKey: 'modelNumber',
-      header: 'Model',
+      header: () => <span className={backgroundStyles.textColor}>Model</span>,
     },
     {
       accessorKey: 'toolCost',
       header: ({ column }) => (
         <button
-          className="flex items-center gap-1"
+          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Cost
-          <ArrowUpDown className="h-4 w-4" />
+          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
         </button>
       ),
       cell: ({ row }) => {
@@ -343,11 +355,11 @@ export default function ToolsPage() {
       accessorKey: 'purchasedDate',
       header: ({ column }) => (
         <button
-          className="flex items-center gap-1"
+          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Purchase Date
-          <ArrowUpDown className="h-4 w-4" />
+          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
         </button>
       ),
       cell: ({ row }) => {
@@ -357,14 +369,15 @@ export default function ToolsPage() {
     },
     {
       accessorKey: 'toolStatus',
-      header: 'Status',
+      header: () => <span className={backgroundStyles.textColor}>Status</span>,
     },
     {
       accessorKey: 'toolLocation',
-      header: 'Location',
+      header: () => <span className={backgroundStyles.textColor}>Location</span>,
     },
     {
-      header: 'QR Code',
+      id: 'qrcode',
+      header: () => <span className={backgroundStyles.textColor}>QR Code</span>,
       cell: ({ row }) => (
         <AssetQRCode 
           assetNumber={row.original.assetnumber} 
@@ -375,7 +388,7 @@ export default function ToolsPage() {
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: () => <span className={backgroundStyles.textColor}>Actions</span>,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <button
@@ -407,11 +420,11 @@ export default function ToolsPage() {
 
   return (
     <div className={backgroundStyles.container}>
-      {/* Animated background canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-10" />
-      
-      {/* Main content */}
-      <div className="relative z-20 pt-8 pb-12 px-4 sm:px-6 lg:px-8">
+      {theme === 'glassmorphic' && (
+        <canvas ref={canvasRef} className="absolute inset-0 z-10" />
+      )}
+
+      <div className={`relative ${theme === 'glassmorphic' ? 'z-20' : 'z-10'} pt-8 pb-12 px-4 sm:px-6 lg:px-8 min-h-screen`}>
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="mb-8">
@@ -435,29 +448,38 @@ export default function ToolsPage() {
           </div>
 
           {/* Search Section */}
-          <div className="mb-6">
+          <div className={`mb-6 p-6 ${backgroundStyles.searchBg} rounded-xl shadow-lg`}>
             <input
               type="text"
               value={globalFilter ?? ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
               placeholder="Search tools..."
-              className={`w-full max-w-sm px-4 py-3 ${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 transition-all`}
+              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
             />
           </div>
 
           {/* Table Section */}
-          <div className={`${backgroundStyles.tableBg} ${backgroundStyles.tableHover} rounded-3xl shadow-2xl overflow-hidden transition-all duration-300`}>
-            <ResponsiveTanStackTable
-              data={data}
-              columns={columns}
-              sorting={sorting}
-              setSorting={setSorting}
-              columnFilters={columnFilters}
-              setColumnFilters={setColumnFilters}
-              globalFilter={globalFilter}
-              setGlobalFilter={setGlobalFilter}
-              getRowId={(row) => row._id || row.assetnumber}
-            />
+          <div className={`rounded-xl ${backgroundStyles.tableBg} shadow-xl overflow-hidden`}>
+            <div className={theme === 'default' ? 'dark' : undefined}>
+              <ResponsiveTanStackTable
+                data={data}
+                columns={columns}
+                sorting={sorting}
+                setSorting={setSorting}
+                columnFilters={columnFilters}
+                setColumnFilters={setColumnFilters}
+                globalFilter={globalFilter}
+                setGlobalFilter={setGlobalFilter}
+                getRowId={(row) => row._id || row.assetnumber}
+                variant={
+                  theme === 'light'
+                    ? 'light'
+                    : theme === 'glassmorphic'
+                      ? 'glassmorphic'
+                      : 'default'
+                }
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -363,15 +363,24 @@ export default function MMEPage() {
               Enter search criteria to view assets
             </div>
           ) : (
-            <ResponsiveTanStackTable
-              data={data}
-              columns={columns}
-              sorting={sorting}
-              setSorting={setSorting}
-              columnFilters={columnFilters}
-              setColumnFilters={setColumnFilters}
-              getRowId={(row) => row._id}
-            />
+            <div className={theme === 'default' ? 'dark' : undefined}>
+              <ResponsiveTanStackTable
+                data={data}
+                columns={columns}
+                sorting={sorting}
+                setSorting={setSorting}
+                columnFilters={columnFilters}
+                setColumnFilters={setColumnFilters}
+                getRowId={(row) => row._id}
+                variant={
+                  theme === 'light'
+                    ? 'light'
+                    : theme === 'glassmorphic'
+                      ? 'glassmorphic'
+                      : 'default'
+                }
+              />
+            </div>
           )}
         </div>
       </div>

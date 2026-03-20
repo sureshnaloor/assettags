@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { 
+import {
   ColumnDef,
   SortingState,
   ColumnFiltersState
@@ -8,9 +8,9 @@ import {
 import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 
-// Add this import at the top with other imports
 import { AssetQRCode } from '@/components/AssetQRCode';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 interface FixedAsset {
   _id: string;
@@ -26,6 +26,13 @@ interface FixedAsset {
 }
 
 export default function FixedAssetPage() {
+  const [data, setData] = useState<FixedAsset[]>([]);
+  const [assetNumberSearch, setAssetNumberSearch] = useState('');
+  const [assetNameSearch, setAssetNameSearch] = useState('');
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [loading, setLoading] = useState(false);
+  const { theme } = useAppTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Array<{
     x: number;
@@ -36,15 +43,8 @@ export default function FixedAssetPage() {
   }>>([]);
   const animationFrameRef = useRef<number>();
 
-  const [data, setData] = useState<FixedAsset[]>([]);
-  const [assetNumberSearch, setAssetNumberSearch] = useState('');
-  const [assetNameSearch, setAssetNameSearch] = useState('');
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [loading, setLoading] = useState(false);
-
   const searchAssets = async (assetNumber: string, assetName: string) => {
-    if ((!assetNumber?.trim() || assetNumber.trim().length < 2) && 
+    if ((!assetNumber?.trim() || assetNumber.trim().length < 2) &&
         (!assetName?.trim() || assetName.trim().length < 2)) {
       setData([]);
       return;
@@ -75,8 +75,15 @@ export default function FixedAssetPage() {
     return () => clearTimeout(timer);
   }, [assetNumberSearch, assetNameSearch]);
 
-  // Animated particle background
+  // Animated particle background for glassmorphic theme only
   useEffect(() => {
+    if (theme !== 'glassmorphic') {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -102,8 +109,8 @@ export default function FixedAssetPage() {
     }
 
     const animate = () => {
-      if (!ctx || !canvas) return;
-      
+      if (!ctx || !canvas || theme !== 'glassmorphic') return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particlesRef.current.forEach((particle, i) => {
@@ -153,24 +160,79 @@ export default function FixedAssetPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [theme]);
+
+  const getBackgroundStyles = () => {
+    switch (theme) {
+      case 'glassmorphic':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          textColor: 'text-white',
+          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          headerHover: 'hover:bg-white/15',
+          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-white/80',
+          searchBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          resultsBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
+          emptyText: 'text-white/70',
+          spinnerColor: 'border-teal-400',
+          linkColor: 'text-teal-400 hover:text-teal-300',
+          cellText: 'text-white'
+        };
+      case 'light':
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
+          textColor: 'text-gray-900',
+          headerBg: 'bg-white border-2 border-blue-200 shadow-lg',
+          headerHover: 'hover:bg-blue-50',
+          headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
+          headerSubtitle: 'text-gray-700',
+          searchBg: 'bg-white border-2 border-blue-200 shadow-md',
+          inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
+          resultsBg: 'border-2 border-blue-200 bg-white shadow-md',
+          emptyText: 'text-gray-600',
+          spinnerColor: 'border-blue-500',
+          linkColor: 'text-blue-600 hover:text-blue-700',
+          cellText: 'text-gray-900'
+        };
+      default:
+        return {
+          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
+          textColor: 'text-white',
+          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          headerHover: 'hover:bg-white/15',
+          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
+          headerSubtitle: 'text-white/80',
+          searchBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
+          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
+          resultsBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
+          emptyText: 'text-white/70',
+          spinnerColor: 'border-teal-400',
+          linkColor: 'text-teal-400 hover:text-teal-300',
+          cellText: 'text-white'
+        };
+    }
+  };
+
+  const backgroundStyles = getBackgroundStyles();
 
   const columns: ColumnDef<FixedAsset>[] = [
     {
       accessorKey: 'assetnumber',
       header: ({ column }) => (
         <button
-          className="flex items-center gap-1"
+          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Asset Number
-          <ArrowUpDown className="h-4 w-4" />
+          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
         </button>
       ),
       cell: ({ row }) => (
-        <Link 
+        <Link
           href={`/fixedasset/${row.original.assetnumber}`}
-          className="text-teal-400 hover:text-teal-300 transition-colors"
+          className={`${backgroundStyles.linkColor} transition-colors font-semibold`}
         >
           {row.original.assetnumber}
         </Link>
@@ -180,44 +242,48 @@ export default function FixedAssetPage() {
       accessorKey: 'assetdescription',
       header: ({ column }) => (
         <button
-          className="flex items-center gap-1"
+          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Description
-          <ArrowUpDown className="h-4 w-4" />
+          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
         </button>
       ),
-      cell: ({ row }) => <div className="max-w-[300px] truncate text-[12px] text-white">{row.getValue('assetdescription')}</div>,
+      cell: ({ row }) => (
+        <div className={`max-w-[300px] truncate text-[12px] ${backgroundStyles.cellText}`}>
+          {row.getValue('assetdescription')}
+        </div>
+      ),
     },
     {
       accessorKey: 'assetcategory',
-      header: 'Category',
+      header: () => <span className={backgroundStyles.textColor}>Category</span>,
     },
     {
       accessorKey: 'assetsubcategory',
-      header: 'Subcategory',
+      header: () => <span className={backgroundStyles.textColor}>Subcategory</span>,
     },
     {
       accessorKey: 'assetstatus',
-      header: 'Status',
+      header: () => <span className={backgroundStyles.textColor}>Status</span>,
     },
     {
       accessorKey: 'location',
-      header: 'Location',
+      header: () => <span className={backgroundStyles.textColor}>Location</span>,
     },
     {
       accessorKey: 'department',
-      header: 'Department',
+      header: () => <span className={backgroundStyles.textColor}>Department</span>,
     },
     {
       accessorKey: 'acquiredvalue',
       header: ({ column }) => (
         <button
-          className="flex items-center gap-1"
+          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Value
-          <ArrowUpDown className="h-4 w-4" />
+          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
         </button>
       ),
       cell: ({ row }) => {
@@ -228,69 +294,76 @@ export default function FixedAssetPage() {
         }).format(value) : 'N/A';
       }
     },
-    // Add the new QR code column
     {
       id: 'qrcode',
-      header: 'QR Code',
-              cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} assetType="fixedasset" />,
+      header: () => <span className={backgroundStyles.textColor}>QR Code</span>,
+      cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} assetType="fixedasset" />,
     },
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
-      {/* Animated background canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-10" />
-      
-      {/* Main content */}
-      <div className="relative z-20 flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
-        {/* Header Section */}
-        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-xl">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent mb-2">
-            Fixed Assets
-          </h1>
-          <p className="text-white/80 text-lg">Search and manage fixed assets</p>
+    <div className={backgroundStyles.container}>
+      {theme === 'glassmorphic' && (
+        <canvas ref={canvasRef} className="absolute inset-0 z-10" />
+      )}
+
+      <div className={`relative ${theme === 'glassmorphic' ? 'z-20' : 'z-10'} flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen`}>
+        <div className="mb-8">
+          <div className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300`}>
+            <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+              Fixed Assets
+            </h1>
+            <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Search and manage fixed assets</p>
+          </div>
         </div>
-      
-        {/* Search Section with Enhanced Styling */}
-        <div className="mb-6 p-6 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl">
+
+        <div className={`mb-6 p-6 ${backgroundStyles.searchBg} rounded-xl shadow-lg`}>
           <div className="flex gap-4">
             <input
               type="text"
               value={assetNumberSearch}
               onChange={(e) => setAssetNumberSearch(e.target.value)}
               placeholder="Search by asset number..."
-              className="w-full max-w-sm px-4 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
             />
             <input
               type="text"
               value={assetNameSearch}
               onChange={(e) => setAssetNameSearch(e.target.value)}
               placeholder="Search by asset description..."
-              className="w-full max-w-sm px-4 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
             />
           </div>
         </div>
 
-        {/* Results Section with Gradient Background */}
-        <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-xl">
+        <div className={`rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
           {loading ? (
             <div className="flex justify-center items-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-400"></div>
+              <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
             </div>
           ) : data.length === 0 ? (
-            <div className="text-center py-8 text-white/80">
+            <div className={`text-center py-8 ${backgroundStyles.emptyText}`}>
               Enter search criteria to view fixed assets
             </div>
           ) : (
-            <ResponsiveTanStackTable
-              data={data}
-              columns={columns}
-              sorting={sorting}
-              setSorting={setSorting}
-              columnFilters={columnFilters}
-              setColumnFilters={setColumnFilters}
-              getRowId={(row) => row._id}
-            />
+            <div className={theme === 'default' ? 'dark' : undefined}>
+              <ResponsiveTanStackTable
+                data={data}
+                columns={columns}
+                sorting={sorting}
+                setSorting={setSorting}
+                columnFilters={columnFilters}
+                setColumnFilters={setColumnFilters}
+                getRowId={(row) => row._id}
+                variant={
+                  theme === 'light'
+                    ? 'light'
+                    : theme === 'glassmorphic'
+                      ? 'glassmorphic'
+                      : 'default'
+                }
+              />
+            </div>
           )}
         </div>
       </div>
