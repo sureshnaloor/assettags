@@ -2,7 +2,19 @@
 
 import { useEffect, useRef } from "react"
 
-export function AssetTypeDistribution() {
+export interface AssetTypeSlice {
+  label: string
+  value: number
+}
+
+const DEFAULT_COLORS = ["#3b82f6", "#8b5cf6", "#14b8a6", "#f59e0b", "#ef4444", "#64748b", "#ec4899", "#22c55e"]
+
+interface AssetTypeDistributionProps {
+  segments: AssetTypeSlice[]
+  theme?: "light" | "dark" | "glassmorphic"
+}
+
+export function AssetTypeDistribution({ segments, theme = "dark" }: AssetTypeDistributionProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -12,37 +24,42 @@ export function AssetTypeDistribution() {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // Set canvas dimensions with device pixel ratio for sharp rendering
     const dpr = window.devicePixelRatio || 1
     const rect = canvas.getBoundingClientRect()
     canvas.width = rect.width * dpr
     canvas.height = rect.height * dpr
     ctx.scale(dpr, dpr)
 
-    // Chart configuration
+    ctx.clearRect(0, 0, rect.width, rect.height)
+
+    const legendMuted =
+      theme === "light" ? "#475569" : theme === "glassmorphic" ? "rgba(255,255,255,0.85)" : "#cbd5e1"
+
+    const data =
+      segments?.filter((s) => s.value > 0).map((s, i) => ({
+        label: s.label || "Unknown",
+        value: s.value,
+        color: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+      })) ?? []
+
     const centerX = rect.width / 2
-    const centerY = rect.height / 2
-    const radius = Math.min(centerX, centerY) - 40
+    const centerY = rect.height / 2 - 8
+    const radius = Math.min(centerX, centerY) - 36
 
-    // Data for the pie chart
-    const data = [
-      { label: "IT Equipment", value: 35, color: "#3b82f6" },
-      { label: "Machinery", value: 25, color: "#8b5cf6" },
-      { label: "Vehicles", value: 15, color: "#22c55e" },
-      { label: "Office Equipment", value: 10, color: "#f59e0b" },
-      { label: "Tools", value: 8, color: "#ef4444" },
-      { label: "Other", value: 7, color: "#6b7280" },
-    ]
+    if (data.length === 0) {
+      ctx.fillStyle = legendMuted
+      ctx.font = "500 14px ui-sans-serif, system-ui, sans-serif"
+      ctx.textAlign = "center"
+      ctx.textBaseline = "middle"
+      ctx.fillText("No category data yet", centerX, centerY)
+      return
+    }
 
-    // Calculate total for percentages
     const total = data.reduce((sum, item) => sum + item.value, 0)
+    let startAngle = -Math.PI / 2
 
-    // Draw the pie chart
-    let startAngle = 0
     data.forEach((item) => {
       const sliceAngle = (item.value / total) * 2 * Math.PI
-
-      // Draw slice
       ctx.beginPath()
       ctx.moveTo(centerX, centerY)
       ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle)
@@ -50,46 +67,40 @@ export function AssetTypeDistribution() {
       ctx.fillStyle = item.color
       ctx.fill()
 
-      // Calculate position for the label
-      const middleAngle = startAngle + sliceAngle / 2
-      const labelRadius = radius * 0.7
-      const labelX = centerX + labelRadius * Math.cos(middleAngle)
-      const labelY = centerY + labelRadius * Math.sin(middleAngle)
-
-      // Draw percentage label
-      ctx.fillStyle = "#fff"
-      ctx.font = "bold 12px Inter, system-ui, sans-serif"
-      ctx.textAlign = "center"
-      ctx.textBaseline = "middle"
-      ctx.fillText(`${Math.round((item.value / total) * 100)}%`, labelX, labelY)
+      if (sliceAngle > 0.15) {
+        const middleAngle = startAngle + sliceAngle / 2
+        const labelRadius = radius * 0.62
+        const labelX = centerX + labelRadius * Math.cos(middleAngle)
+        const labelY = centerY + labelRadius * Math.sin(middleAngle)
+        ctx.fillStyle = "rgba(255,255,255,0.95)"
+        ctx.font = "600 11px ui-sans-serif, system-ui, sans-serif"
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+        ctx.fillText(`${Math.round((item.value / total) * 100)}%`, labelX, labelY)
+      }
 
       startAngle += sliceAngle
     })
 
-    // Draw legend
-    const legendX = 10
-    let legendY = rect.height - data.length * 20 - 10
+    const legendX = 12
+    let legendY = Math.min(rect.height - data.length * 22 - 12, centerY + radius + 14)
 
     data.forEach((item) => {
-      // Draw color box
       ctx.fillStyle = item.color
       ctx.fillRect(legendX, legendY, 12, 12)
-
-      // Draw label
-      ctx.fillStyle = "#fff"
-      ctx.font = "12px Inter, system-ui, sans-serif"
+      ctx.fillStyle = legendMuted
+      ctx.font = "500 12px ui-sans-serif, system-ui, sans-serif"
       ctx.textAlign = "left"
       ctx.textBaseline = "middle"
-      ctx.fillText(item.label, legendX + 20, legendY + 6)
-
-      legendY += 20
+      const pct = Math.round((item.value / total) * 100)
+      ctx.fillText(`${item.label} · ${pct}%`, legendX + 18, legendY + 6)
+      legendY += 22
     })
-  }, [])
+  }, [segments, theme])
 
   return (
     <div className="h-[300px] w-full">
-      <canvas ref={canvasRef} className="h-full w-full" />
+      <canvas ref={canvasRef} className="h-full w-full" aria-label="Asset type distribution chart" />
     </div>
   )
 }
-

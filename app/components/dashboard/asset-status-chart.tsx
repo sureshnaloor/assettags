@@ -1,73 +1,57 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { BarChart, Battery, CheckCircle, Clock } from "lucide-react"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 
-export function AssetStatusChart() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+export interface AssetStatusDatum {
+  name: string
+  value: number
+}
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+const DEFAULT_PALETTE = ["#6366f1", "#8b5cf6", "#0ea5e9", "#14b8a6", "#f59e0b", "#ef4444", "#64748b"]
 
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
+interface AssetStatusChartProps {
+  data: AssetStatusDatum[]
+  gridStroke?: string
+  axisStroke?: string
+  emptyLabel?: string
+}
 
-    // Set canvas dimensions with device pixel ratio for sharp rendering
-    const dpr = window.devicePixelRatio || 1
-    const rect = canvas.getBoundingClientRect()
-    canvas.width = rect.width * dpr
-    canvas.height = rect.height * dpr
-    ctx.scale(dpr, dpr)
-
-    // Chart configuration
-    const chartWidth = rect.width
-    const chartHeight = rect.height
-    const barWidth = chartWidth / 6
-    const maxBarHeight = chartHeight - 60
-    const padding = 40
-
-    // Data for the chart
-    const data = [
-      { label: "In Use", value: 842, color: "#22c55e", icon: CheckCircle },
-      { label: "In Storage", value: 256, color: "#3b82f6", icon: Battery },
-      { label: "In Transit", value: 64, color: "#f59e0b", icon: Clock },
-      { label: "Maintenance", value: 86, color: "#8b5cf6", icon: BarChart },
-    ]
-
-    // Find the maximum value for scaling
-    const maxValue = Math.max(...data.map((item) => item.value))
-
-    // Draw the bars
-    data.forEach((item, index) => {
-      const barHeight = (item.value / maxValue) * maxBarHeight
-      const x = padding + index * (barWidth + 20)
-      const y = chartHeight - barHeight - 30
-
-      // Draw bar
-      ctx.fillStyle = item.color
-      ctx.beginPath()
-      ctx.roundRect(x, y, barWidth, barHeight, 6)
-      ctx.fill()
-
-      // Draw value on top of bar
-      ctx.fillStyle = "#ffffff"
-      ctx.font = "bold 14px Inter, system-ui, sans-serif"
-      ctx.textAlign = "center"
-      ctx.fillText(item.value.toString(), x + barWidth / 2, y - 10)
-
-      // Draw label below bar
-      ctx.fillStyle = "#ffffff"
-      ctx.font = "12px Inter, system-ui, sans-serif"
-      ctx.textAlign = "center"
-      ctx.fillText(item.label, x + barWidth / 2, chartHeight - 10)
-    })
-  }, [])
+export function AssetStatusChart({
+  data,
+  gridStroke = "#33415555",
+  axisStroke = "#64748b",
+  emptyLabel = "No status data yet",
+}: AssetStatusChartProps) {
+  const chartData = data?.length ? data : [{ name: emptyLabel, value: 0 }]
 
   return (
-    <div className="h-[300px] w-full">
-      <canvas ref={canvasRef} className="h-full w-full" />
+    <div className="w-full" style={{ minHeight: 320 }}>
+      <ResponsiveContainer width="100%" height={320}>
+        <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+          <XAxis dataKey="name" tick={{ fill: axisStroke, fontSize: 12 }} interval={0} angle={-18} textAnchor="end" height={56} />
+          <YAxis tick={{ fill: axisStroke, fontSize: 12 }} allowDecimals={false} />
+          <Tooltip
+            contentStyle={{
+              borderRadius: 12,
+              border: "1px solid rgba(148,163,184,0.35)",
+              fontSize: 13,
+            }}
+          />
+          <Bar dataKey="value" radius={[6, 6, 0, 0]} name="Assets">
+            {chartData.map((_, i) => (
+              <Cell
+                key={i}
+                fill={
+                  !data?.length
+                    ? "#94a3b8"
+                    : DEFAULT_PALETTE[i % DEFAULT_PALETTE.length]
+                }
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   )
 }
-

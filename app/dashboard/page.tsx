@@ -1,38 +1,56 @@
 'use client';
 
-import { useEffect, useRef } from "react"
-import Link from "next/link"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   Activity,
   AlertTriangle,
   BarChart3,
   Box,
-  Calendar,
   ClipboardList,
   Download,
-  FileText,
   Filter,
-  Home,
-  Package,
-  Search,
-  Settings,
-  Truck,
   Users,
   Wrench,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AssetStatusChart } from "@/app/components/dashboard/asset-status-chart"
 import { AssetTypeDistribution } from "@/app/components/dashboard/asset-type-distribution"
 import { MaintenanceSchedule } from "@/app/components/dashboard/maintenance-schedule"
-import { RecentActivities } from "@/app/components/dashboard/recent-activities"
 import { useAppTheme } from '@/app/contexts/ThemeContext'
+import type { DashboardOverviewResponse } from '@/types/dashboard'
+
+type ChartTheme = 'light' | 'dark' | 'glassmorphic'
 
 export default function DashboardPage() {
   const { theme } = useAppTheme();
+  const [overview, setOverview] = useState<DashboardOverviewResponse | null>(null);
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
+
+  const loadOverview = useCallback(async () => {
+    setOverviewLoading(true);
+    setOverviewError(null);
+    try {
+      const res = await fetch('/api/dashboard/overview');
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to load overview');
+      }
+      setOverview(json as DashboardOverviewResponse);
+    } catch (e) {
+      setOverview(null);
+      setOverviewError(e instanceof Error ? e.message : 'Failed to load overview');
+    } finally {
+      setOverviewLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadOverview();
+  }, [loadOverview]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Array<{
     x: number;
@@ -158,7 +176,14 @@ export default function DashboardPage() {
           cardDescription: 'text-white/70',
           cardValue: 'text-teal-400',
           cardSubtext: 'text-white/70',
-          iconColor: 'text-teal-400'
+          iconColor: 'text-teal-400',
+          sectionHeading: 'text-lg font-semibold tracking-tight text-white',
+          sectionSub: 'text-sm text-white/75',
+          rowTitle: 'text-sm font-medium text-white',
+          rowMuted: 'text-xs text-white/70',
+          rowBody: 'text-sm text-white/85',
+          rowBorder: 'border-white/20',
+          rowBg: 'border-white/20 bg-white/5 backdrop-blur-sm',
         };
       case 'light':
         return {
@@ -178,7 +203,14 @@ export default function DashboardPage() {
           cardDescription: 'text-gray-600',
           cardValue: 'text-blue-600',
           cardSubtext: 'text-gray-600',
-          iconColor: 'text-blue-600'
+          iconColor: 'text-blue-600',
+          sectionHeading: 'text-lg font-semibold tracking-tight text-gray-900',
+          sectionSub: 'text-sm text-gray-600',
+          rowTitle: 'text-sm font-medium text-gray-900',
+          rowMuted: 'text-xs text-gray-600',
+          rowBody: 'text-sm text-gray-700',
+          rowBorder: 'border-gray-200',
+          rowBg: 'border-gray-200 bg-white/90',
         };
       default: // dark theme
         return {
@@ -198,12 +230,46 @@ export default function DashboardPage() {
           cardDescription: 'text-slate-400',
           cardValue: 'text-teal-400',
           cardSubtext: 'text-slate-400',
-          iconColor: 'text-teal-400'
+          iconColor: 'text-teal-400',
+          sectionHeading: 'text-lg font-semibold tracking-tight text-slate-100',
+          sectionSub: 'text-sm text-slate-400',
+          rowTitle: 'text-sm font-medium text-slate-100',
+          rowMuted: 'text-xs text-slate-400',
+          rowBody: 'text-sm text-slate-300',
+          rowBorder: 'border-slate-600',
+          rowBg: 'border-slate-600 bg-slate-900/40',
         };
     }
   };
 
   const backgroundStyles = getBackgroundStyles();
+
+  const chartTheme: ChartTheme =
+    theme === 'light' ? 'light' : theme === 'glassmorphic' ? 'glassmorphic' : 'dark';
+  const chartGrid =
+    theme === 'light' ? '#e2e8f0' : theme === 'glassmorphic' ? 'rgba(255,255,255,0.12)' : 'rgba(148,163,184,0.22)';
+  const chartAxis =
+    theme === 'light' ? '#64748b' : theme === 'glassmorphic' ? 'rgba(255,255,255,0.65)' : '#94a3b8';
+
+  const calibrationScheduleItems = useMemo(() => {
+    if (!overview?.upcomingCalibrations?.length) return [];
+    return overview.upcomingCalibrations.map((c, i) => ({
+      id: `${c.assetnumber}-${i}`,
+      asset: (c.assetdescription && c.assetdescription.trim()) || `Asset ${c.assetnumber}`,
+      subtitle: c.calibratedby
+        ? `Certificate valid to · Last calibrated by ${c.calibratedby}`
+        : 'Upcoming certificate expiry',
+      dateLabel: c.calibrationtodate
+        ? new Date(c.calibrationtodate).toLocaleDateString(undefined, { dateStyle: 'medium' })
+        : '—',
+      status: 'scheduled' as const,
+    }));
+  }, [overview]);
+
+  const fmtDateTime = (iso: string | null) =>
+    iso
+      ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+      : '—';
 
   return (
     <div className={backgroundStyles.container}>
@@ -276,89 +342,274 @@ export default function DashboardPage() {
                 </TabsTrigger>
               </TabsList>
             </div>
-            <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <TabsContent value="overview" className="space-y-8">
+              {overviewError ? (
+                <div
+                  className={`rounded-2xl border px-4 py-3 text-sm ${backgroundStyles.rowBorder} ${backgroundStyles.rowBg} ${backgroundStyles.rowBody}`}
+                >
+                  {overviewError}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={`ml-3 h-8 ${backgroundStyles.buttonOutline}`}
+                    onClick={() => loadOverview()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              ) : null}
+
+              <section className="space-y-3">
+                <div>
+                  <h2 className={backgroundStyles.sectionHeading}>Overview</h2>
+                  <p className={backgroundStyles.sectionSub}>
+                    Live counts from equipment and tools plus fixed assets, with custody coverage.
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className={`text-sm font-medium ${backgroundStyles.cardTitle}`}>Total assets</CardTitle>
+                      <Box className={`h-4 w-4 ${backgroundStyles.iconColor}`} />
+                    </CardHeader>
+                    <CardContent>
+                      <div className={`text-2xl font-bold tabular-nums tracking-tight ${backgroundStyles.cardValue}`}>
+                        {overviewLoading ? '…' : overview ? overview.summary.totalAssets.toLocaleString() : '—'}
+                      </div>
+                      <p className={`text-xs ${backgroundStyles.cardSubtext}`}>
+                        {overviewLoading
+                          ? 'Loading from equipmentandtools and fixedassets…'
+                          : `${overview?.summary.assetsAddedThisMonth ?? 0} added this month · ${overview?.summary.mmeCount ?? 0} MME / ${overview?.summary.fixedAssetCount ?? 0} fixed`}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className={`text-sm font-medium ${backgroundStyles.cardTitle}`}>In custody</CardTitle>
+                      <Users className={`h-4 w-4 ${backgroundStyles.iconColor}`} />
+                    </CardHeader>
+                    <CardContent>
+                      <div className={`text-2xl font-bold tabular-nums tracking-tight ${backgroundStyles.cardValue}`}>
+                        {overviewLoading ? '…' : overview ? overview.summary.assetsInCustody.toLocaleString() : '—'}
+                      </div>
+                      <p className={`text-xs ${backgroundStyles.cardSubtext}`}>
+                        {overviewLoading
+                          ? 'Loading equipmentcustody…'
+                          : `${overview?.summary.custodyPercent ?? 0}% of registered assets have an active custody row`}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className={`text-sm font-medium ${backgroundStyles.cardTitle}`}>Calibrations due soon</CardTitle>
+                      <Wrench className={`h-4 w-4 ${backgroundStyles.iconColor}`} />
+                    </CardHeader>
+                    <CardContent>
+                      <div className={`text-2xl font-bold tabular-nums tracking-tight ${backgroundStyles.cardValue}`}>
+                        {overviewLoading ? '…' : overview ? String(overview.summary.calibrationsDueSoon) : '—'}
+                      </div>
+                      <p className={`text-xs ${backgroundStyles.cardSubtext}`}>
+                        Latest certificate per asset expiring within 30 days (equipmentcalibcertificates)
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className={`text-sm font-medium ${backgroundStyles.cardTitle}`}>Expired calibrations</CardTitle>
+                      <AlertTriangle className={`h-4 w-4 ${backgroundStyles.iconColor}`} />
+                    </CardHeader>
+                    <CardContent>
+                      <div className={`text-2xl font-bold tabular-nums tracking-tight ${backgroundStyles.cardValue}`}>
+                        {overviewLoading ? '…' : overview ? String(overview.summary.expiredCalibrations) : '—'}
+                      </div>
+                      <p className={`text-xs ${backgroundStyles.cardSubtext}`}>
+                        Assets whose latest certificate end date is already past
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </section>
+
+              <section className="space-y-3">
+                <div>
+                  <h2 className={backgroundStyles.sectionHeading}>Status and categories</h2>
+                  <p className={backgroundStyles.sectionSub}>
+                    Combined <span className="font-medium">assetstatus</span> and{' '}
+                    <span className="font-medium">assetcategory</span> from both registers.
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                  <Card className={`lg:col-span-4 ${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
+                    <CardHeader>
+                      <CardTitle className={`text-base font-semibold tracking-tight ${backgroundStyles.cardTitle}`}>
+                        Asset status overview
+                      </CardTitle>
+                      <CardDescription className={backgroundStyles.cardDescription}>
+                        Counts by recorded status across MME and fixed assets
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pl-2">
+                      <AssetStatusChart
+                        data={overview?.assetStatus ?? []}
+                        gridStroke={chartGrid}
+                        axisStroke={chartAxis}
+                      />
+                    </CardContent>
+                  </Card>
+                  <Card className={`lg:col-span-3 ${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
+                    <CardHeader>
+                      <CardTitle className={`text-base font-semibold tracking-tight ${backgroundStyles.cardTitle}`}>
+                        Asset type distribution
+                      </CardTitle>
+                      <CardDescription className={backgroundStyles.cardDescription}>
+                        Merged categories from both collections
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <AssetTypeDistribution segments={overview?.assetTypeDistribution ?? []} theme={chartTheme} />
+                    </CardContent>
+                  </Card>
+                </div>
+              </section>
+
+              <section className="space-y-3">
+                <div>
+                  <h2 className={backgroundStyles.sectionHeading}>Custody and calibration</h2>
+                  <p className={backgroundStyles.sectionSub}>
+                    Recent rows from <span className="font-medium">equipmentcustody</span>; next expiries from{' '}
+                    <span className="font-medium">equipmentcalibcertificates</span>.
+                  </p>
+                </div>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
+                    <CardHeader>
+                      <CardTitle className={`text-base font-semibold tracking-tight ${backgroundStyles.cardTitle}`}>
+                        Recent custody activity
+                      </CardTitle>
+                      <CardDescription className={backgroundStyles.cardDescription}>
+                        Newest assignments by custody start date
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {overviewLoading ? (
+                        <p className={`text-sm ${backgroundStyles.rowMuted}`}>Loading…</p>
+                      ) : overview?.recentCustody?.length ? (
+                        overview.recentCustody.map((row, idx) => (
+                          <div
+                            key={`${row.assetnumber}-${row.custodyfrom}-${idx}`}
+                            className={`rounded-xl border p-3 ${backgroundStyles.rowBorder} ${backgroundStyles.rowBg}`}
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className={backgroundStyles.rowTitle}>{row.assetnumber}</p>
+                              <span className={backgroundStyles.rowMuted}>{fmtDateTime(row.custodyfrom)}</span>
+                            </div>
+                            <p className={`mt-1 ${backgroundStyles.rowBody}`}>
+                              {row.employeename || '—'}
+                              {row.employeenumber ? ` · ${row.employeenumber}` : ''}
+                            </p>
+                            <p className={`mt-0.5 text-xs ${backgroundStyles.rowMuted}`}>
+                              {[row.locationType, row.location].filter(Boolean).join(' · ') || '—'}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className={`text-sm ${backgroundStyles.rowMuted}`}>No custody rows returned.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                  <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
+                    <CardHeader>
+                      <CardTitle className={`text-base font-semibold tracking-tight ${backgroundStyles.cardTitle}`}>
+                        Upcoming calibration expiries
+                      </CardTitle>
+                      <CardDescription className={backgroundStyles.cardDescription}>
+                        Next certificate end date per asset (soonest first)
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <MaintenanceSchedule
+                        items={calibrationScheduleItems}
+                        titleClass={backgroundStyles.rowTitle}
+                        mutedClass={backgroundStyles.rowMuted}
+                        borderClass={backgroundStyles.rowBorder}
+                        rowBgClass={backgroundStyles.rowBg}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              </section>
+
+              <section className="space-y-3">
+                <div>
+                  <h2 className={backgroundStyles.sectionHeading}>Latest PPE transactions</h2>
+                  <p className={backgroundStyles.sectionSub}>Most recent issues from the ppe-records collection.</p>
+                </div>
                 <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className={`text-sm font-medium ${backgroundStyles.cardTitle}`}>Total Assets</CardTitle>
-                    <Box className={`h-4 w-4 ${backgroundStyles.iconColor}`} />
-                  </CardHeader>
-                  <CardContent>
-                    <div className={`text-2xl font-bold ${backgroundStyles.cardValue}`}>1,248</div>
-                    <p className={`text-xs ${backgroundStyles.cardSubtext}`}>+12 assets added this month</p>
+                  <CardContent className="space-y-2 pt-6">
+                    {overviewLoading ? (
+                      <p className={`text-sm ${backgroundStyles.rowMuted}`}>Loading…</p>
+                    ) : overview?.recentPpe?.length ? (
+                      overview.recentPpe.map((r) => (
+                        <div
+                          key={r._id}
+                          className={`rounded-xl border p-3 ${backgroundStyles.rowBorder} ${backgroundStyles.rowBg}`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className={backgroundStyles.rowTitle}>{r.ppeName}</p>
+                            <span className={backgroundStyles.rowMuted}>{fmtDateTime(r.dateOfIssue)}</span>
+                          </div>
+                          <p className={`mt-1 ${backgroundStyles.rowBody}`}>
+                            {r.userEmpName} · {r.userEmpNumber} · Qty {r.quantityIssued}
+                          </p>
+                          {r.issuedByName ? (
+                            <p className={`mt-0.5 text-xs ${backgroundStyles.rowMuted}`}>Issued by {r.issuedByName}</p>
+                          ) : null}
+                        </div>
+                      ))
+                    ) : (
+                      <p className={`text-sm ${backgroundStyles.rowMuted}`}>No PPE issue records found.</p>
+                    )}
                   </CardContent>
                 </Card>
+              </section>
+
+              <section className="space-y-3">
+                <div>
+                  <h2 className={backgroundStyles.sectionHeading}>Recent project return materials</h2>
+                  <p className={backgroundStyles.sectionSub}>
+                    Ten newest rows from projreturnmaterials (non-disposed), by createdAt.
+                  </p>
+                </div>
                 <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className={`text-sm font-medium ${backgroundStyles.cardTitle}`}>Assets In Use</CardTitle>
-                    <Users className={`h-4 w-4 ${backgroundStyles.iconColor}`} />
-                  </CardHeader>
-                  <CardContent>
-                    <div className={`text-2xl font-bold ${backgroundStyles.cardValue}`}>842</div>
-                    <p className={`text-xs ${backgroundStyles.cardSubtext}`}>67.5% of total assets</p>
+                  <CardContent className="space-y-2 pt-6">
+                    {overviewLoading ? (
+                      <p className={`text-sm ${backgroundStyles.rowMuted}`}>Loading…</p>
+                    ) : overview?.recentProjectReturns?.length ? (
+                      overview.recentProjectReturns.map((m) => (
+                        <div
+                          key={m.materialid}
+                          className={`rounded-xl border p-3 ${backgroundStyles.rowBorder} ${backgroundStyles.rowBg}`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className={backgroundStyles.rowTitle}>{m.materialDescription}</p>
+                            <span className={backgroundStyles.rowMuted}>{fmtDateTime(m.createdAt)}</span>
+                          </div>
+                          <p className={`mt-1 text-xs ${backgroundStyles.rowMuted}`}>
+                            {m.materialCode} · ID {m.materialid}
+                            {m.sourceProject ? ` · ${m.sourceProject}` : ''}
+                          </p>
+                          <p className={`mt-1 ${backgroundStyles.rowBody}`}>
+                            Qty {m.quantity} {m.uom}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className={`text-sm ${backgroundStyles.rowMuted}`}>No return material rows found.</p>
+                    )}
                   </CardContent>
                 </Card>
-                <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className={`text-sm font-medium ${backgroundStyles.cardTitle}`}>Pending Maintenance</CardTitle>
-                    <Wrench className={`h-4 w-4 ${backgroundStyles.iconColor}`} />
-                  </CardHeader>
-                  <CardContent>
-                    <div className={`text-2xl font-bold ${backgroundStyles.cardValue}`}>36</div>
-                    <p className={`text-xs ${backgroundStyles.cardSubtext}`}>8 scheduled for this week</p>
-                  </CardContent>
-                </Card>
-                <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className={`text-sm font-medium ${backgroundStyles.cardTitle}`}>Alerts</CardTitle>
-                    <AlertTriangle className={`h-4 w-4 ${backgroundStyles.iconColor}`} />
-                  </CardHeader>
-                  <CardContent>
-                    <div className={`text-2xl font-bold ${backgroundStyles.cardValue}`}>12</div>
-                    <p className={`text-xs ${backgroundStyles.cardSubtext}`}>3 critical alerts requiring attention</p>
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className={`lg:col-span-4 ${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
-                  <CardHeader>
-                    <CardTitle className={backgroundStyles.cardTitle}>Asset Status Overview</CardTitle>
-                    <CardDescription className={backgroundStyles.cardDescription}>Distribution of assets by current status</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pl-2">
-                    <AssetStatusChart />
-                  </CardContent>
-                </Card>
-                <Card className={`lg:col-span-3 ${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
-                  <CardHeader>
-                    <CardTitle className={backgroundStyles.cardTitle}>Asset Type Distribution</CardTitle>
-                    <CardDescription className={backgroundStyles.cardDescription}>Breakdown of assets by type</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <AssetTypeDistribution />
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className={`lg:col-span-4 ${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
-                  <CardHeader>
-                    <CardTitle className={backgroundStyles.cardTitle}>Recent Activities</CardTitle>
-                    <CardDescription className={backgroundStyles.cardDescription}>Latest asset movements and maintenance activities</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <RecentActivities />
-                  </CardContent>
-                </Card>
-                <Card className={`lg:col-span-3 ${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
-                  <CardHeader>
-                    <CardTitle className={backgroundStyles.cardTitle}>Upcoming Maintenance</CardTitle>
-                    <CardDescription className={backgroundStyles.cardDescription}>Scheduled maintenance for the next 7 days</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <MaintenanceSchedule />
-                  </CardContent>
-                </Card>
-              </div>
+              </section>
             </TabsContent>
             <TabsContent value="analytics" className="space-y-4">
               <Card className={`${backgroundStyles.cardBg} ${backgroundStyles.cardHover} transition-all duration-300`}>
