@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
 
 import { AssetQRCode } from '@/components/AssetQRCode';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
@@ -25,6 +26,19 @@ interface FixedAsset {
   department: string;
 }
 
+interface BulkFixedAssetRow {
+  assetnumber: string;
+  assetdescription: string;
+  assetcategory?: string;
+  assetsubcategory?: string;
+  assetstatus?: string;
+  acquiredvalue?: number;
+  acquireddate?: string;
+  location?: string;
+  department?: string;
+  sourceRow?: number;
+}
+
 export default function FixedAssetPage() {
   const [data, setData] = useState<FixedAsset[]>([]);
   const [assetNumberSearch, setAssetNumberSearch] = useState('');
@@ -32,6 +46,20 @@ export default function FixedAssetPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [loading, setLoading] = useState(false);
+  const [showBulkInsertModal, setShowBulkInsertModal] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkFileName, setBulkFileName] = useState('');
+  const [bulkRows, setBulkRows] = useState<BulkFixedAssetRow[]>([]);
+  const [validatedRows, setValidatedRows] = useState<BulkFixedAssetRow[]>([]);
+  const [validationMessage, setValidationMessage] = useState('');
+  const [validationSummary, setValidationSummary] = useState<{
+    totalUploaded: number;
+    validForInsert: number;
+    skippedExisting: Array<{ assetnumber: string; sourceRow?: number }>;
+  } | null>(null);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorModalTitle, setErrorModalTitle] = useState('Bulk Insert Error');
+  const [errorModalContent, setErrorModalContent] = useState('');
   const { theme } = useAppTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Array<{
@@ -64,6 +92,210 @@ export default function FixedAssetPage() {
       console.error('Error fetching assets:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openBulkErrorModal = (title: string, content: string) => {
+    setErrorModalTitle(title);
+    setErrorModalContent(content);
+    setErrorModalOpen(true);
+  };
+
+  const resetBulkState = () => {
+    setBulkFileName('');
+    setBulkRows([]);
+    setValidatedRows([]);
+    setValidationMessage('');
+    setValidationSummary(null);
+  };
+
+  const normalizeHeader = (header: unknown) => String(header ?? '').trim().toLowerCase();
+
+  const parseBulkFile = async (file: File): Promise<BulkFixedAssetRow[]> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json<(string | number | null)[]>(worksheet, {
+      header: 1,
+      defval: '',
+      raw: false
+    });
+
+    if (!rows || rows.length < 2) {
+      throw new Error('File must include a header row and at least one data row.');
+    }
+
+    const headers = rows[0].map(normalizeHeader);
+    const requiredHeaders = ['asset number', 'asset description'];
+    const missing = requiredHeaders.filter((header) => !headers.includes(header));
+    if (missing.length > 0) {
+      throw new Error(`Missing required header(s): ${missing.join(', ')}.`);
+    }
+
+    const getCell = (row: (string | number | null)[], names: string[]) => {
+      const idx = headers.findIndex((h) => names.includes(h));
+      if (idx === -1) {
+        return '';
+      }
+      return String(row[idx] ?? '').trim();
+    };
+
+    const parsed: BulkFixedAssetRow[] = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const assetnumber = getCell(row, ['asset number', 'assetnumber']);
+      const assetdescription = getCell(row, ['asset description', 'assetdescription']);
+      const assetcategory = getCell(row, ['asset category', 'assetcategory']);
+      const assetsubcategory = getCell(row, ['asset subcategory', 'assetsubcategory']);
+      const assetstatus = getCell(row, ['asset status', 'assetstatus']);
+      const acquiredValueText = getCell(row, ['acquired value', 'acquiredvalue']);
+      const acquireddate = getCell(row, ['acquired date', 'acquireddate']);
+      const location = getCell(row, ['location']);
+      const department = getCell(row, ['department']);
+
+      const hasAnyData = [
+        assetnumber,
+        assetdescription,
+        assetcategory,
+        assetsubcategory,
+        assetstatus,
+        acquiredValueText,
+        acquireddate,
+        location,
+        department
+      ].some((value) => value !== '');
+      if (!hasAnyData) {
+        continue;
+      }
+
+      const acquiredvalue = acquiredValueText ? Number(acquiredValueText) : undefined;
+      parsed.push({
+        assetnumber,
+        assetdescription,
+        assetcategory,
+        assetsubcategory,
+        assetstatus,
+        acquiredvalue: Number.isNaN(acquiredvalue) ? undefined : acquiredvalue,
+        acquireddate,
+        location,
+        department,
+        sourceRow: i + 1
+      });
+    }
+
+    if (parsed.length === 0) {
+      throw new Error('No data rows found in uploaded file.');
+    }
+
+    return parsed;
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch('/api/fixedassets/template');
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to download template.');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'fixedassets_bulk_insert_template.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      openBulkErrorModal('Template Download Error', error.message || 'Failed to download template.');
+    }
+  };
+
+  const handleBulkFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const rows = await parseBulkFile(file);
+      setBulkRows(rows);
+      setBulkFileName(file.name);
+      setValidatedRows([]);
+      setValidationMessage('');
+      setValidationSummary(null);
+    } catch (error: any) {
+      resetBulkState();
+      openBulkErrorModal('File Parsing Error', error.message || 'Failed to parse uploaded file.');
+    }
+  };
+
+  const handleValidateBulk = async () => {
+    if (!bulkRows.length) {
+      openBulkErrorModal('Validation Error', 'Please upload file first.');
+      return;
+    }
+
+    try {
+      setBulkLoading(true);
+      const response = await fetch('/api/fixedassets/bulk-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'validate', rows: bulkRows })
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        const details = Array.isArray(result.errors) ? result.errors.join('\n') : result.error;
+        throw new Error(details || 'Validation failed.');
+      }
+
+      const data = result.data;
+      setValidatedRows(data.rowsToInsert || []);
+      setValidationSummary({
+        totalUploaded: data.totalUploaded || 0,
+        validForInsert: data.validForInsert || 0,
+        skippedExisting: data.skippedExisting || []
+      });
+      setValidationMessage(result.message || 'Validation successful.');
+    } catch (error: any) {
+      setValidatedRows([]);
+      setValidationSummary(null);
+      setValidationMessage('');
+      openBulkErrorModal('Validation Error', error.message || 'Validation failed.');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleInsertBulk = async () => {
+    if (!validatedRows.length) {
+      openBulkErrorModal('Insert Error', 'No validated rows ready for insert.');
+      return;
+    }
+
+    try {
+      setBulkLoading(true);
+      const response = await fetch('/api/fixedassets/bulk-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'insert', rows: validatedRows })
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.details || result.error || 'Insert failed.');
+      }
+
+      alert(result.message || 'Fixed assets inserted successfully.');
+      setShowBulkInsertModal(false);
+      resetBulkState();
+      searchAssets(assetNumberSearch, assetNameSearch);
+    } catch (error: any) {
+      openBulkErrorModal('Insert Error', error.message || 'Insert failed.');
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -318,7 +550,7 @@ export default function FixedAssetPage() {
         </div>
 
         <div className={`mb-6 p-6 ${backgroundStyles.searchBg} rounded-xl shadow-lg`}>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <input
               type="text"
               value={assetNumberSearch}
@@ -333,6 +565,16 @@ export default function FixedAssetPage() {
               placeholder="Search by asset description..."
               className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
             />
+            <button
+              type="button"
+              onClick={() => {
+                resetBulkState();
+                setShowBulkInsertModal(true);
+              }}
+              className={`px-4 py-3 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+            >
+              Bulk Insert
+            </button>
           </div>
         </div>
 
@@ -366,6 +608,142 @@ export default function FixedAssetPage() {
             </div>
           )}
         </div>
+
+        {showBulkInsertModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className={`${backgroundStyles.searchBg} w-full max-w-4xl rounded-2xl p-6 shadow-xl`}>
+              <h3 className={`mb-4 text-2xl font-semibold ${backgroundStyles.textColor}`}>Bulk Insert Fixed Assets</h3>
+              <p className={`mb-4 text-sm ${backgroundStyles.headerSubtitle}`}>
+                Download template, fill rows, validate to skip existing asset numbers, then insert only new rows.
+              </p>
+
+              <div className="mb-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+                >
+                  Download Template
+                </button>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleBulkFileSelect}
+                  className={`text-sm ${backgroundStyles.textColor}`}
+                />
+              </div>
+
+              {bulkFileName && (
+                <p className={`mb-3 text-sm ${backgroundStyles.headerSubtitle}`}>
+                  Selected file: {bulkFileName} ({bulkRows.length} rows detected)
+                </p>
+              )}
+
+              {validationSummary && (
+                <div className={`mb-4 rounded-xl border p-4 ${backgroundStyles.inputBg}`}>
+                  <p className={backgroundStyles.textColor}>{validationMessage}</p>
+                  <p className={`mt-2 text-sm ${backgroundStyles.headerSubtitle}`}>
+                    Total uploaded: {validationSummary.totalUploaded} | New rows: {validationSummary.validForInsert} |
+                    Existing skipped: {validationSummary.skippedExisting.length}
+                  </p>
+                  {validationSummary.skippedExisting.length > 0 && (
+                    <div className={`mt-2 max-h-24 overflow-auto text-xs ${backgroundStyles.headerSubtitle}`}>
+                      {validationSummary.skippedExisting.map((item, idx) => (
+                        <div key={`${item.assetnumber}-${idx}`}>
+                          Existing assetnumber skipped: {item.assetnumber}
+                          {item.sourceRow ? ` (row ${item.sourceRow})` : ''}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {validatedRows.length > 0 && (
+                <div className={`mb-4 rounded-xl border p-4 ${backgroundStyles.inputBg}`}>
+                  <p className={`mb-3 text-sm font-medium ${backgroundStyles.textColor}`}>
+                    Preview of rows ready to insert ({validatedRows.length})
+                  </p>
+                  <div className="max-h-64 overflow-auto rounded-lg border border-white/20">
+                    <table className="min-w-full text-left text-xs">
+                      <thead className="sticky top-0 bg-black/20">
+                        <tr>
+                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Asset No</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Description</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Category</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Status</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {validatedRows.map((row, idx) => (
+                          <tr key={`${row.assetnumber}-${idx}`} className="border-t border-white/10">
+                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetnumber}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetdescription}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetcategory || '-'}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetstatus || '-'}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>
+                              {row.acquiredvalue !== undefined ? row.acquiredvalue : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-wrap justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBulkInsertModal(false);
+                    resetBulkState();
+                  }}
+                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleValidateBulk}
+                  disabled={bulkLoading || bulkRows.length === 0}
+                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+                >
+                  {bulkLoading ? 'Processing...' : 'Validate'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleInsertBulk}
+                  disabled={bulkLoading || validatedRows.length === 0}
+                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+                >
+                  {bulkLoading ? 'Processing...' : 'Insert'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {errorModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className={`${backgroundStyles.searchBg} w-full max-w-2xl rounded-2xl p-6 shadow-xl`}>
+              <h3 className={`mb-3 text-xl font-semibold ${backgroundStyles.textColor}`}>{errorModalTitle}</h3>
+              <div className={`max-h-80 overflow-auto whitespace-pre-wrap rounded-xl border p-4 text-sm ${backgroundStyles.inputBg}`}>
+                {errorModalContent}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setErrorModalOpen(false)}
+                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

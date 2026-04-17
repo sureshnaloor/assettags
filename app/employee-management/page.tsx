@@ -4,11 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Employee } from '@/types/ppe';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResponsiveTable from '@/components/ui/responsive-table';
 import PPEIssuesByEmployee from '@/components/PPEIssuesByEmployee';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
+import * as XLSX from 'xlsx';
 
 interface EmployeeFormData {
   empno: string;
@@ -18,6 +18,17 @@ interface EmployeeFormData {
   email: string;
   phone: string;
   active: 'Y' | 'N';
+}
+
+interface BulkEmployeeRow {
+  empno: string;
+  empname: string;
+  department?: string;
+  designation?: string;
+  email?: string;
+  phone?: string;
+  active?: 'Y' | 'N';
+  sourceRow?: number;
 }
 
 export default function EmployeeManagementPage() {
@@ -48,6 +59,20 @@ export default function EmployeeManagementPage() {
     phone: '',
     active: 'Y'
   });
+  const [showBulkInsertModal, setShowBulkInsertModal] = useState(false);
+  const [bulkInsertLoading, setBulkInsertLoading] = useState(false);
+  const [bulkFileName, setBulkFileName] = useState('');
+  const [bulkRows, setBulkRows] = useState<BulkEmployeeRow[]>([]);
+  const [validatedRows, setValidatedRows] = useState<BulkEmployeeRow[]>([]);
+  const [validationMessage, setValidationMessage] = useState('');
+  const [validationSummary, setValidationSummary] = useState<{
+    totalUploaded: number;
+    validForInsert: number;
+    skippedExisting: Array<{ empno: string; sourceRow?: number }>;
+  } | null>(null);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorModalTitle, setErrorModalTitle] = useState('Bulk Insert Error');
+  const [errorModalContent, setErrorModalContent] = useState('');
 
   // Fetch employees
   const fetchEmployees = async () => {
@@ -335,6 +360,210 @@ export default function EmployeeManagementPage() {
     }
   };
 
+  const openBulkErrorModal = (title: string, content: string) => {
+    setErrorModalTitle(title);
+    setErrorModalContent(content);
+    setErrorModalOpen(true);
+  };
+
+  const resetBulkInsertState = () => {
+    setBulkFileName('');
+    setBulkRows([]);
+    setValidatedRows([]);
+    setValidationMessage('');
+    setValidationSummary(null);
+  };
+
+  const normalizeHeader = (header: unknown) => String(header ?? '').trim().toLowerCase();
+
+  const parseBulkFile = async (file: File): Promise<BulkEmployeeRow[]> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json<(string | number | null)[]>(worksheet, {
+      header: 1,
+      defval: '',
+      raw: false
+    });
+
+    if (!rows || rows.length < 2) {
+      throw new Error('File must include a header row and at least one data row.');
+    }
+
+    const headers = rows[0].map(normalizeHeader);
+    const requiredHeaders = ['employee number', 'employee name'];
+    const missingHeaders = requiredHeaders.filter((required) => !headers.includes(required));
+    if (missingHeaders.length > 0) {
+      throw new Error(`Missing required header(s): ${missingHeaders.join(', ')}.`);
+    }
+
+    const getCell = (row: (string | number | null)[], names: string[]) => {
+      const index = headers.findIndex((header) => names.includes(header));
+      if (index === -1) {
+        return '';
+      }
+      return String(row[index] ?? '').trim();
+    };
+
+    const parsedRows: BulkEmployeeRow[] = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const empno = getCell(row, ['employee number', 'employee no', 'empno']);
+      const empname = getCell(row, ['employee name', 'empname']);
+      const department = getCell(row, ['department']);
+      const designation = getCell(row, ['designation']);
+      const email = getCell(row, ['email']);
+      const phone = getCell(row, ['phone', 'mobile']);
+      const activeInput = getCell(row, ['active', 'status']).toUpperCase();
+      const active: 'Y' | 'N' = activeInput === 'N' ? 'N' : 'Y';
+
+      const hasAnyData = [empno, empname, department, designation, email, phone, activeInput].some(
+        (value) => value !== ''
+      );
+      if (!hasAnyData) {
+        continue;
+      }
+
+      parsedRows.push({
+        empno,
+        empname,
+        department,
+        designation,
+        email,
+        phone,
+        active,
+        sourceRow: i + 1
+      });
+    }
+
+    if (parsedRows.length === 0) {
+      throw new Error('No data rows found in uploaded file.');
+    }
+
+    return parsedRows;
+  };
+
+  const handleDownloadEmployeeTemplate = async () => {
+    try {
+      const response = await fetch('/api/employees/template');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to download template.');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'employee_bulk_insert_template.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      openBulkErrorModal('Template Download Error', error.message || 'Failed to download template.');
+    }
+  };
+
+  const handleBulkFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const rows = await parseBulkFile(file);
+      setBulkRows(rows);
+      setBulkFileName(file.name);
+      setValidatedRows([]);
+      setValidationMessage('');
+      setValidationSummary(null);
+    } catch (error: any) {
+      setBulkRows([]);
+      setValidatedRows([]);
+      setValidationMessage('');
+      setValidationSummary(null);
+      openBulkErrorModal('File Parsing Error', error.message || 'Failed to read uploaded file.');
+    }
+  };
+
+  const handleValidateBulkInsert = async () => {
+    if (!bulkRows.length) {
+      openBulkErrorModal('Validation Error', 'Please upload a file with employee data first.');
+      return;
+    }
+
+    try {
+      setBulkInsertLoading(true);
+      const response = await fetch('/api/employees/bulk-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'validate',
+          rows: bulkRows
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        const details = Array.isArray(result.errors) ? result.errors.join('\n') : result.error;
+        throw new Error(details || 'Bulk validation failed.');
+      }
+
+      const data = result.data;
+      setValidatedRows(data.rowsToInsert || []);
+      setValidationSummary({
+        totalUploaded: data.totalUploaded || 0,
+        validForInsert: data.validForInsert || 0,
+        skippedExisting: data.skippedExisting || []
+      });
+      setValidationMessage(result.message || 'Validation successful.');
+    } catch (error: any) {
+      setValidatedRows([]);
+      setValidationSummary(null);
+      setValidationMessage('');
+      openBulkErrorModal('Validation Error', error.message || 'Bulk validation failed.');
+    } finally {
+      setBulkInsertLoading(false);
+    }
+  };
+
+  const handleBulkInsert = async () => {
+    if (!validatedRows.length) {
+      openBulkErrorModal('Insert Error', 'No validated rows available to insert.');
+      return;
+    }
+
+    try {
+      setBulkInsertLoading(true);
+      const response = await fetch('/api/employees/bulk-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'insert',
+          rows: validatedRows
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        const details = result.details || result.error || 'Bulk insert failed.';
+        throw new Error(details);
+      }
+
+      alert(result.message || 'Employees inserted successfully.');
+      setShowBulkInsertModal(false);
+      resetBulkInsertState();
+      fetchEmployees();
+    } catch (error: any) {
+      openBulkErrorModal('Insert Error', error.message || 'Bulk insert failed.');
+    } finally {
+      setBulkInsertLoading(false);
+    }
+  };
+
   // Table columns
   const columns = [
     { key: 'empno', label: 'Employee Number' },
@@ -479,6 +708,16 @@ export default function EmployeeManagementPage() {
                     className={backgroundStyles.buttonPrimary}
                   >
                     Add New Employee
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      resetBulkInsertState();
+                      setShowBulkInsertModal(true);
+                    }}
+                    className={backgroundStyles.buttonSecondary}
+                  >
+                    Bulk Insert
                   </Button>
                   {(empNumberSearch || searchTerm) && (
                     <Button 
@@ -663,6 +902,144 @@ export default function EmployeeManagementPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {showBulkInsertModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className={`${backgroundStyles.cardBg} w-full max-w-3xl rounded-2xl p-6 shadow-xl`}>
+            <h3 className={`mb-4 text-2xl font-semibold ${backgroundStyles.cardTitle}`}>Bulk Insert Employees</h3>
+            <div className="space-y-4">
+              <p className={`text-sm ${backgroundStyles.searchInfo}`}>
+                Download the template, fill all rows, upload the file, then validate before insertion.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  onClick={handleDownloadEmployeeTemplate}
+                  className={backgroundStyles.buttonSecondary}
+                >
+                  Download Template
+                </Button>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleBulkFileSelect}
+                  className={`max-w-md text-sm ${backgroundStyles.labelText}`}
+                />
+              </div>
+
+              {bulkFileName && (
+                <p className={`text-sm ${backgroundStyles.searchInfo}`}>
+                  Selected file: <span className={backgroundStyles.labelText}>{bulkFileName}</span> ({bulkRows.length}{' '}
+                  rows detected)
+                </p>
+              )}
+
+              {validationSummary && (
+                <div className={`rounded-xl border p-4 ${backgroundStyles.inputBg}`}>
+                  <p className={`font-medium ${backgroundStyles.labelText}`}>{validationMessage}</p>
+                  <p className={`mt-2 text-sm ${backgroundStyles.searchInfo}`}>
+                    Total uploaded: {validationSummary.totalUploaded} | New rows: {validationSummary.validForInsert} |
+                    Existing rows skipped: {validationSummary.skippedExisting.length}
+                  </p>
+                  {validationSummary.skippedExisting.length > 0 && (
+                    <div className={`mt-2 max-h-28 overflow-y-auto text-xs ${backgroundStyles.searchInfo}`}>
+                      {validationSummary.skippedExisting.map((item, index) => (
+                        <div key={`${item.empno}-${index}`}>
+                          Existing empno skipped: {item.empno}
+                          {item.sourceRow ? ` (row ${item.sourceRow})` : ''}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {validatedRows.length > 0 && (
+                <div className={`rounded-xl border p-4 ${backgroundStyles.inputBg}`}>
+                  <p className={`mb-3 text-sm font-medium ${backgroundStyles.labelText}`}>
+                    Preview of rows ready to insert ({validatedRows.length})
+                  </p>
+                  <div className="max-h-64 overflow-auto rounded-lg border border-white/20">
+                    <table className="min-w-full text-left text-xs">
+                      <thead className="sticky top-0 bg-black/20">
+                        <tr>
+                          <th className={`px-3 py-2 ${backgroundStyles.labelText}`}>Emp No</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.labelText}`}>Name</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.labelText}`}>Department</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.labelText}`}>Designation</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.labelText}`}>Email</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.labelText}`}>Phone</th>
+                          <th className={`px-3 py-2 ${backgroundStyles.labelText}`}>Active</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {validatedRows.map((row, index) => (
+                          <tr key={`${row.empno}-${index}`} className="border-t border-white/10">
+                            <td className={`px-3 py-2 ${backgroundStyles.searchInfo}`}>{row.empno}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.searchInfo}`}>{row.empname}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.searchInfo}`}>{row.department || '-'}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.searchInfo}`}>{row.designation || '-'}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.searchInfo}`}>{row.email || '-'}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.searchInfo}`}>{row.phone || '-'}</td>
+                            <td className={`px-3 py-2 ${backgroundStyles.searchInfo}`}>{row.active || 'Y'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-wrap justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowBulkInsertModal(false);
+                    resetBulkInsertState();
+                  }}
+                  className={backgroundStyles.buttonSecondary}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleValidateBulkInsert}
+                  disabled={bulkInsertLoading || bulkRows.length === 0}
+                  className={backgroundStyles.buttonPrimary}
+                >
+                  {bulkInsertLoading ? 'Processing...' : 'Validate'}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleBulkInsert}
+                  disabled={bulkInsertLoading || validatedRows.length === 0}
+                  className={backgroundStyles.buttonPrimary}
+                >
+                  {bulkInsertLoading ? 'Processing...' : 'Insert'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {errorModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className={`${backgroundStyles.cardBg} w-full max-w-2xl rounded-2xl p-6 shadow-xl`}>
+            <h3 className={`mb-3 text-xl font-semibold ${backgroundStyles.cardTitle}`}>{errorModalTitle}</h3>
+            <div className={`max-h-80 overflow-auto whitespace-pre-wrap rounded-xl border p-4 text-sm ${backgroundStyles.inputBg}`}>
+              {errorModalContent}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button type="button" onClick={() => setErrorModalOpen(false)} className={backgroundStyles.buttonPrimary}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
