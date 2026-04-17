@@ -69,10 +69,10 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
     { name: 'Search-4', href: '#' },
   ],
   employee: [
-    { name: 'Employee-1', href: '#' },
-    { name: 'Employee-2', href: '#' },
-    { name: 'Employee-3', href: '#' },
-    { name: 'Employee-4', href: '#' },
+    { name: 'Assets in User Custody', href: '#' },
+    { name: 'MME in User Custody', href: '#' },
+    { name: 'Tools in User Custody', href: '#' },
+    { name: 'PPE Issued to User', href: '#' },
   ],
   ppe: [
     { name: 'PPE-1', href: '#' },

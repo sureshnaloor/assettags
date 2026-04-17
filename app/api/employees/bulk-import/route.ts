@@ -104,6 +104,36 @@ export async function POST(request: Request) {
 
     const { db } = await connectToDatabase();
     const collection = db.collection('employees');
+    const departmentsCollection = db.collection('departments');
+    const designationsCollection = db.collection('designations');
+
+    const [departmentDocs, designationDocs] = await Promise.all([
+      departmentsCollection.find({}, { projection: { name: 1 } }).toArray(),
+      designationsCollection.find({}, { projection: { name: 1 } }).toArray()
+    ]);
+    const validDepartments = new Set(departmentDocs.map((item: any) => String(item.name)));
+    const validDesignations = new Set(designationDocs.map((item: any) => String(item.name)));
+
+    const invalidLookupErrors: string[] = [];
+    normalizedRows.forEach((row) => {
+      if (row.department && !validDepartments.has(row.department)) {
+        invalidLookupErrors.push(
+          `Row ${row.sourceRow}: Department "${row.department}" does not exist in master list.`
+        );
+      }
+      if (row.designation && !validDesignations.has(row.designation)) {
+        invalidLookupErrors.push(
+          `Row ${row.sourceRow}: Designation "${row.designation}" does not exist in master list.`
+        );
+      }
+    });
+
+    if (invalidLookupErrors.length > 0) {
+      return NextResponse.json(
+        { success: false, error: 'Validation failed.', errors: invalidLookupErrors },
+        { status: 400 }
+      );
+    }
 
     const empnos = normalizedRows.map((row) => row.empno);
     const existingEmployees = await collection

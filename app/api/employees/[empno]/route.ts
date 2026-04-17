@@ -4,6 +4,31 @@ import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Employee, PPEApiResponse } from '@/types/ppe';
 
+async function validateDepartmentAndDesignation(
+  department: unknown,
+  designation: unknown
+): Promise<string | null> {
+  const departmentName = String(department ?? '').trim();
+  const designationName = String(designation ?? '').trim();
+  const { db } = await connectToDatabase();
+
+  if (departmentName) {
+    const existingDepartment = await db.collection('departments').findOne({ name: departmentName });
+    if (!existingDepartment) {
+      return 'Selected department does not exist';
+    }
+  }
+
+  if (designationName) {
+    const existingDesignation = await db.collection('designations').findOne({ name: designationName });
+    if (!existingDesignation) {
+      return 'Selected designation does not exist';
+    }
+  }
+
+  return null;
+}
+
 // GET - Fetch specific employee
 export async function GET(
   request: NextRequest,
@@ -65,6 +90,11 @@ export async function PUT(
         { success: false, error: 'Employee name is required' },
         { status: 400 }
       );
+    }
+
+    const validationError = await validateDepartmentAndDesignation(department, designation);
+    if (validationError) {
+      return NextResponse.json({ success: false, error: validationError }, { status: 400 });
     }
 
     const { db } = await connectToDatabase();

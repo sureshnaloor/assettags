@@ -31,6 +31,11 @@ interface BulkEmployeeRow {
   sourceRow?: number;
 }
 
+interface MasterLookupItem {
+  _id: string;
+  name: string;
+}
+
 export default function EmployeeManagementPage() {
   const { theme } = useAppTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -73,6 +78,12 @@ export default function EmployeeManagementPage() {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorModalTitle, setErrorModalTitle] = useState('Bulk Insert Error');
   const [errorModalContent, setErrorModalContent] = useState('');
+  const [departments, setDepartments] = useState<MasterLookupItem[]>([]);
+  const [designations, setDesignations] = useState<MasterLookupItem[]>([]);
+  const [departmentFormName, setDepartmentFormName] = useState('');
+  const [designationFormName, setDesignationFormName] = useState('');
+  const [editingDepartmentId, setEditingDepartmentId] = useState<string | null>(null);
+  const [editingDesignationId, setEditingDesignationId] = useState<string | null>(null);
 
   // Fetch employees
   const fetchEmployees = async () => {
@@ -109,6 +120,32 @@ export default function EmployeeManagementPage() {
   useEffect(() => {
     fetchEmployees();
   }, [searchTerm, empNumberSearch]);
+
+  const fetchMasterData = async () => {
+    try {
+      const [departmentResponse, designationResponse] = await Promise.all([
+        fetch('/api/departments'),
+        fetch('/api/designations')
+      ]);
+      const [departmentResult, designationResult] = await Promise.all([
+        departmentResponse.json(),
+        designationResponse.json()
+      ]);
+
+      if (departmentResult.success) {
+        setDepartments(departmentResult.data || []);
+      }
+      if (designationResult.success) {
+        setDesignations(designationResult.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching department/designation master data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMasterData();
+  }, []);
 
   // Theme-based styling function
   const getBackgroundStyles = () => {
@@ -372,6 +409,106 @@ export default function EmployeeManagementPage() {
     setValidatedRows([]);
     setValidationMessage('');
     setValidationSummary(null);
+  };
+
+  const handleDepartmentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = departmentFormName.trim();
+    if (!name) {
+      alert('Department name is required');
+      return;
+    }
+
+    try {
+      const method = editingDepartmentId ? 'PUT' : 'POST';
+      const response = await fetch('/api/departments', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingDepartmentId ? { _id: editingDepartmentId, name } : { name })
+      });
+      const result = await response.json();
+      if (!result.success) {
+        alert(`Error: ${result.error}`);
+        return;
+      }
+
+      setDepartmentFormName('');
+      setEditingDepartmentId(null);
+      fetchMasterData();
+    } catch (error) {
+      console.error('Error saving department:', error);
+      alert('Failed to save department');
+    }
+  };
+
+  const handleDesignationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = designationFormName.trim();
+    if (!name) {
+      alert('Designation name is required');
+      return;
+    }
+
+    try {
+      const method = editingDesignationId ? 'PUT' : 'POST';
+      const response = await fetch('/api/designations', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingDesignationId ? { _id: editingDesignationId, name } : { name })
+      });
+      const result = await response.json();
+      if (!result.success) {
+        alert(`Error: ${result.error}`);
+        return;
+      }
+
+      setDesignationFormName('');
+      setEditingDesignationId(null);
+      fetchMasterData();
+    } catch (error) {
+      console.error('Error saving designation:', error);
+      alert('Failed to save designation');
+    }
+  };
+
+  const handleDeleteDepartment = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this department?')) return;
+    try {
+      const response = await fetch(`/api/departments?id=${id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!result.success) {
+        alert(`Error: ${result.error}`);
+        return;
+      }
+      if (editingDepartmentId === id) {
+        setEditingDepartmentId(null);
+        setDepartmentFormName('');
+      }
+      fetchMasterData();
+    } catch (error) {
+      console.error('Error deleting department:', error);
+      alert('Failed to delete department');
+    }
+  };
+
+  const handleDeleteDesignation = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this designation?')) return;
+    try {
+      const response = await fetch(`/api/designations?id=${id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!result.success) {
+        alert(`Error: ${result.error}`);
+        return;
+      }
+      if (editingDesignationId === id) {
+        setEditingDesignationId(null);
+        setDesignationFormName('');
+      }
+      fetchMasterData();
+    } catch (error) {
+      console.error('Error deleting designation:', error);
+      alert('Failed to delete designation');
+    }
   };
 
   const normalizeHeader = (header: unknown) => String(header ?? '').trim().toLowerCase();
@@ -639,6 +776,12 @@ export default function EmployeeManagementPage() {
             >
               {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
             </TabsTrigger>
+            <TabsTrigger value="departments" className={backgroundStyles.tabsTrigger}>
+              Departments
+            </TabsTrigger>
+            <TabsTrigger value="designations" className={backgroundStyles.tabsTrigger}>
+              Designation
+            </TabsTrigger>
             {selectedEmployee && (
               <TabsTrigger 
                 value="ppe-records"
@@ -790,22 +933,36 @@ export default function EmployeeManagementPage() {
                   <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                     Department
                   </label>
-                  <Input
+                  <select
                     value={formData.department}
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                  />
+                    className={`w-full px-4 py-2 ${backgroundStyles.selectBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                  >
+                    <option value="" className={backgroundStyles.selectOption}>Select Department</option>
+                    {departments.map((department) => (
+                      <option key={department._id} value={department.name} className={backgroundStyles.selectOption}>
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
                   <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
                     Designation
                   </label>
-                  <Input
+                  <select
                     value={formData.designation}
                     onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                    className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                  />
+                    className={`w-full px-4 py-2 ${backgroundStyles.selectBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                  >
+                    <option value="" className={backgroundStyles.selectOption}>Select Designation</option>
+                    {designations.map((designation) => (
+                      <option key={designation._id} value={designation.name} className={backgroundStyles.selectOption}>
+                        {designation.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
@@ -877,6 +1034,150 @@ export default function EmployeeManagementPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="departments">
+          <div className={`${backgroundStyles.cardBg} rounded-2xl p-6 shadow-xl`}>
+            <h2 className={`text-2xl font-semibold ${backgroundStyles.cardTitle} mb-6`}>Departments</h2>
+            <form onSubmit={handleDepartmentSubmit} className="flex flex-col gap-4 md:flex-row md:items-end">
+              <div className="flex-1">
+                <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
+                  Department Name
+                </label>
+                <Input
+                  value={departmentFormName}
+                  onChange={(e) => setDepartmentFormName(e.target.value)}
+                  required
+                  className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" className={backgroundStyles.buttonPrimary}>
+                  {editingDepartmentId ? 'Update Department' : 'Add Department'}
+                </Button>
+                {editingDepartmentId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={backgroundStyles.buttonSecondary}
+                    onClick={() => {
+                      setEditingDepartmentId(null);
+                      setDepartmentFormName('');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </form>
+
+            <div className="mt-6">
+              <ResponsiveTable
+                columns={[
+                  { key: 'name', label: 'Department' },
+                  { key: 'actions', label: 'Actions' }
+                ]}
+                data={departments.map((department) => ({
+                  name: department.name,
+                  actions: (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className={backgroundStyles.buttonPrimary}
+                        onClick={() => {
+                          setEditingDepartmentId(department._id);
+                          setDepartmentFormName(department.name);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className={backgroundStyles.buttonDestructive}
+                        onClick={() => handleDeleteDepartment(department._id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  )
+                }))}
+                variant={theme === 'light' ? 'light' : 'glassmorphic'}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="designations">
+          <div className={`${backgroundStyles.cardBg} rounded-2xl p-6 shadow-xl`}>
+            <h2 className={`text-2xl font-semibold ${backgroundStyles.cardTitle} mb-6`}>Designation</h2>
+            <form onSubmit={handleDesignationSubmit} className="flex flex-col gap-4 md:flex-row md:items-end">
+              <div className="flex-1">
+                <label className={`block text-sm font-medium mb-1 ${backgroundStyles.labelText}`}>
+                  Designation Name
+                </label>
+                <Input
+                  value={designationFormName}
+                  onChange={(e) => setDesignationFormName(e.target.value)}
+                  required
+                  className={`${backgroundStyles.inputBg} rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" className={backgroundStyles.buttonPrimary}>
+                  {editingDesignationId ? 'Update Designation' : 'Add Designation'}
+                </Button>
+                {editingDesignationId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={backgroundStyles.buttonSecondary}
+                    onClick={() => {
+                      setEditingDesignationId(null);
+                      setDesignationFormName('');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </form>
+
+            <div className="mt-6">
+              <ResponsiveTable
+                columns={[
+                  { key: 'name', label: 'Designation' },
+                  { key: 'actions', label: 'Actions' }
+                ]}
+                data={designations.map((designation) => ({
+                  name: designation.name,
+                  actions: (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className={backgroundStyles.buttonPrimary}
+                        onClick={() => {
+                          setEditingDesignationId(designation._id);
+                          setDesignationFormName(designation.name);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className={backgroundStyles.buttonDestructive}
+                        onClick={() => handleDeleteDesignation(designation._id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  )
+                }))}
+                variant={theme === 'light' ? 'light' : 'glassmorphic'}
+              />
+            </div>
           </div>
         </TabsContent>
 
