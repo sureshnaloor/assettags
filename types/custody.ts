@@ -1,21 +1,42 @@
+/** Stored on equipmentcustody; `department` is legacy only — treat as project site in UI */
+export type CustodyLocationType = 'warehouse' | 'camp/office' | 'project_site' | 'department';
+
 export interface Custody {
   _id?: string;
   assetnumber: string;
   employeenumber: string;
   employeename: string;
-  locationType: 'warehouse' | 'department' | 'camp/office';
-  location: string;
-  warehouseLocation?: string;  // for room/rack/bin
-  warehouseCity?: 'Dammam' | 'Jubail';
-  departmentLocation?: string;  // city for department
-  campOfficeLocation?: string;  // for building/room/occupant
-  project?: string; // wbs number for project
-  projectname?: string; // project name
-  documentnumber?: string; // gatepass document number
+  locationType: CustodyLocationType;
+  /** Generic / legacy display line */
+  location?: string;
+  /** Master city (warehouse or department list depending on type) */
+  custodyCity?: string;
+  /** Selected premises document id from Admin → Locations → Premises */
+  premisesId?: string;
+  /** Denormalized label for display */
+  premisesLabel?: string;
+  floorRoom?: string;
+  occupant?: string;
+  custodyRemark?: string;
+  /** Warehouse custody detail */
+  rackBinPallet?: string;
+  shedRoomNumber?: string;
+  /** Project site custody detail */
+  custodianDetail?: string;
+  containerNumberRack?: string;
+  /** Legacy warehouse flow */
+  warehouseLocation?: string;
+  warehouseCity?: string;
+  /** Legacy: was used as city for camp/department */
+  departmentLocation?: string;
+  campOfficeLocation?: string;
+  project?: string;
+  projectname?: string;
+  documentnumber?: string;
   createdat: Date;
   createdby: string;
   custodyfrom: Date;
-  custodyto?: Date | null;  // Optional field
+  custodyto?: Date | null;
 }
 
 export interface CustodyRecord extends Custody {
@@ -23,7 +44,7 @@ export interface CustodyRecord extends Custody {
   assetnumber: string;
   employeenumber: string;
   employeename: string;
-  locationType: 'warehouse' | 'department' | 'camp/office';
+  locationType: CustodyLocationType;
   location: string;
 }
 

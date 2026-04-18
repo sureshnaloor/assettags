@@ -137,7 +137,7 @@ export async function GET(request: Request) {
                     {
                         $match: {
                             'custodyRecords.custodyto': null,
-                            'custodyRecords.locationType': { $in: ['department', 'camp/office'] }
+                            'custodyRecords.locationType': { $in: ['department', 'project_site', 'camp/office'] }
                         }
                     },
                     {

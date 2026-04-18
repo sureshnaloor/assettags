@@ -330,6 +330,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
               onUpdate={handleCustodyUpdate}
               assetnumber={params.assetnumber}
               theme={theme}
+              custodyNewHref={`/asset/${params.assetnumber}/custody/new`}
             />
           </CollapsibleSection>
 

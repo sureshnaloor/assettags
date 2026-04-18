@@ -464,6 +464,8 @@ export default function FixedAssetPage() {
       cell: ({ row }) => (
         <Link
           href={`/fixedasset/${row.original.assetnumber}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className={`${backgroundStyles.linkColor} transition-colors font-semibold`}
         >
           {row.original.assetnumber}

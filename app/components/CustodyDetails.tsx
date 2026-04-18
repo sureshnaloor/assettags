@@ -1,13 +1,15 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { PencilIcon, PlusIcon, XMarkIcon, CheckIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
-import Select from 'react-select';
+import { useState, useEffect, useCallback } from 'react';
+import { PencilIcon, PlusIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 import { Custody, Employee, Project } from '@/types/custody';
 import DatePicker from 'react-datepicker';
 import AsyncSelect from 'react-select/async';
 import Link from 'next/link';
 
 import type { Theme } from '@/app/components/AssetDetails';
+import CustodyLocationFields from '@/app/components/CustodyLocationFields';
+import type { CustodyLocationType } from '@/lib/custodyLocation';
+import { displayCustodyLocationType, normalizeCustodyLocationType } from '@/lib/custodyLocation';
 
 interface CustodyDetailsProps {
   currentCustody: Custody | null;
@@ -15,559 +17,64 @@ interface CustodyDetailsProps {
   onUpdate: (updatedCustody: Custody | null) => void;
   assetnumber: string;
   theme?: Theme;
+  /** Full URL path for “new custody” page; default is fixed-asset flow */
+  custodyNewHref?: string;
 }
 
-interface CustodyFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (custody: Custody) => void;
-  assetnumber: string;
-  warehouseCityNames: string[];
-  departmentCityNames: string[];
-  locationCitiesLoaded: boolean;
+function custodyCityDisplay(c: Custody): string {
+  const t = String(c.locationType || '');
+  if (c.custodyCity?.trim()) return c.custodyCity.trim();
+  if (t === 'warehouse' && c.warehouseCity) return String(c.warehouseCity);
+  if ((t === 'department' || t === 'camp/office' || t === 'project_site') && c.departmentLocation) {
+    return String(c.departmentLocation);
+  }
+  return '—';
 }
 
-function CustodyFormModal({
-  isOpen,
-  onClose,
-  onSave,
+function premisesDisplay(c: Custody): string {
+  if (c.premisesLabel?.trim()) return c.premisesLabel.trim();
+  if (c.location?.trim()) return c.location.trim();
+  if (c.locationType === 'warehouse' && c.warehouseLocation?.trim()) return c.warehouseLocation.trim();
+  return '—';
+}
+
+function floorRoomDisplay(c: Custody): string {
+  if (c.floorRoom?.trim()) return c.floorRoom.trim();
+  if (c.locationType === 'camp/office' && c.campOfficeLocation?.trim()) return c.campOfficeLocation.trim();
+  return '—';
+}
+
+function warehouseRackDisplay(c: Custody): string {
+  if (c.rackBinPallet?.trim()) return c.rackBinPallet.trim();
+  if (c.locationType === 'warehouse' && c.warehouseLocation?.trim()) return c.warehouseLocation.trim();
+  return '—';
+}
+
+function warehouseShedDisplay(c: Custody): string {
+  if (c.shedRoomNumber?.trim()) return c.shedRoomNumber.trim();
+  return '—';
+}
+
+function parseLegacyProjectField(project?: string): { wbs: string; name: string } {
+  if (!project?.trim()) return { wbs: '', name: '' };
+  const s = project.trim();
+  const idx = s.indexOf(' - ');
+  if (idx === -1) return { wbs: s, name: '' };
+  return { wbs: s.slice(0, idx).trim(), name: s.slice(idx + 3).trim() };
+}
+
+export default function CustodyDetails({
+  currentCustody,
+  custodyHistory,
+  onUpdate,
   assetnumber,
-  warehouseCityNames,
-  departmentCityNames,
-  locationCitiesLoaded,
-}: CustodyFormModalProps) {
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [locationType, setLocationType] = useState<'warehouse' | 'department' | 'camp/office'>('warehouse');
-  
-  const [formData, setFormData] = useState<Partial<Custody>>({
-    assetnumber,
-    locationType: 'warehouse',
-    warehouseCity: undefined,
-    custodyfrom: new Date(),
-    custodyto: null
-  });
-
-  useEffect(() => {
-    if (!isOpen || warehouseCityNames.length === 0) return;
-    setFormData((prev) => {
-      const w = prev.warehouseCity;
-      const next =
-        w && warehouseCityNames.includes(String(w)) ? w : warehouseCityNames[0];
-      return { ...prev, warehouseCity: next as Custody['warehouseCity'] };
-    });
-  }, [isOpen, warehouseCityNames]);
-
-  // Fetch employees
-  useEffect(() => {
-    if (isOpen) {
-      fetchEmployees();
-      fetchProjects();      
-    }
-  }, [isOpen]);
-
-  const fetchEmployees = async () => {
-    try {
-      const response = await fetch('/api/employees');
-      if (!response.ok) throw new Error('Failed to fetch employees');
-      const data = await response.json();
-      setEmployees(data);
-      console.log("employees are", data);
-    } catch (error) {
-      console.error('Error fetching employees:', error);
-      setError('Failed to load employees');
-    }
-  };
-
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch('/api/projects');
-      if (!response.ok) throw new Error('Failed to fetch projects');
-      const data = await response.json();
-      setProjects(data);
-      console.log("projects are", data);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      setError('Failed to load projects');
-    }
-  };
-
-  const loadEmployeeOptions = async (inputValue: string) => {
-    // Require minimum 3 characters for name searches, or any length for numeric searches
-    if (inputValue.length < 3 && !/^\d+$/.test(inputValue)) return [];
-    
-    try {
-      const response = await fetch(`/api/employees/search?q=${encodeURIComponent(inputValue)}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to fetch employees');
-      }
-      
-      const data = await response.json();
-      // Handle wrapped response format
-      const employees = data.success ? data.data?.records || [] : [];
-      
-      return employees.map((emp: Employee) => ({
-        value: emp.empno,
-        label: `${emp.empno} - ${emp.empname}`,
-        employee: emp
-      }));
-    } catch (error) {
-      console.error('Error fetching employees:', error);
-      return [];
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      setIsSaving(true);
-      
-      // Basic validation
-      if (!formData.employeenumber || !formData.custodyfrom) {
-        setError('Employee and From Date are required');
-        return;
-      }
-
-      if (
-        locationType === 'warehouse' &&
-        (!formData.warehouseCity || !String(formData.warehouseCity).trim())
-      ) {
-        setError('Select a warehouse city, or add cities under Admin → Locations → City lists');
-        return;
-      }
-
-      // Add API call to save the custody record
-      const response = await fetch(`/api/custody/${assetnumber}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          createdat: new Date(),
-          createdby: 'current-user' // This should be replaced with actual user info when auth is implemented
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save custody record');
-      }
-
-      const savedCustody = await response.json();
-      onSave(savedCustody);
-      onClose();
-    } catch (error) {
-      console.error('Error saving custody:', error);
-      setError('Failed to save custody record');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] overflow-y-auto">
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-2xl my-10">
-          <h3 className="text-lg font-semibold text-zinc-100 mb-6">New Custody Record</h3>
-          
-          <div className="space-y-6">
-            {error && (
-              <div className="bg-red-500/20 text-red-100 px-4 py-2 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-6">
-              {/* Employee Selection */}
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Employee Number
-                </label>
-                <AsyncSelect
-                  loadOptions={loadEmployeeOptions}
-                  defaultOptions={false}
-                  cacheOptions
-                  onChange={(option: { value: string; label: string; employee: Employee } | null) => {
-                    if (option) {
-                      setFormData(prev => ({
-                        ...prev,
-                        employeenumber: option.value,
-                        employeename: option.employee.empname
-                      }));
-                    }
-                  }}
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      background: 'rgb(51 65 85 / 0.5)',
-                      borderColor: 'rgb(71 85 105)',
-                      '&:hover': {
-                        borderColor: 'rgb(100 116 139)'
-                      }
-                    }),
-                    menu: (base) => ({
-                      ...base,
-                      background: 'rgb(30 41 59)',
-                      border: '1px solid rgb(71 85 105)'
-                    }),
-                    option: (base, state) => ({
-                      ...base,
-                      backgroundColor: state.isFocused 
-                        ? 'rgb(51 65 85)' 
-                        : state.isSelected 
-                          ? 'rgb(30 58 138)' 
-                          : 'transparent',
-                      color: 'rgb(226 232 240)',
-                      '&:hover': {
-                        backgroundColor: 'rgb(51 65 85)'
-                      }
-                    }),
-                    singleValue: (base) => ({
-                      ...base,
-                      color: 'rgb(226 232 240)'
-                    }),
-                    input: (base) => ({
-                      ...base,
-                      color: 'rgb(226 232 240)'
-                    })
-                  }}
-                  className="text-sm"
-                  classNamePrefix="react-select"
-                  placeholder="Search by employee number or name..."
-                  isClearable
-                />
-              </div>
-
-              {/* Location Type Selection */}
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Location Type
-                </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="warehouse"
-                      checked={locationType === 'warehouse'}
-                      onChange={() => {
-                        setLocationType('warehouse');
-                        setFormData((prev) => ({
-                          ...prev,
-                          locationType: 'warehouse',
-                          warehouseCity: (warehouseCityNames[0] ?? prev.warehouseCity) as Custody['warehouseCity'],
-                        }));
-                      }}
-                      className="mr-2"
-                    />
-                    Warehouse
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="department"
-                      checked={locationType === 'department'}
-                      onChange={(e) => {
-                        setLocationType('department');
-                        setFormData(prev => ({
-                          ...prev,
-                          locationType: 'department'
-                        }));
-                      }}
-                      className="mr-2"
-                    />
-                    Department
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="camp/office"
-                      checked={locationType === 'camp/office'}
-                      onChange={(e) => {
-                        setLocationType('camp/office');
-                        setFormData(prev => ({
-                          ...prev,
-                          locationType: 'camp/office'
-                        }));
-                      }}
-                      className="mr-2"
-                    />
-                    Camp/Office
-                  </label>
-                </div>
-              </div>
-
-              {/* Warehouse Fields */}
-              {locationType === 'warehouse' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
-                      Warehouse Location
-                    </label>
-                    {!locationCitiesLoaded ? (
-                      <p className="text-sm text-zinc-400">Loading cities…</p>
-                    ) : warehouseCityNames.length === 0 ? (
-                      <p className="text-sm text-amber-200/90">
-                        No warehouse cities configured. Add them under Admin → Locations → City lists.
-                      </p>
-                    ) : (
-                      <div className="flex gap-4 flex-wrap">
-                        {warehouseCityNames.map((city) => (
-                          <label key={city} className="flex items-center">
-                            <input
-                              type="radio"
-                              value={city}
-                              checked={formData.warehouseCity === city}
-                              onChange={() =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  warehouseCity: city as Custody['warehouseCity'],
-                                }))
-                              }
-                              className="mr-2"
-                            />
-                            {city}
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
-                      Room/Rack/Bin Location
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.warehouseLocation || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        warehouseLocation: e.target.value
-                      }))}
-                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* Department Fields */}
-              {locationType === 'department' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
-                      Location
-                    </label>
-                    <select
-                      value={formData.departmentLocation || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        departmentLocation: e.target.value
-                      }))}
-                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                    >
-                      <option value="">Select Location</option>
-                      {(departmentCityNames.length ? departmentCityNames : []).map((city) => (
-                        <option key={city} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
-                      Project
-                    </label>
-                    <Select
-                      options={projects.map(proj => ({
-                        value: proj.wbs + " - " + proj.projectname,
-                        label: `${proj.wbs} - ${proj.projectname}`,
-                        project: proj
-                      }))}
-                      onChange={(option) => {
-                        if (option) {
-                          setFormData(prev => ({
-                            ...prev,
-                            project: option.value
-                          }));
-                        }
-                      }}
-                      styles={{
-                        control: (base) => ({
-                          ...base,
-                          background: 'rgb(51 65 85 / 0.5)',
-                          borderColor: 'rgb(71 85 105)',
-                          '&:hover': {
-                            borderColor: 'rgb(100 116 139)'
-                          }
-                        }),
-                        menu: (base) => ({
-                          ...base,
-                          background: 'rgb(30 41 59)',
-                          border: '1px solid rgb(71 85 105)'
-                        }),
-                        option: (base, state) => ({
-                          ...base,
-                          backgroundColor: state.isFocused 
-                            ? 'rgb(51 65 85)' 
-                            : state.isSelected 
-                              ? 'rgb(30 58 138)' 
-                              : 'transparent',
-                          color: 'rgb(226 232 240)',
-                          '&:hover': {
-                            backgroundColor: 'rgb(51 65 85)'
-                          }
-                        }),
-                        singleValue: (base) => ({
-                          ...base,
-                          color: 'rgb(226 232 240)'
-                        }),
-                        input: (base) => ({
-                          ...base,
-                          color: 'rgb(226 232 240)'
-                        })
-                      }}
-                      className="text-sm"
-                      classNamePrefix="react-select"
-                      placeholder="Search by WBS or project name..."
-                      isClearable
-                      isSearchable
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* Camp/Office Fields */}
-              {locationType === 'camp/office' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
-                      Location
-                    </label>
-                    <select
-                      value={formData.departmentLocation || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        departmentLocation: e.target.value
-                      }))}
-                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                    >
-                      <option value="">Select Location</option>
-                      {(departmentCityNames.length ? departmentCityNames : []).map((city) => (
-                        <option key={city} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-1">
-                      Building/Room/Occupant
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.campOfficeLocation || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        campOfficeLocation: e.target.value
-                      }))}
-                      className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                      placeholder="Enter building, room, or occupant details..."
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* Add Custody From Date */}
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Custody From Date <span className="text-red-400">*</span>
-                </label>
-                <DatePicker
-                  selected={formData.custodyfrom}
-                  onChange={(date: Date | null) => {
-                    if (date) {
-                      setFormData(prev => ({
-                        ...prev,
-                        custodyfrom: date
-                      }));
-                    }
-                  }}
-                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                  dateFormat="yyyy-MM-dd"
-                  required
-                />
-              </div>
-
-              {/* Add Custody To Date */}
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Custody To Date
-                </label>
-                <DatePicker
-                  selected={formData.custodyto}
-                  onChange={(date: Date | null) => setFormData(prev => ({
-                    ...prev,
-                    custodyto: date
-                  }))}
-                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                  dateFormat="yyyy-MM-dd"
-                  isClearable
-                  minDate={formData.custodyfrom || undefined}
-                />
-              </div>
-
-              {/* Gatepass Document */}
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Gatepass Document Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.documentnumber || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    documentnumber: e.target.value
-                  }))}
-                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-                  placeholder="Enter gatepass document number..."
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 border-t border-slate-700 pt-6">
-            <div className="flex gap-4">
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-3 rounded-md text-sm font-medium transition-colors"
-              >
-                {isSaving ? 'Saving...' : 'Save'}
-              </button>
-              <button
-                onClick={onClose}
-                disabled={isSaving}
-                className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-3 rounded-md text-sm font-medium transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function CustodyDetails({ currentCustody, custodyHistory, onUpdate, assetnumber, theme = 'default' }: CustodyDetailsProps) {
-  const [showNewCustodyModal, setShowNewCustodyModal] = useState(false);
+  theme = 'default',
+  custodyNewHref,
+}: CustodyDetailsProps) {
+  const newCustodyLink = custodyNewHref ?? `/fixedasset/${assetnumber}/custody/new`;
   const [showEditModal, setShowEditModal] = useState(false);
   const [showErrorCorrectionModal, setShowErrorCorrectionModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [warehouseCityNames, setWarehouseCityNames] = useState<string[]>([]);
   const [departmentCityNames, setDepartmentCityNames] = useState<string[]>([]);
   const [locationCitiesLoaded, setLocationCitiesLoaded] = useState(false);
@@ -771,40 +278,82 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
     );
   };
 
-  // Error-correction modal: edit only Location Type, Warehouse City/Project, and Location fields (patch record)
+  // Error-correction modal: city + premises from master; floor/occupant/remark free text
   const ErrorCorrectionModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-    type LocationTypeOption = 'warehouse' | 'department' | 'camp/office';
-    const [locationType, setLocationType] = useState<LocationTypeOption>('warehouse');
-    const [warehouseCity, setWarehouseCity] = useState<string>('');
-    const [warehouseLocation, setWarehouseLocation] = useState('');
-    const [departmentLocation, setDepartmentLocation] = useState('');
-    const [campOfficeLocation, setCampOfficeLocation] = useState('');
-    const [project, setProject] = useState('');
-    const [projectname, setProjectname] = useState('');
+    const [locationType, setLocationType] = useState<CustodyLocationType>('warehouse');
+    const [custodyCity, setCustodyCity] = useState('');
+    const [premisesId, setPremisesId] = useState('');
+    const [premisesLabel, setPremisesLabel] = useState('');
+    const [floorRoom, setFloorRoom] = useState('');
+    const [occupant, setOccupant] = useState('');
+    const [custodyRemark, setCustodyRemark] = useState('');
+    const [rackBinPallet, setRackBinPallet] = useState('');
+    const [shedRoomNumber, setShedRoomNumber] = useState('');
+    const [custodianDetail, setCustodianDetail] = useState('');
+    const [containerNumberRack, setContainerNumberRack] = useState('');
+    const [projectWbs, setProjectWbs] = useState('');
+    const [projectName, setProjectName] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [err, setErr] = useState<string | null>(null);
 
+    const onPremisesChange = useCallback((id: string, label: string) => {
+      setPremisesId(id);
+      setPremisesLabel(label);
+    }, []);
+
     useEffect(() => {
       if (!isOpen || !currentCustody) return;
-      setLocationType((currentCustody.locationType as LocationTypeOption) || 'warehouse');
-      setWarehouseCity(currentCustody.warehouseCity ?? '');
-      setWarehouseLocation(currentCustody.warehouseLocation ?? '');
-      setDepartmentLocation(currentCustody.departmentLocation ?? '');
-      setCampOfficeLocation(currentCustody.campOfficeLocation ?? '');
-      setProject(currentCustody.project ?? '');
-      setProjectname(currentCustody.projectname ?? '');
+      const lt = normalizeCustodyLocationType(currentCustody.locationType);
+      setLocationType(lt);
+      const cityRaw =
+        currentCustody.custodyCity?.trim() ||
+        (String(currentCustody.locationType) === 'warehouse'
+          ? currentCustody.warehouseCity
+          : currentCustody.departmentLocation);
+      setCustodyCity(cityRaw ? String(cityRaw) : '');
+      setPremisesId(currentCustody.premisesId ?? '');
+      setPremisesLabel(currentCustody.premisesLabel ?? '');
+      setFloorRoom(currentCustody.floorRoom ?? '');
+      setOccupant(currentCustody.occupant ?? '');
+      setCustodyRemark(currentCustody.custodyRemark ?? '');
+      setRackBinPallet(currentCustody.rackBinPallet ?? '');
+      setShedRoomNumber(currentCustody.shedRoomNumber ?? '');
+      setCustodianDetail(currentCustody.custodianDetail ?? '');
+      setContainerNumberRack(currentCustody.containerNumberRack ?? '');
+      const parsed = parseLegacyProjectField(currentCustody.project);
+      setProjectWbs(parsed.wbs);
+      setProjectName(currentCustody.projectname ?? parsed.name);
       setErr(null);
     }, [isOpen, currentCustody]);
 
     useEffect(() => {
       if (isOpen) {
         fetch('/api/projects')
-          .then((res) => res.ok ? res.json() : [])
+          .then((res) => (res.ok ? res.json() : []))
           .then((data) => setProjects(Array.isArray(data) ? data : []))
           .catch(() => setProjects([]));
       }
     }, [isOpen]);
+
+    const handleLocationTypeChange = (t: CustodyLocationType) => {
+      setLocationType(t);
+      const list = t === 'warehouse' ? warehouseCityNames : departmentCityNames;
+      const nextCity =
+        custodyCity && list.includes(custodyCity) ? custodyCity : (list[0] ?? '');
+      setCustodyCity(nextCity);
+      setPremisesId('');
+      setPremisesLabel('');
+      setFloorRoom('');
+      setOccupant('');
+      setCustodyRemark('');
+      setRackBinPallet('');
+      setShedRoomNumber('');
+      setCustodianDetail('');
+      setContainerNumberRack('');
+      setProjectWbs('');
+      setProjectName('');
+    };
 
     if (!isOpen || !currentCustody || !currentCustody._id) return null;
 
@@ -818,7 +367,7 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
             input: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
             select: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
             buttonPrimary: 'bg-teal-500 hover:bg-teal-600',
-            buttonSecondary: 'bg-white/10 hover:bg-white/20 border border-white/20'
+            buttonSecondary: 'bg-white/10 hover:bg-white/20 border border-white/20',
           };
         case 'light':
           return {
@@ -828,7 +377,7 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
             input: 'bg-white border-2 border-blue-300 text-gray-900',
             select: 'bg-white border-2 border-blue-300 text-gray-900',
             buttonPrimary: 'bg-blue-500 hover:bg-blue-600',
-            buttonSecondary: 'bg-gray-200 hover:bg-gray-300'
+            buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
           };
         default:
           return {
@@ -838,25 +387,44 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
             input: 'bg-slate-700/50 text-zinc-100 border-0 ring-1 ring-slate-600',
             select: 'bg-slate-700/50 text-zinc-100 border-0 ring-1 ring-slate-600',
             buttonPrimary: 'bg-blue-600 hover:bg-blue-700',
-            buttonSecondary: 'bg-slate-600 hover:bg-slate-700'
+            buttonSecondary: 'bg-slate-600 hover:bg-slate-700',
           };
       }
     };
 
     const modalStyles = getModalStyles();
 
+    const locFieldClassNames =
+      theme === 'light'
+        ? {
+            input: 'w-full text-sm rounded-xl p-2 bg-white border-2 border-blue-300 text-gray-900',
+            label: `block text-sm font-medium ${modalStyles.textSecondary} mb-1`,
+            hint: 'text-sm text-gray-600',
+          }
+        : theme === 'glassmorphic'
+          ? {
+              input:
+                'w-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm rounded-xl p-2 placeholder-white/50',
+              label: `block text-sm font-medium ${modalStyles.textSecondary} mb-1`,
+              hint: 'text-sm text-white/70',
+            }
+          : undefined;
+
     const handleSave = async () => {
       setErr(null);
-      if (locationType === 'warehouse' && !warehouseLocation?.trim()) {
-        setErr('Location is required for warehouse');
+      if (locationType !== 'project_site' && !custodyCity.trim()) {
+        setErr('City is required');
         return;
       }
-      if (locationType === 'department' && !departmentLocation?.trim()) {
-        setErr('Location is required for department');
+      if (
+        (locationType === 'warehouse' || locationType === 'camp/office') &&
+        !premisesId.trim()
+      ) {
+        setErr('Select a premises location from the master list');
         return;
       }
-      if (locationType === 'camp/office' && (!departmentLocation?.trim() && !campOfficeLocation?.trim())) {
-        setErr('At least one location field is required for camp/office');
+      if (locationType === 'project_site' && !projectWbs.trim()) {
+        setErr('Project is required for project site');
         return;
       }
 
@@ -864,12 +432,31 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
       try {
         const payload: Record<string, unknown> = {
           locationType,
-          warehouseCity: locationType === 'warehouse' ? (warehouseCity || null) : null,
-          warehouseLocation: locationType === 'warehouse' ? (warehouseLocation?.trim() || null) : null,
-          departmentLocation: locationType !== 'warehouse' ? (departmentLocation?.trim() || null) : null,
-          campOfficeLocation: locationType === 'camp/office' ? (campOfficeLocation?.trim() || null) : null,
-          project: locationType === 'department' ? (project?.trim() || null) : null,
-          projectname: locationType === 'department' ? (projectname?.trim() || null) : null,
+          custodyCity: custodyCity.trim() || null,
+          premisesId: locationType === 'project_site' ? null : premisesId || null,
+          premisesLabel:
+            locationType === 'project_site' ? null : premisesLabel.trim() || null,
+          floorRoom: locationType === 'camp/office' ? floorRoom.trim() || null : null,
+          occupant: locationType === 'camp/office' ? occupant.trim() || null : null,
+          custodyRemark:
+            locationType === 'camp/office' || locationType === 'project_site'
+              ? custodyRemark.trim() || null
+              : null,
+          rackBinPallet: locationType === 'warehouse' ? rackBinPallet.trim() || null : null,
+          shedRoomNumber: locationType === 'warehouse' ? shedRoomNumber.trim() || null : null,
+          custodianDetail: locationType === 'project_site' ? custodianDetail.trim() || null : null,
+          containerNumberRack: locationType === 'project_site' ? containerNumberRack.trim() || null : null,
+          warehouseCity: locationType === 'warehouse' ? custodyCity.trim() : null,
+          warehouseLocation: null,
+          departmentLocation: null,
+          campOfficeLocation: null,
+          location:
+            locationType === 'project_site' ? null : premisesLabel.trim() || null,
+          project:
+            locationType === 'project_site'
+              ? [projectWbs, projectName].filter(Boolean).join(' - ') || null
+              : null,
+          projectname: locationType === 'project_site' ? projectName.trim() || null : null,
         };
 
         const response = await fetch(`/api/custody/${assetnumber}/${currentCustody._id}`, {
@@ -891,121 +478,61 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
     };
 
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center">
-        <div className={`${modalStyles.container} rounded-lg shadow-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto`}>
-          <h3 className={`text-lg font-semibold ${modalStyles.text} mb-4`}>Correct location (error correction)</h3>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div
+          className={`${modalStyles.container} rounded-lg shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto`}
+        >
+          <h3 className={`text-lg font-semibold ${modalStyles.text} mb-4`}>
+            Correct location (error correction)
+          </h3>
           {err && (
-            <div className={`${theme === 'glassmorphic' ? 'bg-red-500/20 text-red-300' : theme === 'light' ? 'bg-red-50 text-red-700' : 'bg-red-500/20 text-red-100'} px-4 py-2 rounded-lg text-sm mb-4`}>
+            <div
+              className={`${
+                theme === 'glassmorphic'
+                  ? 'bg-red-500/20 text-red-300'
+                  : theme === 'light'
+                    ? 'bg-red-50 text-red-700'
+                    : 'bg-red-500/20 text-red-100'
+              } px-4 py-2 rounded-lg text-sm mb-4`}
+            >
               {err}
             </div>
           )}
 
-          <div className="space-y-4">
-            <div>
-              <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Location Type</label>
-              <select
-                value={locationType}
-                onChange={(e) => setLocationType(e.target.value as LocationTypeOption)}
-                className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
-              >
-                <option value="warehouse" className="bg-slate-800 text-white">Warehouse</option>
-                <option value="department" className="bg-slate-800 text-white">Department</option>
-                <option value="camp/office" className="bg-slate-800 text-white">Camp/Office</option>
-              </select>
-            </div>
-
-            {locationType === 'warehouse' && (
-              <>
-                <div>
-                  <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Warehouse City</label>
-                  {!locationCitiesLoaded ? (
-                    <p className={`text-sm ${modalStyles.textSecondary}`}>Loading cities…</p>
-                  ) : warehouseCityNames.length === 0 ? (
-                    <p className="text-sm text-amber-200/90">
-                      No warehouse cities configured. Add them under Admin → Locations → City lists.
-                    </p>
-                  ) : (
-                    <select
-                      value={warehouseCity}
-                      onChange={(e) => setWarehouseCity(e.target.value)}
-                      className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
-                    >
-                      <option value="" className="bg-slate-800 text-white">Select</option>
-                      {warehouseCityNames.map((city) => (
-                        <option key={city} value={city} className="bg-slate-800 text-white">
-                          {city}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Location</label>
-                  <input
-                    type="text"
-                    value={warehouseLocation}
-                    onChange={(e) => setWarehouseLocation(e.target.value)}
-                    className={`w-full text-sm rounded-xl p-2 ${modalStyles.input}`}
-                    placeholder="Room/Rack/Bin"
-                  />
-                </div>
-              </>
-            )}
-
-            {locationType === 'department' && (
-              <div>
-                <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Project</label>
-                <select
-                  value={project}
-                  onChange={(e) => {
-                    const p = projects.find((pr) => pr.wbs === e.target.value);
-                    setProject(e.target.value);
-                    setProjectname(p?.projectname ?? '');
-                  }}
-                  className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
-                >
-                  <option value="" className="bg-slate-800 text-white">Select project</option>
-                  {projects.map((pr) => (
-                    <option key={pr._id} value={pr.wbs} className="bg-slate-800 text-white">{pr.wbs} – {pr.projectname}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {(locationType === 'department' || locationType === 'camp/office') && (
-              <>
-                <div>
-                  <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>
-                    {locationType === 'department' ? 'Department Location' : 'Location'}
-                  </label>
-                  <select
-                    value={departmentLocation}
-                    onChange={(e) => setDepartmentLocation(e.target.value)}
-                    className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
-                  >
-                    <option value="">Select Location</option>
-                    {(departmentCityNames.length ? departmentCityNames : []).map((city) => (
-                      <option key={city} value={city} className="bg-slate-800 text-white">
-                        {city}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {locationType === 'camp/office' && (
-                  <div>
-                    <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Building/Room/Occupant</label>
-                    <input
-                      type="text"
-                      value={campOfficeLocation}
-                      onChange={(e) => setCampOfficeLocation(e.target.value)}
-                      className={`w-full text-sm rounded-xl p-2 ${modalStyles.input}`}
-                      placeholder="Building/Room/Occupant"
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          <CustodyLocationFields
+            variant={theme === 'glassmorphic' ? 'page' : 'modal'}
+            classNames={locFieldClassNames}
+            locationType={locationType}
+            onLocationTypeChange={handleLocationTypeChange}
+            custodyCity={custodyCity}
+            onCustodyCityChange={setCustodyCity}
+            premisesId={premisesId}
+            onPremisesChange={onPremisesChange}
+            floorRoom={floorRoom}
+            onFloorRoomChange={setFloorRoom}
+            occupant={occupant}
+            onOccupantChange={setOccupant}
+            custodyRemark={custodyRemark}
+            onCustodyRemarkChange={setCustodyRemark}
+            rackBinPallet={rackBinPallet}
+            onRackBinPalletChange={setRackBinPallet}
+            shedRoomNumber={shedRoomNumber}
+            onShedRoomNumberChange={setShedRoomNumber}
+            custodianDetail={custodianDetail}
+            onCustodianDetailChange={setCustodianDetail}
+            containerNumberRack={containerNumberRack}
+            onContainerNumberRackChange={setContainerNumberRack}
+            warehouseCityNames={warehouseCityNames}
+            departmentCityNames={departmentCityNames}
+            locationCitiesLoaded={locationCitiesLoaded}
+            projects={projects}
+            projectWbs={projectWbs}
+            projectName={projectName}
+            onProjectChange={(wbs, pname) => {
+              setProjectWbs(wbs);
+              setProjectName(pname);
+            }}
+          />
 
           <div className="flex gap-3 mt-6">
             <button
@@ -1018,7 +545,9 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
             <button
               onClick={onClose}
               disabled={isSaving}
-              className={`flex-1 ${modalStyles.buttonSecondary} disabled:opacity-50 ${theme === 'glassmorphic' ? 'text-white' : theme === 'light' ? 'text-gray-900' : 'text-white'} px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
+              className={`flex-1 ${modalStyles.buttonSecondary} disabled:opacity-50 ${
+                theme === 'glassmorphic' ? 'text-white' : theme === 'light' ? 'text-gray-900' : 'text-white'
+              } px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
             >
               Cancel
             </button>
@@ -1038,7 +567,7 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
         <div className="flex gap-2">
           {canCreateNewCustody && (
             <Link
-              href={`/fixedasset/${assetnumber}/custody/new`}
+              href={newCustodyLink}
               className={getButtonStyles('blue')}
               title="New Custody Record"
             >
@@ -1080,67 +609,90 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
           {/* Location Type */}
           <div className={`${fieldStyles.container} p-2`}>
             <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location Type</label>
-            <div className={`text-sm ${fieldStyles.text} capitalize`}>
-              {currentCustody.locationType}
+            <div className={`text-sm ${fieldStyles.text}`}>
+              {displayCustodyLocationType(currentCustody.locationType)}
             </div>
           </div>
 
-          {/* Conditional fields based on location type */}
-          {currentCustody.locationType === 'warehouse' && (
+          <div className={`${fieldStyles.container} p-2`}>
+            <label className={`block text-xs font-medium ${fieldStyles.label}`}>
+              {normalizeCustodyLocationType(currentCustody.locationType) === 'project_site'
+                ? 'City (record)'
+                : 'City'}
+            </label>
+            <div className={`text-sm ${fieldStyles.text}`}>{custodyCityDisplay(currentCustody)}</div>
+          </div>
+
+          {normalizeCustodyLocationType(currentCustody.locationType) !== 'project_site' && (
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location (premises)</label>
+              <div className={`text-sm ${fieldStyles.text}`}>{premisesDisplay(currentCustody)}</div>
+            </div>
+          )}
+
+          {(normalizeCustodyLocationType(currentCustody.locationType) === 'project_site' ||
+            currentCustody.locationType === 'department') && (
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Project</label>
+              <div className={`text-sm ${fieldStyles.text}`}>
+                {currentCustody.project || '—'}
+                {currentCustody.projectname ? ` (${currentCustody.projectname})` : ''}
+              </div>
+            </div>
+          )}
+
+          {normalizeCustodyLocationType(currentCustody.locationType) === 'warehouse' && (
             <>
-              {/* Warehouse City */}
               <div className={`${fieldStyles.container} p-2`}>
-                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Warehouse City</label>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Rack / bin / pallet</label>
+                <div className={`text-sm ${fieldStyles.text}`}>{warehouseRackDisplay(currentCustody)}</div>
+              </div>
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Shed / room number</label>
+                <div className={`text-sm ${fieldStyles.text}`}>{warehouseShedDisplay(currentCustody)}</div>
+              </div>
+            </>
+          )}
+
+          {normalizeCustodyLocationType(currentCustody.locationType) === 'camp/office' && (
+            <>
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Floor / room</label>
+                <div className={`text-sm ${fieldStyles.text}`}>{floorRoomDisplay(currentCustody)}</div>
+              </div>
+              <div className={`${fieldStyles.container} p-2`}>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Occupant</label>
                 <div className={`text-sm ${fieldStyles.text}`}>
-                  {currentCustody.warehouseCity}
+                  {currentCustody.occupant?.trim() ? currentCustody.occupant : '—'}
                 </div>
               </div>
-
-              {/* Warehouse Location */}
               <div className={`${fieldStyles.container} p-2`}>
-                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location</label>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Remark</label>
                 <div className={`text-sm ${fieldStyles.text}`}>
-                  {currentCustody.warehouseLocation}
+                  {currentCustody.custodyRemark?.trim() ? currentCustody.custodyRemark : '—'}
                 </div>
               </div>
             </>
           )}
 
-          {currentCustody.locationType === 'department' && (
+          {normalizeCustodyLocationType(currentCustody.locationType) === 'project_site' && (
             <>
-              {/* Department Location */}
               <div className={`${fieldStyles.container} p-2`}>
-                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Department Location</label>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Custodian detail</label>
                 <div className={`text-sm ${fieldStyles.text}`}>
-                  {currentCustody.departmentLocation}
+                  {currentCustody.custodianDetail?.trim() ? currentCustody.custodianDetail : '—'}
                 </div>
               </div>
-
-              {/* Project */}
               <div className={`${fieldStyles.container} p-2`}>
-                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Project</label>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Container number / rack</label>
                 <div className={`text-sm ${fieldStyles.text}`}>
-                  {currentCustody.project}
+                  {currentCustody.containerNumberRack?.trim() ? currentCustody.containerNumberRack : '—'}
                 </div>
               </div>
-            </>
-          )}
-
-          {currentCustody.locationType === 'camp/office' && (
-            <>
-              {/* Camp/Office Location */}
               <div className={`${fieldStyles.container} p-2`}>
-                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location</label>
+                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Purpose / remarks</label>
                 <div className={`text-sm ${fieldStyles.text}`}>
-                  {currentCustody.departmentLocation}
-                </div>
-              </div>
-
-              {/* Building/Room/Occupant */}
-              <div className={`${fieldStyles.container} p-2`}>
-                <label className={`block text-xs font-medium ${fieldStyles.label}`}>Building/Room/Occupant</label>
-                <div className={`text-sm ${fieldStyles.text}`}>
-                  {currentCustody.campOfficeLocation}
+                  {currentCustody.custodyRemark?.trim() ? currentCustody.custodyRemark : '—'}
                 </div>
               </div>
             </>
@@ -1209,47 +761,91 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
                   {/* Location Type */}
                   <div>
                     <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location Type</label>
-                    <div className={`text-sm ${fieldStyles.text} capitalize`}>
-                      {record.locationType}
+                    <div className={`text-sm ${fieldStyles.text}`}>
+                      {displayCustodyLocationType(record.locationType)}
                     </div>
                   </div>
 
-                  {/* Location Details */}
-                  {record.locationType === 'warehouse' && (
+                  <div>
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>
+                      {normalizeCustodyLocationType(record.locationType) === 'project_site'
+                        ? 'City (record)'
+                        : 'City'}
+                    </label>
+                    <div className={`text-sm ${fieldStyles.text}`}>{custodyCityDisplay(record)}</div>
+                  </div>
+
+                  {normalizeCustodyLocationType(record.locationType) !== 'project_site' && (
+                    <div>
+                      <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location (premises)</label>
+                      <div className={`text-sm ${fieldStyles.text}`}>{premisesDisplay(record)}</div>
+                    </div>
+                  )}
+
+                  {(normalizeCustodyLocationType(record.locationType) === 'project_site' ||
+                    record.locationType === 'department') && (
+                    <div>
+                      <label className={`block text-xs font-medium ${fieldStyles.label}`}>Project</label>
+                      <div className={`text-sm ${fieldStyles.text}`}>
+                        {record.project || '—'}
+                        {record.projectname ? ` (${record.projectname})` : ''}
+                      </div>
+                    </div>
+                  )}
+
+                  {normalizeCustodyLocationType(record.locationType) === 'warehouse' && (
                     <>
                       <div>
-                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Warehouse City</label>
-                        <div className={`text-sm ${fieldStyles.text}`}>{record.warehouseCity}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Rack / bin / pallet</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{warehouseRackDisplay(record)}</div>
                       </div>
                       <div>
-                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location</label>
-                        <div className={`text-sm ${fieldStyles.text}`}>{record.warehouseLocation}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Shed / room number</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{warehouseShedDisplay(record)}</div>
                       </div>
                     </>
                   )}
 
-                  {record.locationType === 'department' && (
+                  {normalizeCustodyLocationType(record.locationType) === 'camp/office' && (
                     <>
                       <div>
-                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Department Location</label>
-                        <div className={`text-sm ${fieldStyles.text}`}>{record.departmentLocation}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Floor / room</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>{floorRoomDisplay(record)}</div>
                       </div>
                       <div>
-                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Project</label>
-                        <div className={`text-sm ${fieldStyles.text}`}>{record.project}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Occupant</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>
+                          {record.occupant?.trim() ? record.occupant : '—'}
+                        </div>
+                      </div>
+                      <div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Remark</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>
+                          {record.custodyRemark?.trim() ? record.custodyRemark : '—'}
+                        </div>
                       </div>
                     </>
                   )}
 
-                  {record.locationType === 'camp/office' && (
+                  {normalizeCustodyLocationType(record.locationType) === 'project_site' && (
                     <>
                       <div>
-                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Location</label>
-                        <div className={`text-sm ${fieldStyles.text}`}>{record.departmentLocation}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Custodian detail</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>
+                          {record.custodianDetail?.trim() ? record.custodianDetail : '—'}
+                        </div>
                       </div>
                       <div>
-                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Building/Room/Occupant</label>
-                        <div className={`text-sm ${fieldStyles.text}`}>{record.campOfficeLocation}</div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Container number / rack</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>
+                          {record.containerNumberRack?.trim() ? record.containerNumberRack : '—'}
+                        </div>
+                      </div>
+                      <div>
+                        <label className={`block text-xs font-medium ${fieldStyles.label}`}>Purpose / remarks</label>
+                        <div className={`text-sm ${fieldStyles.text}`}>
+                          {record.custodyRemark?.trim() ? record.custodyRemark : '—'}
+                        </div>
                       </div>
                     </>
                   )}
@@ -1292,17 +888,6 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
       <ErrorCorrectionModal
         isOpen={showErrorCorrectionModal}
         onClose={() => setShowErrorCorrectionModal(false)}
-      />
-
-      {/* New Custody Modal */}
-      <CustodyFormModal
-        isOpen={showNewCustodyModal}
-        onClose={() => setShowNewCustodyModal(false)}
-        onSave={onUpdate}
-        assetnumber={assetnumber}
-        warehouseCityNames={warehouseCityNames}
-        departmentCityNames={departmentCityNames}
-        locationCitiesLoaded={locationCitiesLoaded}
       />
     </div>
   );

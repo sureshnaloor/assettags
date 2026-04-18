@@ -158,7 +158,12 @@ export default function FixedAssetSearchByLocationPage() {
         </button>
       ),
       cell: ({ row }) => (
-        <Link href={`/fixedasset/${row.original.assetnumber}`} className="text-teal-400 hover:text-teal-300 transition-colors">
+        <Link
+          href={`/fixedasset/${row.original.assetnumber}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-teal-400 hover:text-teal-300 transition-colors"
+        >
           {row.original.assetnumber}
         </Link>
       ),

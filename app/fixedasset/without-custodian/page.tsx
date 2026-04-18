@@ -151,6 +151,8 @@ export default function FixedAssetWithoutCustodianPage() {
       cell: ({ row }) => (
         <Link 
           href={`/fixedasset/${row.original.assetnumber}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-teal-400 hover:text-teal-300 transition-colors"
         >
           {row.original.assetnumber}
