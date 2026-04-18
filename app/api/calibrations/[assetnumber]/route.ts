@@ -2,6 +2,32 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+function parseOptionalDate(value: unknown): Date | null {
+  if (value === null || value === undefined || value === '') return null;
+  const d = value instanceof Date ? value : new Date(value as string);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function normalizeCalibrationPayload(input: Record<string, unknown>) {
+  const req = (input.calibrationRequired as string) || 'Required';
+  if (req === 'Not Required') {
+    return {
+      ...input,
+      calibrationRequired: 'Not Required',
+      idleCalibrationDuration: '',
+      idlePeriodFrom: null,
+      idlePeriodTo: null,
+    };
+  }
+  return {
+    ...input,
+    calibrationRequired: 'Required',
+    idleCalibrationDuration: String(input.idleCalibrationDuration ?? '').trim(),
+    idlePeriodFrom: parseOptionalDate(input.idlePeriodFrom),
+    idlePeriodTo: parseOptionalDate(input.idlePeriodTo),
+  };
+}
+
 // GET calibrations for specific asset
 export async function GET(
   request: Request,
@@ -50,13 +76,14 @@ export async function PUT(
 
     // Remove _id from the update body since MongoDB doesn't allow modifying _id
     const { _id, ...updateData } = body;
+    const normalizedUpdateData = normalizeCalibrationPayload(updateData as Record<string, unknown>);
     
     const result = await db.collection('equipmentcalibcertificates').updateOne(
       { 
         _id: new ObjectId(_id),
         assetnumber: params.assetnumber // Keep this as additional validation
       },
-      { $set: updateData }
+      { $set: normalizedUpdateData }
     );
 
     if (result.matchedCount === 0) {
@@ -122,7 +149,7 @@ export async function POST(
     const { db } = await connectToDatabase();
     
     const newCalibration = {
-      ...body,
+      ...normalizeCalibrationPayload(body as Record<string, unknown>),
       assetnumber: params.assetnumber,
       createdat: new Date(),
     };

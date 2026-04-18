@@ -476,6 +476,8 @@ export default function MMEPage() {
       cell: ({ row }) => (
         <Link 
           href={`/asset/${row.original.assetnumber}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className={`${backgroundStyles.linkColor} transition-colors font-semibold`}
         >
           {row.original.assetnumber}

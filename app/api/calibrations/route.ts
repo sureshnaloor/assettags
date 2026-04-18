@@ -2,6 +2,32 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import type { Calibration } from '@/types/asset';
 
+function parseOptionalDate(value: unknown): Date | null {
+  if (value === null || value === undefined || value === '') return null;
+  const d = value instanceof Date ? value : new Date(value as string);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function normalizeCalibrationPayload(input: Record<string, unknown>) {
+  const req = (input.calibrationRequired as string) || 'Required';
+  if (req === 'Not Required') {
+    return {
+      ...input,
+      calibrationRequired: 'Not Required',
+      idleCalibrationDuration: '',
+      idlePeriodFrom: null,
+      idlePeriodTo: null,
+    };
+  }
+  return {
+    ...input,
+    calibrationRequired: 'Required',
+    idleCalibrationDuration: String(input.idleCalibrationDuration ?? '').trim(),
+    idlePeriodFrom: parseOptionalDate(input.idlePeriodFrom),
+    idlePeriodTo: parseOptionalDate(input.idlePeriodTo),
+  };
+}
+
 // GET all calibrations
 export async function GET() {
   try {
@@ -25,7 +51,7 @@ export async function POST(request: Request) {
     
     // Create new document without _id (MongoDB will generate it)
     const calibrationData = {
-      ...body,
+      ...normalizeCalibrationPayload(body as unknown as Record<string, unknown>),
       createdat: new Date(),
     };
     

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PencilIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Calibration } from '@/types/asset';
 import DatePicker from 'react-datepicker';
@@ -11,6 +11,7 @@ interface CalibrationCompany {
 }
 
 import type { Theme } from '@/app/components/AssetDetails';
+import { useToast } from '@/components/ui/toaster';
 
 interface CalibrationDetailsProps {
   currentCalibration: Calibration | null;
@@ -26,6 +27,25 @@ const VALIDITY_PERIODS = [
   { label: '12 Months', months: 12 },
   { label: '24 Months', months: 24 },
 ];
+
+function parseCalibrationDate(d: unknown): Date | null {
+  if (d === null || d === undefined || d === '') return null;
+  const x = d instanceof Date ? d : new Date(d as string);
+  return Number.isNaN(x.getTime()) ? null : x;
+}
+
+function isTodayInIdleWindow(from: unknown, to: unknown): boolean {
+  const start = parseCalibrationDate(from);
+  const end = parseCalibrationDate(to);
+  if (!start || !end) return false;
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  const s = new Date(start);
+  s.setHours(0, 0, 0, 0);
+  const e = new Date(end);
+  e.setHours(23, 59, 59, 999);
+  return today >= s && today <= e;
+}
 
 function LoadingSpinner() {
   return (
@@ -58,6 +78,9 @@ interface ConfirmationModalProps {
   onCancel: () => void;
   isSaving: boolean;
   changes: {
+    calibrationRequired?: string;
+    idleCalibrationDuration?: string;
+    idlePeriod?: string;
     calibratedby?: string;
     calibrationdate?: string;
     validityPeriod?: string;
@@ -161,13 +184,61 @@ interface ArchivedCalibration extends Calibration {
 
 interface CalibrationAlertProps {
   calibrationToDate: Date | null;
+  calibrationRequired?: 'Required' | 'Not Required';
+  idlePeriodFrom?: unknown;
+  idlePeriodTo?: unknown;
   onAcknowledge: () => void;
   showAlert: boolean;
 }
 
-function CalibrationAlert({ calibrationToDate, onAcknowledge, showAlert }: CalibrationAlertProps) {
+function CalibrationAlert({
+  calibrationToDate,
+  calibrationRequired,
+  idlePeriodFrom,
+  idlePeriodTo,
+  onAcknowledge,
+  showAlert,
+}: CalibrationAlertProps) {
   if (!showAlert) return null;
-  
+  if (calibrationRequired === 'Not Required') {
+    return (
+      <div className="bg-blue-500/90 text-white p-4 rounded-lg mb-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <CheckIcon className="h-6 w-6" />
+          <span className="font-medium">Calibration is marked as not required for this equipment</span>
+        </div>
+        <button
+          onClick={onAcknowledge}
+          className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
+        >
+          Acknowledge
+        </button>
+      </div>
+    );
+  }
+
+  if (
+    calibrationRequired === 'Required' &&
+    isTodayInIdleWindow(idlePeriodFrom, idlePeriodTo)
+  ) {
+    return (
+      <div className="bg-cyan-600/90 text-white p-4 rounded-lg mb-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <CheckIcon className="h-6 w-6" />
+          <span className="font-medium">
+            Calibration not required in this time window (equipment idle / not in service)
+          </span>
+        </div>
+        <button
+          onClick={onAcknowledge}
+          className="bg-cyan-700 hover:bg-cyan-800 px-3 py-1 rounded text-sm"
+        >
+          Acknowledge
+        </button>
+      </div>
+    );
+  }
+
   // If there's no calibration record at all
   if (!calibrationToDate) {
     return (
@@ -261,6 +332,8 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   const [pendingNewCalibration, setPendingNewCalibration] = useState<Partial<Calibration> | null>(null);
   const [isNewMode, setIsNewMode] = useState(false);
   const [showAlert, setShowAlert] = useState(true);
+  const { show: showToast } = useToast();
+  const idleToastKeyRef = useRef<string | null>(null);
 
   // Theme-based style helpers
   const getContainerStyles = () => {
@@ -350,6 +423,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   
   const [editedCalibration, setEditedCalibration] = useState<Calibration>(() => {
     return {
+      calibrationRequired: 'Required',
+      idleCalibrationDuration: '',
+      idlePeriodFrom: null,
+      idlePeriodTo: null,
       calibratedby: '',
       calibrationdate: null as Date | null,
       calibrationtodate: null as Date | null,
@@ -366,6 +443,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
     if (isEditing && currentCalibration) {
       setEditedCalibration({
         ...currentCalibration,
+        calibrationRequired: currentCalibration.calibrationRequired || 'Required',
+        idleCalibrationDuration: currentCalibration.idleCalibrationDuration || '',
+        idlePeriodFrom: parseCalibrationDate(currentCalibration.idlePeriodFrom),
+        idlePeriodTo: parseCalibrationDate(currentCalibration.idlePeriodTo),
         calibrationdate: currentCalibration.calibrationdate 
           ? new Date(currentCalibration.calibrationdate)
           : null,
@@ -379,6 +460,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   useEffect(() => {
     if (isNewMode) {
       setEditedCalibration({
+        calibrationRequired: 'Required',
+        idleCalibrationDuration: '',
+        idlePeriodFrom: null,
+        idlePeriodTo: null,
         calibratedby: '',
         calibrationdate: null as Date | null,
         calibrationtodate: null as Date | null,
@@ -402,6 +487,32 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   useEffect(() => {
     setShowAlert(true);
   }, [currentCalibration?.calibrationtodate]);
+
+  useEffect(() => {
+    idleToastKeyRef.current = null;
+  }, [assetnumber]);
+
+  useEffect(() => {
+    if (!currentCalibration) return;
+    const req = currentCalibration.calibrationRequired || 'Required';
+    if (req !== 'Required') return;
+    if (!isTodayInIdleWindow(currentCalibration.idlePeriodFrom, currentCalibration.idlePeriodTo)) return;
+    const key = `${assetnumber}-${String(currentCalibration._id ?? '')}-${String(currentCalibration.idlePeriodFrom)}-${String(currentCalibration.idlePeriodTo)}`;
+    if (idleToastKeyRef.current === key) return;
+    idleToastKeyRef.current = key;
+    showToast({
+      title: 'Idle window',
+      description: 'Calibration not required in this time window',
+      variant: 'success',
+    });
+  }, [
+    assetnumber,
+    currentCalibration?._id,
+    currentCalibration?.calibrationRequired,
+    currentCalibration?.idlePeriodFrom,
+    currentCalibration?.idlePeriodTo,
+    showToast,
+  ]);
 
   const fetchCalibrationCompanies = async () => {
     try {
@@ -453,19 +564,23 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
 
   const handleSave = async () => {
     try {
-      // Validation
-      if (!editedCalibration.calibratedby) {
-        setError('Please select a calibration company');
-        return;
-      }
-      if (!editedCalibration.calibrationdate) {
-        setError('Please select a calibration date');
-        return;
-      }
+      setError(null);
+      // Partial saves are allowed: e.g. Required + idle window only, or requirement flag without company/date yet.
 
       // Calculate changes
       const currentCal = currentCalibration || {} as Calibration;
       const changes = {
+        calibrationRequired: editedCalibration.calibrationRequired !== currentCal.calibrationRequired
+          ? editedCalibration.calibrationRequired
+          : undefined,
+        idleCalibrationDuration: editedCalibration.idleCalibrationDuration !== currentCal.idleCalibrationDuration
+          ? editedCalibration.idleCalibrationDuration
+          : undefined,
+        idlePeriod:
+          editedCalibration.idlePeriodFrom !== currentCal.idlePeriodFrom ||
+          editedCalibration.idlePeriodTo !== currentCal.idlePeriodTo
+            ? `${formatDate(editedCalibration.idlePeriodFrom ?? null)} → ${formatDate(editedCalibration.idlePeriodTo ?? null)}`
+            : undefined,
         calibratedby: editedCalibration.calibratedby !== currentCal.calibratedby 
           ? editedCalibration.calibratedby 
           : undefined,
@@ -488,6 +603,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       // Store the changes and show confirmation
       setPendingChanges({
         ...editedCalibration,
+        idleCalibrationDuration: editedCalibration.idleCalibrationDuration || '',
         calibrationdate: editedCalibration.calibrationdate || undefined,
         calibrationtodate: editedCalibration.calibrationtodate || undefined
       });
@@ -612,6 +728,10 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
 
   const resetForm = () => {
     setEditedCalibration({
+      calibrationRequired: 'Required',
+      idleCalibrationDuration: '',
+      idlePeriodFrom: null,
+      idlePeriodTo: null,
       calibratedby: '',
       calibrationdate: null as Date | null,
       calibrationtodate: null as Date | null,
@@ -633,11 +753,20 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
     setShowAlert(false);
   };
 
+  const requirementForLayout =
+    isEditing || isNewMode
+      ? editedCalibration.calibrationRequired || 'Required'
+      : currentCalibration?.calibrationRequired || 'Required';
+  const showCalibrationDetailFields = requirementForLayout !== 'Not Required';
+
   return (
     <div className={`${getContainerStyles()} p-3 w-full max-w-4xl relative`}>
       {/* Always show the alert, even if currentCalibration is null */}
       <CalibrationAlert
         calibrationToDate={currentCalibration?.calibrationtodate ? new Date(currentCalibration.calibrationtodate) : null}
+        calibrationRequired={currentCalibration?.calibrationRequired || 'Required'}
+        idlePeriodFrom={currentCalibration?.idlePeriodFrom}
+        idlePeriodTo={currentCalibration?.idlePeriodTo}
         onAcknowledge={handleAlertAcknowledge}
         showAlert={showAlert}
       />
@@ -713,140 +842,232 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       )}
 
       <div className="grid grid-cols-2 gap-4 mt-2">
-        {/* Calibrated By */}
-        <div className={`${fieldStyles.container} p-2`}>
-          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibrated By</label>
+        <div className={`${fieldStyles.container} col-span-2 p-2`}>
+          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration Requirement</label>
           {isEditing ? (
             <select
-              value={editedCalibration.calibratedby || ''}
-              onChange={(e) => setEditedCalibration(prev => ({
-                ...prev,
-                calibratedby: e.target.value
-              }))}
+              value={editedCalibration.calibrationRequired || 'Required'}
+              onChange={(e) =>
+                setEditedCalibration((prev) => {
+                  const requirement = e.target.value as 'Required' | 'Not Required';
+                  return {
+                    ...prev,
+                    calibrationRequired: requirement,
+                    ...(requirement === 'Not Required'
+                      ? {
+                          calibratedby: '',
+                          calibrationdate: null,
+                          calibrationtodate: null,
+                          calibrationpo: '',
+                          calibfile: '',
+                          calibcertificate: '',
+                          idlePeriodFrom: null,
+                          idlePeriodTo: null,
+                          idleCalibrationDuration: ''
+                        }
+                      : {})
+                  };
+                })
+              }
               className={`w-full text-xs p-2 ${fieldStyles.input}`}
             >
-              <option value="" className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>Select Company</option>
-              {calibrationCompanies.map(company => (
-                <option key={company._id} value={company.name} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>
-                  {company.name}
-                </option>
-              ))}
+              <option value="Required" className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>Required</option>
+              <option value="Not Required" className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>Not Required</option>
             </select>
           ) : (
             <div className={`text-sm ${fieldStyles.text}`}>
-              {currentCalibration?.calibratedby || 'Not specified'}
+              {currentCalibration?.calibrationRequired || 'Required'}
             </div>
           )}
         </div>
 
-        {/* Calibration Date */}
-        <div className={`${fieldStyles.container} p-2`}>
-          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration Date</label>
-          {isEditing ? (
-            <DatePicker
-              selected={editedCalibration.calibrationdate}
-              onChange={handleCalibrationDateChange}
-              className={`w-full text-xs p-2 ${fieldStyles.input}`}
-              dateFormat="yyyy-MM-dd"
-            />
-          ) : (
-            <div className={`text-sm ${fieldStyles.text}`}>
-              {formatDate(currentCalibration?.calibrationdate ?? null)}
-            </div>
-          )}
-        </div>
+        {!showCalibrationDetailFields && (
+          <p className={`col-span-2 text-xs ${fieldStyles.label}`}>
+            Calibration details are hidden while requirement is &quot;Not Required&quot;. Change requirement to enter certificate data.
+          </p>
+        )}
 
-        {/* Validity Period */}
-        <div className={`${fieldStyles.container} p-2`}>
-          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Validity Period</label>
-          {isEditing ? (
-            <select
-              value={selectedValidityPeriod}
-              onChange={(e) => handleValidityPeriodChange(Number(e.target.value))}
-              className={`w-full text-xs p-2 ${fieldStyles.input}`}
-            >
-              {VALIDITY_PERIODS.map(period => (
-                <option key={period.months} value={period.months} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>
-                  {period.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div className={`text-sm ${fieldStyles.text}`}>
-              {`${selectedValidityPeriod} Months`}
+        {showCalibrationDetailFields && (
+          <>
+            <div className={`${fieldStyles.container} col-span-2 p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>
+                Idle period (optional) — calibration not expected during this window
+              </label>
+              {isEditing ? (
+                <DatePicker
+                  selectsRange
+                  startDate={parseCalibrationDate(editedCalibration.idlePeriodFrom) ?? undefined}
+                  endDate={parseCalibrationDate(editedCalibration.idlePeriodTo) ?? undefined}
+                  onChange={(update) => {
+                    if (Array.isArray(update)) {
+                      const [start, end] = update;
+                      setEditedCalibration((prev) => ({
+                        ...prev,
+                        idlePeriodFrom: start,
+                        idlePeriodTo: end
+                      }));
+                    }
+                  }}
+                  isClearable
+                  monthsShown={2}
+                  placeholderText="Click and drag range (from → to)"
+                  className={`w-full text-xs p-2 ${fieldStyles.input}`}
+                  wrapperClassName="w-full"
+                  dateFormat="yyyy-MM-dd"
+                />
+              ) : (
+                <div className={`text-sm ${fieldStyles.text}`}>
+                  {(() => {
+                    const from = parseCalibrationDate(currentCalibration?.idlePeriodFrom);
+                    const to = parseCalibrationDate(currentCalibration?.idlePeriodTo);
+                    if (from && to) {
+                      return `${from.toLocaleDateString()} → ${to.toLocaleDateString()}`;
+                    }
+                    if (currentCalibration?.idleCalibrationDuration) {
+                      return currentCalibration.idleCalibrationDuration;
+                    }
+                    return 'Not set';
+                  })()}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Valid Until */}
-        <div className={`${fieldStyles.container} p-2`}>
-          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Valid Until</label>
-          <div className={`text-sm ${fieldStyles.text}`}>
-            {currentCalibration?.calibrationtodate 
-              ? new Date(currentCalibration.calibrationtodate).toLocaleDateString() 
-              : '-'}
-          </div>
-        </div>
-
-        {/* Calibration PO */}
-        <div className={`${fieldStyles.container} p-2`}>
-          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration PO</label>
-          {isEditing ? (  
-            <input
-              type="text"
-              value={editedCalibration.calibrationpo || ''}
-              onChange={(e) => setEditedCalibration(prev => ({
-                ...prev,
-                calibrationpo: e.target.value
-              }))}
-              className={`w-full text-xs p-2 ${fieldStyles.input}`}
-            />
-          ) : (
-            <div className={`text-sm ${fieldStyles.text}`}>
-              {currentCalibration?.calibrationpo || 'Not specified'}
+            {/* Calibrated By */}
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibrated By</label>
+              {isEditing ? (
+                <select
+                  value={editedCalibration.calibratedby || ''}
+                  onChange={(e) => setEditedCalibration(prev => ({
+                    ...prev,
+                    calibratedby: e.target.value
+                  }))}
+                  className={`w-full text-xs p-2 ${fieldStyles.input}`}
+                >
+                  <option value="" className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>Select Company</option>
+                  {calibrationCompanies.map(company => (
+                    <option key={company._id} value={company.name} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className={`text-sm ${fieldStyles.text}`}>
+                  {currentCalibration?.calibratedby || 'Not specified'}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Calibration File */}
-        <div className={`${fieldStyles.container} p-2`}>
-          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration File</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editedCalibration.calibfile || ''}
-              onChange={(e) => setEditedCalibration(prev => ({
-                ...prev,
-                calibfile: e.target.value
-              }))}
-              className={`w-full text-xs p-2 ${fieldStyles.input}`}
-            />
-          ) : (
-            <div className={`text-sm ${fieldStyles.text}`}>
-              {currentCalibration?.calibfile || 'Not specified'}
+            {/* Calibration Date */}
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration Date</label>
+              {isEditing ? (
+                <DatePicker
+                  selected={editedCalibration.calibrationdate}
+                  onChange={handleCalibrationDateChange}
+                  className={`w-full text-xs p-2 ${fieldStyles.input}`}
+                  dateFormat="yyyy-MM-dd"
+                />
+              ) : (
+                <div className={`text-sm ${fieldStyles.text}`}>
+                  {formatDate(currentCalibration?.calibrationdate ?? null)}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Calibration certificate */}
-        <div className={`${fieldStyles.container} p-2`}>
-          <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration Certificate</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editedCalibration.calibcertificate || ''}
-              onChange={(e) => setEditedCalibration(prev => ({
-                ...prev,
-                calibcertificate: e.target.value
-              }))}
-              className={`w-full text-xs p-2 ${fieldStyles.input}`}
-            />
-          ) : (
-            <div className={`text-sm ${fieldStyles.text}`}>
-              {currentCalibration?.calibcertificate || 'Not specified'}
+            {/* Validity Period */}
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Validity Period</label>
+              {isEditing ? (
+                <select
+                  value={selectedValidityPeriod}
+                  onChange={(e) => handleValidityPeriodChange(Number(e.target.value))}
+                  className={`w-full text-xs p-2 ${fieldStyles.input}`}
+                >
+                  {VALIDITY_PERIODS.map(period => (
+                    <option key={period.months} value={period.months} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>
+                      {period.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className={`text-sm ${fieldStyles.text}`}>
+                  {`${selectedValidityPeriod} Months`}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+
+            {/* Valid Until */}
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Valid Until</label>
+              <div className={`text-sm ${fieldStyles.text}`}>
+                {currentCalibration?.calibrationtodate 
+                  ? new Date(currentCalibration.calibrationtodate).toLocaleDateString() 
+                  : '-'}
+              </div>
+            </div>
+
+            {/* Calibration PO */}
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration PO</label>
+              {isEditing ? (  
+                <input
+                  type="text"
+                  value={editedCalibration.calibrationpo || ''}
+                  onChange={(e) => setEditedCalibration(prev => ({
+                    ...prev,
+                    calibrationpo: e.target.value
+                  }))}
+                  className={`w-full text-xs p-2 ${fieldStyles.input}`}
+                />
+              ) : (
+                <div className={`text-sm ${fieldStyles.text}`}>
+                  {currentCalibration?.calibrationpo || 'Not specified'}
+                </div>
+              )}
+            </div>
+
+            {/* Calibration File */}
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration File</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editedCalibration.calibfile || ''}
+                  onChange={(e) => setEditedCalibration(prev => ({
+                    ...prev,
+                    calibfile: e.target.value
+                  }))}
+                  className={`w-full text-xs p-2 ${fieldStyles.input}`}
+                />
+              ) : (
+                <div className={`text-sm ${fieldStyles.text}`}>
+                  {currentCalibration?.calibfile || 'Not specified'}
+                </div>
+              )}
+            </div>
+
+            {/* Calibration certificate */}
+            <div className={`${fieldStyles.container} p-2`}>
+              <label className={`block text-xs font-medium ${fieldStyles.label}`}>Calibration Certificate</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editedCalibration.calibcertificate || ''}
+                  onChange={(e) => setEditedCalibration(prev => ({
+                    ...prev,
+                    calibcertificate: e.target.value
+                  }))}
+                  className={`w-full text-xs p-2 ${fieldStyles.input}`}
+                />
+              ) : (
+                <div className={`text-sm ${fieldStyles.text}`}>
+                  {currentCalibration?.calibcertificate || 'Not specified'}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* History Section */}
@@ -932,6 +1153,17 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
         isSaving={isSaving}
         theme={theme}
         changes={{
+          calibrationRequired: pendingChanges?.calibrationRequired !== currentCalibration?.calibrationRequired
+            ? pendingChanges?.calibrationRequired
+            : undefined,
+          idleCalibrationDuration: pendingChanges?.idleCalibrationDuration !== currentCalibration?.idleCalibrationDuration
+            ? pendingChanges?.idleCalibrationDuration
+            : undefined,
+          idlePeriod:
+            pendingChanges?.idlePeriodFrom !== currentCalibration?.idlePeriodFrom ||
+            pendingChanges?.idlePeriodTo !== currentCalibration?.idlePeriodTo
+              ? `${formatDate(pendingChanges?.idlePeriodFrom ?? null)} → ${formatDate(pendingChanges?.idlePeriodTo ?? null)}`
+              : undefined,
           calibratedby: pendingChanges?.calibratedby !== currentCalibration?.calibratedby 
             ? pendingChanges?.calibratedby 
             : undefined,
@@ -1064,6 +1296,19 @@ function NewCalibrationModal({ isOpen, onConfirm, onCancel, isSaving, calibratio
             <div className="text-sm text-zinc-300 space-y-2">
               <p>Are you sure you want to add this calibration?</p>
               <ul className="list-disc list-inside space-y-1 text-zinc-400">
+                <li>Calibration Requirement: {calibration.calibrationRequired || 'Required'}</li>
+                {(calibration.idlePeriodFrom || calibration.idlePeriodTo) && (
+                  <li>
+                    Idle window:{' '}
+                    {calibration.idlePeriodFrom instanceof Date
+                      ? calibration.idlePeriodFrom.toLocaleDateString()
+                      : String(calibration.idlePeriodFrom ?? '')}{' '}
+                    →{' '}
+                    {calibration.idlePeriodTo instanceof Date
+                      ? calibration.idlePeriodTo.toLocaleDateString()
+                      : String(calibration.idlePeriodTo ?? '')}
+                  </li>
+                )}
                 <li>Calibrated By: {calibration.calibratedby}</li>
                 <li>Date: {calibration.calibrationdate?.toLocaleDateString()}</li>
                 <li>Valid Until: {calibration.calibrationtodate?.toLocaleDateString()}</li>
@@ -1115,6 +1360,10 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
   const [calibrationCompanies, setCalibrationCompanies] = useState<CalibrationCompany[]>([]);
   const [selectedValidityPeriod, setSelectedValidityPeriod] = useState(12);
   const [newCalibration, setNewCalibration] = useState<Calibration>(() => ({
+    calibrationRequired: 'Required',
+    idleCalibrationDuration: '',
+    idlePeriodFrom: null,
+    idlePeriodTo: null,
     calibratedby: '',
     calibrationdate: null,
     calibrationtodate: null,
@@ -1125,6 +1374,8 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
     createdby: 'current-user',
     createdat: new Date(),
   } as Calibration));
+
+  const showModalDetailFields = newCalibration.calibrationRequired !== 'Not Required';
 
   useEffect(() => {
     console.log('Asset number changed in modal:', assetnumber);
@@ -1155,19 +1406,25 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
   const handleSave = async () => {
     try {
       console.log('Saving calibration with assetnumber:', newCalibration.assetnumber);
-      
-      if (!newCalibration.calibratedby) {
-        setError('Please select a calibration company');
-        return;
-      }
-      if (!newCalibration.calibrationdate) {
-        setError('Please select a calibration date');
-        return;
-      }
+      setError(null);
+
+      const normalizedCalibration = {
+        ...newCalibration,
+        calibratedby: newCalibration.calibrationRequired === 'Not Required' ? '' : (newCalibration.calibratedby ?? ''),
+        calibrationdate: newCalibration.calibrationRequired === 'Not Required' ? null : newCalibration.calibrationdate,
+        calibrationtodate: newCalibration.calibrationRequired === 'Not Required' ? null : newCalibration.calibrationtodate,
+        calibrationpo: newCalibration.calibrationRequired === 'Not Required' ? '' : newCalibration.calibrationpo,
+        calibfile: newCalibration.calibrationRequired === 'Not Required' ? '' : newCalibration.calibfile,
+        calibcertificate: newCalibration.calibrationRequired === 'Not Required' ? '' : newCalibration.calibcertificate,
+        idlePeriodFrom: newCalibration.calibrationRequired === 'Not Required' ? null : newCalibration.idlePeriodFrom,
+        idlePeriodTo: newCalibration.calibrationRequired === 'Not Required' ? null : newCalibration.idlePeriodTo,
+        idleCalibrationDuration:
+          newCalibration.calibrationRequired === 'Not Required' ? '' : newCalibration.idleCalibrationDuration
+      };
 
       const calibrationWithAssetNumber = {
-        ...newCalibration,
-        assetnumber: newCalibration.assetnumber
+        ...normalizedCalibration,
+        assetnumber: normalizedCalibration.assetnumber
       };
 
       console.log('Final payload:', calibrationWithAssetNumber);
@@ -1211,141 +1468,211 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1">
-              Calibrated By
+              Calibration Requirement
             </label>
             <select
-              value={newCalibration.calibratedby}
-              onChange={(e) => setNewCalibration(prev => ({
-                ...prev,
-                calibratedby: e.target.value
-              }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-            >
-              <option value="">Select Company</option>
-              {calibrationCompanies.map(company => (
-                <option key={company._id} value={company.name}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">
-              Calibration Date
-            </label>
-            <DatePicker
-              selected={newCalibration.calibrationdate}
-              onChange={(date: Date | null) => {
-                if (date) {
-                  const validUntil = new Date(date);
-                  validUntil.setMonth(validUntil.getMonth() + selectedValidityPeriod);
-                  setNewCalibration(prev => ({
-                    ...prev,
-                    calibrationdate: date,
-                    calibrationtodate: validUntil
-                  }));
-                }
-              }}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-              dateFormat="yyyy-MM-dd"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">
-              Validity Period
-            </label>
-            <select
-              value={selectedValidityPeriod}
+              value={newCalibration.calibrationRequired || 'Required'}
               onChange={(e) => {
-                const months = Number(e.target.value);
-                setSelectedValidityPeriod(months);
-                if (newCalibration.calibrationdate) {
-                  const validUntil = new Date(newCalibration.calibrationdate);
-                  validUntil.setMonth(validUntil.getMonth() + months);
-                  setNewCalibration(prev => ({
-                    ...prev,
-                    calibrationtodate: validUntil
-                  }));
-                }
+                const v = e.target.value as 'Required' | 'Not Required';
+                setNewCalibration((prev) => ({
+                  ...prev,
+                  calibrationRequired: v,
+                  ...(v === 'Not Required'
+                    ? {
+                        calibratedby: '',
+                        calibrationdate: null,
+                        calibrationtodate: null,
+                        calibrationpo: '',
+                        calibfile: '',
+                        calibcertificate: '',
+                        idlePeriodFrom: null,
+                        idlePeriodTo: null,
+                        idleCalibrationDuration: ''
+                      }
+                    : {})
+                }));
               }}
               className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
             >
-              {VALIDITY_PERIODS.map(period => (
-                <option key={period.months} value={period.months}>
-                  {period.label}
-                </option>
-              ))}
+              <option value="Required">Required</option>
+              <option value="Not Required">Not Required</option>
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">
-              Valid Until
-            </label>
-            <DatePicker
-              selected={newCalibration.calibrationtodate}
-              onChange={(date: Date | null) => {
-                if (date) {
-                  setNewCalibration(prev => ({
+          {!showModalDetailFields && (
+            <p className="text-xs text-zinc-400">
+              Other calibration fields are hidden while requirement is &quot;Not Required&quot;.
+            </p>
+          )}
+
+          {showModalDetailFields && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Idle period (optional) — click range (from → to)
+                </label>
+                <DatePicker
+                  selectsRange
+                  startDate={parseCalibrationDate(newCalibration.idlePeriodFrom) ?? undefined}
+                  endDate={parseCalibrationDate(newCalibration.idlePeriodTo) ?? undefined}
+                  onChange={(update) => {
+                    if (Array.isArray(update)) {
+                      const [start, end] = update;
+                      setNewCalibration((prev) => ({
+                        ...prev,
+                        idlePeriodFrom: start,
+                        idlePeriodTo: end
+                      }));
+                    }
+                  }}
+                  isClearable
+                  monthsShown={2}
+                  placeholderText="Select idle window"
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  wrapperClassName="w-full"
+                  dateFormat="yyyy-MM-dd"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Calibrated By
+                </label>
+                <select
+                  value={newCalibration.calibratedby}
+                  onChange={(e) => setNewCalibration(prev => ({
                     ...prev,
-                    calibrationtodate: date
-                  }));
-                }
-              }}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-              dateFormat="yyyy-MM-dd"
-              minDate={newCalibration.calibrationdate || undefined}
-            />
-          </div>
+                    calibratedby: e.target.value
+                  }))}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                >
+                  <option value="">Select Company</option>
+                  {calibrationCompanies.map(company => (
+                    <option key={company._id} value={company.name}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">
-              Calibration PO
-            </label>
-            <input
-              type="text"
-              value={newCalibration.calibrationpo}
-              onChange={(e) => setNewCalibration(prev => ({
-                ...prev,
-                calibrationpo: e.target.value
-              }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Calibration Date
+                </label>
+                <DatePicker
+                  selected={newCalibration.calibrationdate}
+                  onChange={(date: Date | null) => {
+                    if (date) {
+                      const validUntil = new Date(date);
+                      validUntil.setMonth(validUntil.getMonth() + selectedValidityPeriod);
+                      setNewCalibration(prev => ({
+                        ...prev,
+                        calibrationdate: date,
+                        calibrationtodate: validUntil
+                      }));
+                    }
+                  }}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  dateFormat="yyyy-MM-dd"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">
-              Calibration Certificate
-            </label>
-            <input
-              type="text"
-              value={newCalibration.calibcertificate}
-              onChange={(e) => setNewCalibration(prev => ({
-                ...prev,
-                calibcertificate: e.target.value
-              }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-              placeholder="Enter certificate number"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Validity Period
+                </label>
+                <select
+                  value={selectedValidityPeriod}
+                  onChange={(e) => {
+                    const months = Number(e.target.value);
+                    setSelectedValidityPeriod(months);
+                    if (newCalibration.calibrationdate) {
+                      const validUntil = new Date(newCalibration.calibrationdate);
+                      validUntil.setMonth(validUntil.getMonth() + months);
+                      setNewCalibration(prev => ({
+                        ...prev,
+                        calibrationtodate: validUntil
+                      }));
+                    }
+                  }}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                >
+                  {VALIDITY_PERIODS.map(period => (
+                    <option key={period.months} value={period.months}>
+                      {period.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">
-              Calibration File
-            </label>
-            <input
-              type="text"
-              value={newCalibration.calibfile}
-              onChange={(e) => setNewCalibration(prev => ({
-                ...prev,
-                calibfile: e.target.value
-              }))}
-              className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
-              placeholder="Enter file reference"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Valid Until
+                </label>
+                <DatePicker
+                  selected={newCalibration.calibrationtodate}
+                  onChange={(date: Date | null) => {
+                    if (date) {
+                      setNewCalibration(prev => ({
+                        ...prev,
+                        calibrationtodate: date
+                      }));
+                    }
+                  }}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  dateFormat="yyyy-MM-dd"
+                  minDate={newCalibration.calibrationdate || undefined}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Calibration PO
+                </label>
+                <input
+                  type="text"
+                  value={newCalibration.calibrationpo}
+                  onChange={(e) => setNewCalibration(prev => ({
+                    ...prev,
+                    calibrationpo: e.target.value
+                  }))}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Calibration Certificate
+                </label>
+                <input
+                  type="text"
+                  value={newCalibration.calibcertificate}
+                  onChange={(e) => setNewCalibration(prev => ({
+                    ...prev,
+                    calibcertificate: e.target.value
+                  }))}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  placeholder="Enter certificate number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Calibration File
+                </label>
+                <input
+                  type="text"
+                  value={newCalibration.calibfile}
+                  onChange={(e) => setNewCalibration(prev => ({
+                    ...prev,
+                    calibfile: e.target.value
+                  }))}
+                  className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
+                  placeholder="Enter file reference"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex gap-3 mt-6">
@@ -1374,4 +1701,4 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
       </div>
     </div>
   );
-} 
+}

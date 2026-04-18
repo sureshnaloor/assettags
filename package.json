@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate:calibration-required": "node scripts/backfill-calibration-required.js"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.7.4",

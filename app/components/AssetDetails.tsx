@@ -9,39 +9,6 @@ import { useSession } from 'next-auth/react';
 
 export type Theme = 'default' | 'glassmorphic' | 'light';
 
-// Define separate category constants
-const MME_CATEGORIES = [
-  'Select Category',
-  'Test Equipment',
-  'Measurement Equipment',
-  'Calibration Equipment',
-  // ... MME specific categories
-];
-
-const FIXED_ASSET_CATEGORIES = [
-  'Select Category',
-  'Office Equipment',
-  'Furniture',
-  'IT Equipment',
-  'Vehicles',
-  // ... Fixed asset specific categories
-];
-
-const MME_SUBCATEGORIES: { [key: string]: string[] } = {
-  'Test Equipment': ['Oscilloscope', 'Signal Generator', 'Power Supply'],
-  'Measurement Equipment': ['Multimeter', 'LCR Meter', 'Spectrum Analyzer'],
-  'Calibration Equipment': ['Temperature Calibrator', 'Pressure Calibrator'],
-  // ... MME specific subcategories
-};
-
-const FIXED_ASSET_SUBCATEGORIES: { [key: string]: string[] } = {
-  'Office Equipment': ['Printer', 'Scanner', 'Copier'],
-  'Furniture': ['Desk', 'Chair', 'Cabinet'],
-  'IT Equipment': ['Desktop', 'Laptop', 'Server'],
-  'Vehicles': ['Car', 'Van', 'Truck'],
-  // ... Fixed asset specific subcategories
-};
-
 const ASSET_STATUSES = [
   'Select Status',   // Default option
   'Active',
@@ -194,6 +161,11 @@ interface Subcategory {
   name: string;
 }
 
+interface Manufacturer {
+  _id: string;
+  name: string;
+}
+
 export default function AssetDetails({ asset, onUpdate, theme = 'default' }: AssetDetailsProps) {
   const pathname = usePathname();
   const isFixedAsset = pathname?.includes('/fixedasset/') ?? false;
@@ -243,6 +215,7 @@ export default function AssetDetails({ asset, onUpdate, theme = 'default' }: Ass
   const [editedAsset, setEditedAsset] = useState<AssetData>(asset);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -290,9 +263,29 @@ export default function AssetDetails({ asset, onUpdate, theme = 'default' }: Ass
     fetchSubcategories();
   }, [editedAsset?.assetcategory, isFixedAsset]);
 
+  useEffect(() => {
+    const fetchManufacturers = async () => {
+      if (isFixedAsset) {
+        setManufacturers([]);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/manufacturers/mme');
+        if (!response.ok) throw new Error('Failed to fetch manufacturers');
+        const data = await response.json();
+        setManufacturers([{ _id: '0', name: 'Select Manufacturer' }, ...data]);
+      } catch (error) {
+        console.error('Error fetching manufacturers:', error);
+        setError('Failed to load manufacturers');
+      }
+    };
+
+    fetchManufacturers();
+  }, [isFixedAsset]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [editorContent, setEditorContent] = useState(asset.assetnotes);
-  const [availableSubcategories, setAvailableSubcategories] = useState<string[]>(['Select Subcategory']);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<any>(null);
 
@@ -652,15 +645,45 @@ export default function AssetDetails({ asset, onUpdate, theme = 'default' }: Ass
         <div className={`${fieldStyles.container} p-2`}>
           <label className={`block text-xs font-medium ${fieldStyles.label}`}>Manufacturer</label>
           {isEditing ? (
-            <input
-              type="text"
-              value={editedAsset.assetmanufacturer || ''}
-              onChange={(e) => setEditedAsset(prev => ({
-                ...prev,
-                assetmanufacturer: e.target.value
-              }))}
-              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
-            />
+            isFixedAsset ? (
+              <input
+                type="text"
+                value={editedAsset.assetmanufacturer || ''}
+                onChange={(e) => setEditedAsset(prev => ({
+                  ...prev,
+                  assetmanufacturer: e.target.value
+                }))}
+                className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
+              />
+            ) : (
+              <select
+                value={editedAsset.assetmanufacturer || 'Select Manufacturer'}
+                onChange={(e) =>
+                  setEditedAsset((prev) => ({
+                    ...prev,
+                    assetmanufacturer:
+                      e.target.value === 'Select Manufacturer' ? '' : e.target.value
+                  }))
+                }
+                className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
+              >
+                {manufacturers.map((manufacturer) => (
+                  <option
+                    key={manufacturer._id}
+                    value={manufacturer.name}
+                    className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}
+                  >
+                    {manufacturer.name}
+                  </option>
+                ))}
+                {editedAsset.assetmanufacturer &&
+                  !manufacturers.some(
+                    (manufacturer) => manufacturer.name === editedAsset.assetmanufacturer
+                  ) && (
+                    <option value={editedAsset.assetmanufacturer}>{editedAsset.assetmanufacturer}</option>
+                  )}
+              </select>
+            )
           ) : (
             <div className={`text-[12px] ${fieldStyles.text}`}>{asset.assetmanufacturer}</div>
           )}

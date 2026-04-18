@@ -10,8 +10,14 @@ import {
 } from 'lucide-react';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
 
+type SidebarSubLink = {
+  name: string;
+  href: string;
+  isGroupLabel?: boolean;
+};
+
 // Map of navigation sections to their sub-links
-const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
+const subLinksMap: Record<string, SidebarSubLink[]> = {
   // dashboard: [
   //   { name: 'Dashboard-1', href: '#' },
   //   { name: 'Dashboard-2', href: '#' },
@@ -36,6 +42,10 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
     { name: 'Search by Subcategory', href: '/mme-search-by-subcategory' },
     { name: 'Search by Year of Acquisition', href: '/mme-search-by-year-of-acquisition' },
     { name: 'Search by Location', href: 'mme/search-by-location' },
+    { name: 'MME Master Data', href: '#', isGroupLabel: true },
+    { name: 'Category', href: '/mme/category' },
+    { name: 'Subcategory', href: '/mme/subcategory' },
+    { name: 'Manufacturer', href: '/mme/manufacturer' },
   ],
   assets: [
     { name: 'Assets', href: '#' },
@@ -46,7 +56,11 @@ const subLinksMap: Record<string, Array<{ name: string; href: string }>> = {
     { name: 'Search by category', href: '/assets-search-by-category' },
     { name: 'Search by subcategory', href: '/assets-search-by-subcategory' },
     { name: 'Search by year of acquisition', href: '/assets-search-by-year-of-acquisition' },
-    { name: 'Search by Location', href: 'fixedasset/search-by-location' },
+    { name: 'Search by Location', href: '/fixedasset/search-by-location' },
+    { name: 'Fixed Asset Master Data', href: '#', isGroupLabel: true },
+    { name: 'Category', href: '/fixedasset/category' },
+    { name: 'Subcategory', href: '/fixedasset/subcategory' },
+    { name: 'Manufacturer', href: '/fixedasset/manufacturer' },
   ],
   tools: [
     { name: 'Tools-1', href: '#' },
@@ -194,6 +208,16 @@ export default function Sidebar() {
               </div>
               {subLinks.map((link, idx) => {
                 const isActive = pathname === link.href;
+                if (link.isGroupLabel) {
+                  return (
+                    <div
+                      key={link.name}
+                      className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-teal-400/90"
+                    >
+                      {link.name}
+                    </div>
+                  );
+                }
                 
                 return (
                   <Link

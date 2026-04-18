@@ -61,6 +61,12 @@ export interface AssetAccessory {
 export interface Calibration {
   _id?: string;
   assetnumber: string;
+  calibrationRequired?: 'Required' | 'Not Required';
+  /** @deprecated Prefer idlePeriodFrom / idlePeriodTo */
+  idleCalibrationDuration?: string;
+  /** Optional idle window when calibration is Required — equipment not expected to be calibrated during this range */
+  idlePeriodFrom?: Date | string | null;
+  idlePeriodTo?: Date | string | null;
   calibratedby: string;
   calibrationdate: Date | null;
   calibrationtodate: Date | null;
