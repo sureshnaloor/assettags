@@ -7,6 +7,21 @@ interface LayoutWrapperProps {
   children: React.ReactNode;
 }
 
+/** Single-segment routes under /fixedasset that are app pages (not asset detail) — keep main sidebar visible. */
+const FIXED_ASSET_LIST_ROUTES = new Set([
+  'category',
+  'subcategory',
+  'manufacturer',
+  'without-custodian',
+  'search-by-location',
+]);
+
+function isFixedAssetAssetDetailPath(pathname: string): boolean {
+  const m = pathname.match(/^\/fixedasset\/([^/]+)$/);
+  if (!m) return false;
+  return !FIXED_ASSET_LIST_ROUTES.has(m[1]);
+}
+
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
   
@@ -16,7 +31,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
                            pathname !== '/dashboard' &&
                            pathname !== '/landing' &&
                            !pathname.match(/^\/asset\/[^\/]+$/) && 
-                           !pathname.match(/^\/fixedasset\/[^\/]+$/) &&
+                           !isFixedAssetAssetDetailPath(pathname) &&
                            !pathname.match(/^\/tools\/[^\/]+$/);
 
   if (!shouldShowSidebar) {

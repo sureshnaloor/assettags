@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
+import LocationCitiesTab from './LocationCitiesTab';
 
 interface Location {
   _id: string;
@@ -17,6 +18,7 @@ interface Location {
 
 export default function LocationsManagement() {
   const { theme } = useAppTheme();
+  const [activeTab, setActiveTab] = useState<'cities' | 'premises'>('cities');
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,11 +74,7 @@ export default function LocationsManagement() {
 
   const styles = getThemeStyles();
 
-  useEffect(() => {
-    fetchLocations();
-  }, []);
-
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -90,7 +88,12 @@ export default function LocationsManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'premises') return;
+    fetchLocations();
+  }, [activeTab, fetchLocations]);
 
   const handleAddOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,14 +178,41 @@ export default function LocationsManagement() {
     setShowForm(false);
   };
 
+  const tabBtn = (id: 'cities' | 'premises', label: string) => (
+    <button
+      type="button"
+      onClick={() => setActiveTab(id)}
+      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+        activeTab === id
+          ? `${styles.button} shadow`
+          : `${styles.buttonSecondary}`
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className={`min-h-screen ${styles.bg} p-4 sm:p-6 lg:p-8`}>
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+        <div className="flex justify-between items-start gap-4 mb-6 flex-wrap">
+          <div>
+            <h1 className={`text-4xl font-bold ${styles.text} mb-2`}>Locations</h1>
+            <p className={styles.textMuted}>
+              City names for custody and projects, and physical premises records.
+            </p>
+          </div>
+          <div className="flex gap-2">{tabBtn('cities', 'City lists')} {tabBtn('premises', 'Premises')}</div>
+        </div>
+
+        {activeTab === 'cities' && <LocationCitiesTab />}
+
+        {activeTab === 'premises' && (
+          <>
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className={`text-4xl font-bold ${styles.text} mb-2`}>Locations Management</h1>
-            <p className={styles.textMuted}>Add, edit, and delete locations</p>
+            <h2 className={`text-2xl font-bold ${styles.text} mb-1`}>Physical premises</h2>
+            <p className={styles.textMuted}>Add, edit, and delete site / room records</p>
           </div>
           {!showForm && (
             <button
@@ -405,6 +435,8 @@ export default function LocationsManagement() {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
     </div>
   );

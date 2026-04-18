@@ -37,4 +37,10 @@ export interface Project {
   _id: string;
   wbs: string;
   projectname: string;
+  projectManagerEmpNo?: string;
+  projectManagerName?: string;
+  department?: string;
+  locationCity?: string;
+  startDate?: string | Date;
+  endDate?: string | Date;
 }

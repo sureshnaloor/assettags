@@ -6,15 +6,6 @@ import AsyncSelect from 'react-select/async';
 import DatePicker from 'react-datepicker';
 import { Employee, Project, Custody } from '@/types/custody';
 
-// Add proper type definition for params
-// Remove this interface as we'll use useParams
-interface PageProps {
-  params: {
-    assetnumber: string;
-  };
-}
-
-// Update the component definition
 export default function NewCustodyPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Array<{
@@ -34,12 +25,15 @@ export default function NewCustodyPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [locationType, setLocationType] = useState<'warehouse' | 'department' | 'camp/office'>('warehouse');
-  
+  const [warehouseCityNames, setWarehouseCityNames] = useState<string[]>([]);
+  const [departmentCityNames, setDepartmentCityNames] = useState<string[]>([]);
+  const [locationCitiesLoaded, setLocationCitiesLoaded] = useState(false);
+
   // Keep only one formData declaration
   const [formData, setFormData] = useState<Partial<Custody>>({
     assetnumber: params.assetnumber,
     locationType: 'warehouse',
-    warehouseCity: 'Dammam',
+    warehouseCity: undefined,
     custodyfrom: new Date(),
     custodyto: null
   });
@@ -47,6 +41,34 @@ export default function NewCustodyPage() {
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/location-cities')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setWarehouseCityNames((data.warehouse || []).map((x: { name: string }) => x.name));
+        setDepartmentCityNames((data.department || []).map((x: { name: string }) => x.name));
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLocationCitiesLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (warehouseCityNames.length === 0) return;
+    setFormData((prev) => {
+      const w = prev.warehouseCity;
+      const next =
+        w && warehouseCityNames.includes(String(w)) ? w : warehouseCityNames[0];
+      return { ...prev, warehouseCity: next as Custody['warehouseCity'] };
+    });
+  }, [warehouseCityNames]);
 
   // Animated particle background
   useEffect(() => {
@@ -185,6 +207,14 @@ export default function NewCustodyPage() {
         return;
       }
 
+      if (
+        locationType === 'warehouse' &&
+        (!formData.warehouseCity || !String(formData.warehouseCity).trim())
+      ) {
+        setError('Select a warehouse city, or add cities under Admin → Locations → City lists');
+        return;
+      }
+
       const response = await fetch(`/api/custody/${params.assetnumber}`, {
         method: 'POST',
         headers: {
@@ -286,12 +316,12 @@ export default function NewCustodyPage() {
                       type="radio"
                       value="warehouse"
                       checked={locationType === 'warehouse'}
-                      onChange={(e) => {
+                      onChange={() => {
                         setLocationType('warehouse');
-                        setFormData(prev => ({
+                        setFormData((prev) => ({
                           ...prev,
                           locationType: 'warehouse',
-                          warehouseCity: 'Dammam'
+                          warehouseCity: (warehouseCityNames[0] ?? prev.warehouseCity) as Custody['warehouseCity'],
                         }));
                       }}
                       className="mr-2"
@@ -340,34 +370,33 @@ export default function NewCustodyPage() {
                     <label className="block text-sm font-medium text-white mb-1">
                       Warehouse Location
                     </label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center text-white">
-                        <input
-                          type="radio"
-                          value="Dammam"
-                          checked={formData.warehouseCity === 'Dammam'}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            warehouseCity: 'Dammam'
-                          }))}
-                          className="mr-2"
-                        />
-                        Dammam
-                      </label>
-                      <label className="flex items-center text-white">
-                        <input
-                          type="radio"
-                          value="Jubail"
-                          checked={formData.warehouseCity === 'Jubail'}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            warehouseCity: 'Jubail'
-                          }))}
-                          className="mr-2"
-                        />
-                        Jubail
-                      </label>
-                    </div>
+                    {!locationCitiesLoaded ? (
+                      <p className="text-sm text-white/60">Loading cities…</p>
+                    ) : warehouseCityNames.length === 0 ? (
+                      <p className="text-sm text-amber-200/90">
+                        No warehouse cities configured. Add them under Admin → Locations → City lists.
+                      </p>
+                    ) : (
+                      <div className="flex gap-4 flex-wrap">
+                        {warehouseCityNames.map((city) => (
+                          <label key={city} className="flex items-center text-white">
+                            <input
+                              type="radio"
+                              value={city}
+                              checked={formData.warehouseCity === city}
+                              onChange={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  warehouseCity: city as Custody['warehouseCity'],
+                                }))
+                              }
+                              className="mr-2"
+                            />
+                            {city}
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-white mb-1">
@@ -401,20 +430,11 @@ export default function NewCustodyPage() {
                       className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                     >
                       <option value="" className="bg-[#1a2332]">Select Location</option>
-                      <option value="Dammam">Dammam</option>
-                      <option value="Jubail">Jubail</option>
-                      <option value="Riyadh">Riyadh</option>
-                      <option value="Abha">Abha</option>
-                      <option value="Mecca">Mecca</option>
-                      <option value="Al-Qassim">Al-Qassim</option>
-                      <option value="Al-Ahsa">Al-Ahsa</option>
-                      <option value="Al-Baha">Al-Baha</option>
-                      <option value="Al-Jouf">Al-Jouf</option>
-                      <option value="Al-Madinah">Al-Madinah</option>
-                      <option value="Al-Hail">Al-Hail</option>
-                      <option value="Al-Kharj">Al-Kharj</option>
-                      <option value="Yanbu">Yanbu</option>
-                      <option value="Jeddah">Jeddah</option>
+                      {departmentCityNames.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -486,11 +506,11 @@ export default function NewCustodyPage() {
                       className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
                     >
                       <option value="" className="bg-[#1a2332]">Select Location</option>
-                      <option value="Dammam">Dammam</option>
-                      <option value="Jubail">Jubail</option>
-                      <option value="Riyadh">Riyadh</option>
-                      <option value="Abha">Abha</option>
-                      <option value="Mecca">Mecca</option>
+                      {departmentCityNames.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>

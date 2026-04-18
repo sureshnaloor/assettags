@@ -265,13 +265,9 @@ export default function AssetDetails({ asset, onUpdate, theme = 'default' }: Ass
 
   useEffect(() => {
     const fetchManufacturers = async () => {
-      if (isFixedAsset) {
-        setManufacturers([]);
-        return;
-      }
-
       try {
-        const response = await fetch('/api/manufacturers/mme');
+        const endpoint = isFixedAsset ? '/api/manufacturers/fixedasset' : '/api/manufacturers/mme';
+        const response = await fetch(endpoint);
         if (!response.ok) throw new Error('Failed to fetch manufacturers');
         const data = await response.json();
         setManufacturers([{ _id: '0', name: 'Select Manufacturer' }, ...data]);
@@ -645,45 +641,33 @@ export default function AssetDetails({ asset, onUpdate, theme = 'default' }: Ass
         <div className={`${fieldStyles.container} p-2`}>
           <label className={`block text-xs font-medium ${fieldStyles.label}`}>Manufacturer</label>
           {isEditing ? (
-            isFixedAsset ? (
-              <input
-                type="text"
-                value={editedAsset.assetmanufacturer || ''}
-                onChange={(e) => setEditedAsset(prev => ({
+            <select
+              value={editedAsset.assetmanufacturer || 'Select Manufacturer'}
+              onChange={(e) =>
+                setEditedAsset((prev) => ({
                   ...prev,
-                  assetmanufacturer: e.target.value
-                }))}
-                className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
-              />
-            ) : (
-              <select
-                value={editedAsset.assetmanufacturer || 'Select Manufacturer'}
-                onChange={(e) =>
-                  setEditedAsset((prev) => ({
-                    ...prev,
-                    assetmanufacturer:
-                      e.target.value === 'Select Manufacturer' ? '' : e.target.value
-                  }))
-                }
-                className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
-              >
-                {manufacturers.map((manufacturer) => (
-                  <option
-                    key={manufacturer._id}
-                    value={manufacturer.name}
-                    className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}
-                  >
-                    {manufacturer.name}
-                  </option>
-                ))}
-                {editedAsset.assetmanufacturer &&
-                  !manufacturers.some(
-                    (manufacturer) => manufacturer.name === editedAsset.assetmanufacturer
-                  ) && (
-                    <option value={editedAsset.assetmanufacturer}>{editedAsset.assetmanufacturer}</option>
-                  )}
-              </select>
-            )
+                  assetmanufacturer:
+                    e.target.value === 'Select Manufacturer' ? '' : e.target.value
+                }))
+              }
+              className={`w-full text-sm rounded-xl p-2 ${fieldStyles.input}`}
+            >
+              {manufacturers.map((manufacturer) => (
+                <option
+                  key={manufacturer._id}
+                  value={manufacturer.name}
+                  className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}
+                >
+                  {manufacturer.name}
+                </option>
+              ))}
+              {editedAsset.assetmanufacturer &&
+                !manufacturers.some(
+                  (manufacturer) => manufacturer.name === editedAsset.assetmanufacturer
+                ) && (
+                  <option value={editedAsset.assetmanufacturer}>{editedAsset.assetmanufacturer}</option>
+                )}
+            </select>
           ) : (
             <div className={`text-[12px] ${fieldStyles.text}`}>{asset.assetmanufacturer}</div>
           )}

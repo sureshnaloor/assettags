@@ -22,9 +22,20 @@ interface CustodyFormModalProps {
   onClose: () => void;
   onSave: (custody: Custody) => void;
   assetnumber: string;
+  warehouseCityNames: string[];
+  departmentCityNames: string[];
+  locationCitiesLoaded: boolean;
 }
 
-function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormModalProps) {
+function CustodyFormModal({
+  isOpen,
+  onClose,
+  onSave,
+  assetnumber,
+  warehouseCityNames,
+  departmentCityNames,
+  locationCitiesLoaded,
+}: CustodyFormModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -35,10 +46,20 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
   const [formData, setFormData] = useState<Partial<Custody>>({
     assetnumber,
     locationType: 'warehouse',
-    warehouseCity: 'Dammam',
+    warehouseCity: undefined,
     custodyfrom: new Date(),
     custodyto: null
   });
+
+  useEffect(() => {
+    if (!isOpen || warehouseCityNames.length === 0) return;
+    setFormData((prev) => {
+      const w = prev.warehouseCity;
+      const next =
+        w && warehouseCityNames.includes(String(w)) ? w : warehouseCityNames[0];
+      return { ...prev, warehouseCity: next as Custody['warehouseCity'] };
+    });
+  }, [isOpen, warehouseCityNames]);
 
   // Fetch employees
   useEffect(() => {
@@ -107,6 +128,14 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
       // Basic validation
       if (!formData.employeenumber || !formData.custodyfrom) {
         setError('Employee and From Date are required');
+        return;
+      }
+
+      if (
+        locationType === 'warehouse' &&
+        (!formData.warehouseCity || !String(formData.warehouseCity).trim())
+      ) {
+        setError('Select a warehouse city, or add cities under Admin → Locations → City lists');
         return;
       }
 
@@ -225,12 +254,12 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
                       type="radio"
                       value="warehouse"
                       checked={locationType === 'warehouse'}
-                      onChange={(e) => {
+                      onChange={() => {
                         setLocationType('warehouse');
-                        setFormData(prev => ({
+                        setFormData((prev) => ({
                           ...prev,
                           locationType: 'warehouse',
-                          warehouseCity: 'Dammam'
+                          warehouseCity: (warehouseCityNames[0] ?? prev.warehouseCity) as Custody['warehouseCity'],
                         }));
                       }}
                       className="mr-2"
@@ -279,34 +308,33 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
                     <label className="block text-sm font-medium text-zinc-300 mb-1">
                       Warehouse Location
                     </label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="Dammam"
-                          checked={formData.warehouseCity === 'Dammam'}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            warehouseCity: 'Dammam'
-                          }))}
-                          className="mr-2"
-                        />
-                        Dammam
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="Jubail"
-                          checked={formData.warehouseCity === 'Jubail'}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            warehouseCity: 'Jubail'
-                          }))}
-                          className="mr-2"
-                        />
-                        Jubail
-                      </label>
-                    </div>
+                    {!locationCitiesLoaded ? (
+                      <p className="text-sm text-zinc-400">Loading cities…</p>
+                    ) : warehouseCityNames.length === 0 ? (
+                      <p className="text-sm text-amber-200/90">
+                        No warehouse cities configured. Add them under Admin → Locations → City lists.
+                      </p>
+                    ) : (
+                      <div className="flex gap-4 flex-wrap">
+                        {warehouseCityNames.map((city) => (
+                          <label key={city} className="flex items-center">
+                            <input
+                              type="radio"
+                              value={city}
+                              checked={formData.warehouseCity === city}
+                              onChange={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  warehouseCity: city as Custody['warehouseCity'],
+                                }))
+                              }
+                              className="mr-2"
+                            />
+                            {city}
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-zinc-300 mb-1">
@@ -341,20 +369,11 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
                       className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
                     >
                       <option value="">Select Location</option>
-                      <option value="Dammam">Dammam</option>
-                      <option value="Jubail">Jubail</option>
-                      <option value="Riyadh">Riyadh</option>
-                      <option value="Abha">Abha</option>
-                      <option value="Mecca">Mecca</option>                      
-                      <option value="Al-Qassim">Al-Qassim</option>
-                      <option value="Al-Ahsa">Al-Ahsa</option>
-                      <option value="Al-Baha">Al-Baha</option>
-                      <option value="Al-Jouf">Al-Jouf</option>
-                      <option value="Al-Madinah">Al-Madinah</option>
-                      <option value="Al-Hail">Al-Hail</option>
-                      <option value="Al-Kharj">Al-Kharj</option>
-                      <option value="Yanbu">Yanbu</option>
-                      <option value="Jeddah">Jeddah</option>
+                      {(departmentCityNames.length ? departmentCityNames : []).map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -436,11 +455,11 @@ function CustodyFormModal({ isOpen, onClose, onSave, assetnumber }: CustodyFormM
                       className="w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2"
                     >
                       <option value="">Select Location</option>
-                      <option value="Dammam">Dammam</option>
-                      <option value="Jubail">Jubail</option>
-                      <option value="Riyadh">Riyadh</option>
-                      <option value="Abha">Abha</option>
-                      <option value="Mecca">Mecca</option>
+                      {(departmentCityNames.length ? departmentCityNames : []).map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -549,6 +568,27 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
   const [showErrorCorrectionModal, setShowErrorCorrectionModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warehouseCityNames, setWarehouseCityNames] = useState<string[]>([]);
+  const [departmentCityNames, setDepartmentCityNames] = useState<string[]>([]);
+  const [locationCitiesLoaded, setLocationCitiesLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/location-cities')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data || cancelled) return;
+        setWarehouseCityNames((data.warehouse || []).map((x: { name: string }) => x.name));
+        setDepartmentCityNames((data.department || []).map((x: { name: string }) => x.name));
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLocationCitiesLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Theme-based style helpers
   const getContainerStyles = () => {
@@ -878,15 +918,26 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
               <>
                 <div>
                   <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Warehouse City</label>
-                  <select
-                    value={warehouseCity}
-                    onChange={(e) => setWarehouseCity(e.target.value)}
-                    className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
-                  >
-                    <option value="" className="bg-slate-800 text-white">Select</option>
-                    <option value="Dammam" className="bg-slate-800 text-white">Dammam</option>
-                    <option value="Jubail" className="bg-slate-800 text-white">Jubail</option>
-                  </select>
+                  {!locationCitiesLoaded ? (
+                    <p className={`text-sm ${modalStyles.textSecondary}`}>Loading cities…</p>
+                  ) : warehouseCityNames.length === 0 ? (
+                    <p className="text-sm text-amber-200/90">
+                      No warehouse cities configured. Add them under Admin → Locations → City lists.
+                    </p>
+                  ) : (
+                    <select
+                      value={warehouseCity}
+                      onChange={(e) => setWarehouseCity(e.target.value)}
+                      className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
+                    >
+                      <option value="" className="bg-slate-800 text-white">Select</option>
+                      {warehouseCityNames.map((city) => (
+                        <option key={city} value={city} className="bg-slate-800 text-white">
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <div>
                   <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>Location</label>
@@ -927,13 +978,18 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
                   <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>
                     {locationType === 'department' ? 'Department Location' : 'Location'}
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={departmentLocation}
                     onChange={(e) => setDepartmentLocation(e.target.value)}
-                    className={`w-full text-sm rounded-xl p-2 ${modalStyles.input}`}
-                    placeholder={locationType === 'department' ? 'City/Area' : 'Location'}
-                  />
+                    className={`w-full text-sm rounded-xl p-2 ${modalStyles.select}`}
+                  >
+                    <option value="">Select Location</option>
+                    {(departmentCityNames.length ? departmentCityNames : []).map((city) => (
+                      <option key={city} value={city} className="bg-slate-800 text-white">
+                        {city}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 {locationType === 'camp/office' && (
                   <div>
@@ -1244,6 +1300,9 @@ export default function CustodyDetails({ currentCustody, custodyHistory, onUpdat
         onClose={() => setShowNewCustodyModal(false)}
         onSave={onUpdate}
         assetnumber={assetnumber}
+        warehouseCityNames={warehouseCityNames}
+        departmentCityNames={departmentCityNames}
+        locationCitiesLoaded={locationCitiesLoaded}
       />
     </div>
   );

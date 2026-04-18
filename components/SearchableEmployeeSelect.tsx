@@ -9,6 +9,8 @@ import { useAppTheme } from '@/app/contexts/ThemeContext';
 
 interface SearchableEmployeeSelectProps {
   value: string;
+  /** When editing, pass the stored name so the control can show "empno - name" before search. */
+  initialEmpName?: string;
   onChange: (empNumber: string, empName: string) => void;
   placeholder?: string;
   required?: boolean;
@@ -17,6 +19,7 @@ interface SearchableEmployeeSelectProps {
 
 export default function SearchableEmployeeSelect({
   value,
+  initialEmpName,
   onChange,
   placeholder = "Search employee by name or number...",
   required = false,
@@ -88,6 +91,17 @@ export default function SearchableEmployeeSelect({
       setLoading(false);
     }
   };
+
+  // Sync controlled selection when parent loads edit data (empno + name)
+  useEffect(() => {
+    if (value && initialEmpName) {
+      setSelectedEmployee({ empno: value, empname: initialEmpName } as Employee);
+      setSearchTerm(`${value} - ${initialEmpName}`);
+    } else if (!value) {
+      setSelectedEmployee(null);
+      setSearchTerm('');
+    }
+  }, [value, initialEmpName]);
 
   // Debounced search
   useEffect(() => {

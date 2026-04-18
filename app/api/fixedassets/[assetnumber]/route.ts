@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+const FIXED_ASSET_MANUFACTURERS = 'FIXED_ASSET_MANUFACTURERS';
+
 export async function GET(
   request: Request,
   { params }: { params: { assetnumber: string } }
@@ -60,6 +62,24 @@ export async function PUT(
       assetdescription,
       ...updateFields
     } = updateData;
+
+    if (Object.prototype.hasOwnProperty.call(updateFields, 'assetmanufacturer')) {
+      const next = String(updateFields.assetmanufacturer ?? '').trim();
+      const prev = String((existingAsset as { assetmanufacturer?: string }).assetmanufacturer ?? '').trim();
+      if (next !== prev && next !== '') {
+        const found = await db.collection(FIXED_ASSET_MANUFACTURERS).findOne({ name: next });
+        if (!found) {
+          return NextResponse.json(
+            {
+              error:
+                'Invalid manufacturer. Choose a value from the master list (Fixed Asset → Manufacturer), or add it there first.',
+            },
+            { status: 400 }
+          );
+        }
+      }
+      updateFields.assetmanufacturer = next;
+    }
 
     console.log('Updating fixed asset with fields:', updateFields);
 
