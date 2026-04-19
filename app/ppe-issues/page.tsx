@@ -85,7 +85,7 @@ export default function PPEIssuesDateRangePage() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">PPE Issues (Date Range)</h1>
+        <h1 className="text-2xl font-bold">PPE Issues (Date Range)</h1>
         <p className="text-gray-600">View both individual and bulk issues between dates</p>
       </div>
 

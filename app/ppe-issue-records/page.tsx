@@ -550,7 +550,7 @@ export default function PPEIssueRecordsPage() {
           {/* Header Section */}
           <div className="mb-8">
             <div className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300`}>
-              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+              <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
                 PPE Issue Records
               </h1>
               <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Manage Personal Protective Equipment issue records</p>

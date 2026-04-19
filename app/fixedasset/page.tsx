@@ -544,7 +544,7 @@ export default function FixedAssetPage() {
       <div className={`relative ${theme === 'glassmorphic' ? 'z-20' : 'z-10'} flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen`}>
         <div className="mb-8">
           <div className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300`}>
-            <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+            <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
               Fixed Assets
             </h1>
             <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Search and manage fixed assets</p>

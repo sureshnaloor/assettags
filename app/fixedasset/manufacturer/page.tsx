@@ -88,7 +88,7 @@ export default function FixedAssetManufacturerPage() {
   return (
     <div className="min-h-screen bg-slate-900 p-6 text-white">
       <div className="mx-auto max-w-5xl space-y-6">
-        <h1 className="text-3xl font-bold">Fixed Asset Manufacturer Management</h1>
+        <h1 className="text-2xl font-bold">Fixed Asset Manufacturer Management</h1>
 
         {error && (
           <div className="rounded-lg border border-red-400/40 bg-red-500/10 p-3 text-sm text-red-200">

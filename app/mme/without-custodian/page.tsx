@@ -394,7 +394,7 @@ export default function MMEWithoutCustodianPage() {
           <div
             className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300`}
           >
-            <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+            <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
               MME Equipment Without Custodian
             </h1>
             <p className={`${backgroundStyles.headerSubtitle} text-lg`}>

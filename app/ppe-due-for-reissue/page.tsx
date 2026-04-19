@@ -69,7 +69,7 @@ export default function PPEDueForReissuePage() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">PPE Due for Reissue</h1>
+        <h1 className="text-2xl font-bold">PPE Due for Reissue</h1>
         <p className="text-gray-600">Track PPE items that are due or overdue for reissue</p>
       </div>
 

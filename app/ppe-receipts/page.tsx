@@ -315,7 +315,7 @@ export default function PPEReceiptsPage() {
         theme === 'glassmorphic' ? 'z-20' : 'z-10'
       )}>
         <div className="mb-2">
-          <h1 className={cn('text-4xl md:text-5xl font-bold mb-2', s.headerTitle)}>
+          <h1 className={cn('text-2xl md:text-3xl font-bold mb-2', s.headerTitle)}>
             PPE Receipts
           </h1>
           <p className={cn('text-lg', s.headerSubtitle)}>

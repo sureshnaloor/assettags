@@ -388,7 +388,7 @@ const UserEquipmentList = () => {
         {/* Header Section */}
         <div className="max-w-7xl mx-auto mb-8">
           <div className={`${backgroundStyles.headerBg} ${backgroundStyles.headerHover} rounded-3xl p-8 transition-all duration-300`}>
-            <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+            <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
               User Equipment List
             </h1>
             <p className={`${backgroundStyles.headerSubtitle} text-lg mb-6`}>

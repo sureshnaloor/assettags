@@ -366,7 +366,7 @@ export default function PPEMasterPage() {
           {/* Header Section */}
           <div className="mb-8">
             <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-8 transition-all duration-300`}>
-              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${styles.title}`}>
+              <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${styles.title}`}>
                 PPE Master Management
               </h1>
               <p className={`${styles.text} text-lg`}>Manage Personal Protective Equipment master data</p>

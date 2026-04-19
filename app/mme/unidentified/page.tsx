@@ -363,7 +363,7 @@ export default function UnidentifiedMMEPage() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+                <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
                   Unidentified MME & LVA
                 </h1>
                 <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Manage unidentified MME equipment</p>

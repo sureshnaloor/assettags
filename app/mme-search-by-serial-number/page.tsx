@@ -273,7 +273,7 @@ export default function MMESearchBySerialNumberPage() {
         {/* Header Section */}
         <div className="mb-8">
           <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
               MME Search by Serial Number
             </h1>
             <p className="text-white/80 text-lg">Search MME equipment by serial number</p>

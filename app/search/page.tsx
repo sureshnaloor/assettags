@@ -406,7 +406,7 @@ export default function AssetSearchPage() {
             <div className="relative z-20 flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
                 {/* Header Section */}
                 <div className={`${backgroundStyles.headerBg} rounded-2xl p-6 shadow-xl`}>
-                    <h1 className={`text-4xl font-bold ${backgroundStyles.headerTitle} mb-2`}>
+                    <h1 className={`text-2xl font-bold ${backgroundStyles.headerTitle} mb-2`}>
                         Asset Search & Filter
                     </h1>
                     <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Search and filter assets by various criteria</p>

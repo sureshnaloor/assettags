@@ -420,7 +420,7 @@ export default function ToolsReportsPage() {
             <div className={`${backgroundStyles.headerBg} ${backgroundStyles.headerHover} rounded-3xl p-8 transition-all duration-300`}>
               <div className="flex justify-between items-center flex-wrap gap-4">
                 <div>
-                  <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+                  <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
                     Tools Reports
                   </h1>
                   <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Comprehensive tools inventory reports and analytics</p>

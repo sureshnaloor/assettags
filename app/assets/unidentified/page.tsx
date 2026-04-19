@@ -296,7 +296,7 @@ export default function UnidentifiedAssetsPage() {
         <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent mb-2">
                 Unidentified Assets
               </h1>
               <p className="text-white/80 text-lg">Manage unidentified assets</p>

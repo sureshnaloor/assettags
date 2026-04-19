@@ -511,7 +511,7 @@ export default function LocationsManagement() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-start gap-4 mb-6 flex-wrap">
           <div>
-            <h1 className={`text-4xl font-bold ${styles.text} mb-2`}>Locations</h1>
+            <h1 className={`text-2xl font-bold ${styles.text} mb-2`}>Locations</h1>
             <p className={styles.textMuted}>
               City names for custody and projects, and camp/office premises records.
             </p>

@@ -367,7 +367,7 @@ export default function ExpiredCalibrationsReport() {
                         
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex-1">
-                                <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+                                <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
                                     Expired Calibrations Report
                                 </h1>
                                 <p className={`${backgroundStyles.headerSubtitle} text-lg`}>

@@ -361,7 +361,7 @@ export default function DisposedMaterialsPage() {
         <div className={`mb-6 ${backgroundStyles.headerBg} rounded-2xl p-6 shadow-xl`}>
           <div className="flex items-center gap-3 mb-2">
             <AlertTriangle className={`h-8 w-8 ${backgroundStyles.headerIcon}`} />
-            <h1 className={`text-4xl font-bold ${backgroundStyles.headerTitle}`}>
+            <h1 className={`text-2xl font-bold ${backgroundStyles.headerTitle}`}>
               Disposed Materials
             </h1>
           </div>

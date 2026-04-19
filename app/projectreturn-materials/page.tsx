@@ -756,7 +756,7 @@ export default function ProjectReturnMaterialsPage() {
         <div className="mb-6">
           {/* Title */}
           <div className={`mb-4 ${backgroundStyles.headerBg} rounded-2xl p-6 shadow-xl`}>
-            <h1 className={`text-4xl font-bold ${backgroundStyles.headerTitle} mb-2`}>
+            <h1 className={`text-2xl font-bold ${backgroundStyles.headerTitle} mb-2`}>
               Project Return Materials Management
             </h1>
             <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Manage project return materials inventory</p>

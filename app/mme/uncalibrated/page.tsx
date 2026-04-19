@@ -350,7 +350,7 @@ export default function MMEUncalibratedPage() {
             className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-4`}
           >
             <div>
-              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
+              <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
                 MME Un-calibrated
               </h1>
               <p className={`${backgroundStyles.headerSubtitle} text-lg`}>

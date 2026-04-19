@@ -201,7 +201,7 @@ export default function FixedAssetSearchByLocationPage() {
       <div className="relative z-20 flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
         <div className="mb-8">
           <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 hover:bg-white/15 transition-all duration-300">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+            <h1 className="text-lg md:text-xl font-bold mb-4 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
               Assets Search by Location
             </h1>
             <p className="text-white/80 text-lg">Find fixed assets by location. Type at least 5 characters; use * as wildcard (e.g. *camp* or safco).</p>

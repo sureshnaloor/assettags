@@ -156,7 +156,7 @@ export default function PPEBulkIssuesPage() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Bulk PPE Issues</h1>
+        <h1 className="text-2xl font-bold">Bulk PPE Issues</h1>
         <p className="text-gray-600">Manage bulk PPE issues to departments and projects</p>
       </div>
 

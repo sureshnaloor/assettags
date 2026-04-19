@@ -282,7 +282,7 @@ export default function DashboardPage() {
           <div className="mb-8">
             <div className={`${backgroundStyles.headerBg} ${backgroundStyles.headerHover} rounded-3xl p-8 transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <h1 className={`text-4xl md:text-5xl font-bold ${backgroundStyles.headerTitle}`}>
+                <h1 className={`text-2xl md:text-3xl font-bold ${backgroundStyles.headerTitle}`}>
                   Dashboard
                 </h1>
                 <div className="flex items-center gap-2">

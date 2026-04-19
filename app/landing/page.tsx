@@ -277,7 +277,7 @@ export default function LandingPage() {
         
         <div className="relative z-30 pt-32 pb-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
               SmartAsset Management
             </h1>
             <p className="text-xl md:text-2xl text-slate-300 mb-8 max-w-2xl">
@@ -286,19 +286,19 @@ export default function LandingPage() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
               <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center hover:bg-white/15 hover:-translate-y-1 transition-all duration-300">
-                <div className="text-4xl font-bold text-teal-400 mb-2">{assetCounter.toLocaleString()}</div>
+                <div className="text-3xl font-bold text-teal-400 mb-2">{assetCounter.toLocaleString()}</div>
                 <div className="text-slate-300 text-sm uppercase tracking-wider">Assets Managed</div>
               </div>
               <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center hover:bg-white/15 hover:-translate-y-1 transition-all duration-300">
-                <div className="text-4xl font-bold text-teal-400 mb-2">99.9%</div>
+                <div className="text-3xl font-bold text-teal-400 mb-2">99.9%</div>
                 <div className="text-slate-300 text-sm uppercase tracking-wider">Tracking Accuracy</div>
               </div>
               <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center hover:bg-white/15 hover:-translate-y-1 transition-all duration-300">
-                <div className="text-4xl font-bold text-teal-400 mb-2">75%</div>
+                <div className="text-3xl font-bold text-teal-400 mb-2">75%</div>
                 <div className="text-slate-300 text-sm uppercase tracking-wider">Time Saved</div>
               </div>
               <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 text-center hover:bg-white/15 hover:-translate-y-1 transition-all duration-300">
-                <div className="text-4xl font-bold text-teal-400 mb-2">24/7</div>
+                <div className="text-3xl font-bold text-teal-400 mb-2">24/7</div>
                 <div className="text-slate-300 text-sm uppercase tracking-wider">Real-time Monitoring</div>
               </div>
             </div>
@@ -324,7 +324,7 @@ export default function LandingPage() {
       {/* Asset Categories Section */}
       <section id="features" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2332] text-center mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1a2332] text-center mb-4">
             Comprehensive Asset Categories
           </h2>
           <p className="text-lg text-slate-600 text-center max-w-2xl mx-auto mb-12">
@@ -370,7 +370,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-[#1a2332] mb-6">
+              <h2 className="text-3xl font-bold text-[#1a2332] mb-6">
                 Instant Asset Access with QR Codes
               </h2>
               <p className="text-lg text-slate-600 mb-6 leading-relaxed">
@@ -419,7 +419,7 @@ export default function LandingPage() {
       {/* Features Section */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2332] text-center mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1a2332] text-center mb-4">
             Powerful Asset Management Features
           </h2>
           <p className="text-lg text-slate-600 text-center max-w-2xl mx-auto mb-12">
@@ -446,7 +446,7 @@ export default function LandingPage() {
       {/* Testimonials Section */}
       <section id="about" className="py-24 bg-gradient-to-br from-[#1a2332] to-[#2d3748] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">
             Trusted by Industry Leaders
           </h2>
           
@@ -481,7 +481,7 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="py-24 bg-gradient-to-r from-teal-400 to-teal-500 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Ready to Transform Your Asset Management?
           </h2>
           <p className="text-xl mb-12 opacity-90 max-w-2xl mx-auto">

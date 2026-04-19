@@ -826,7 +826,7 @@ export default function ProjectIssuedMaterialsPage() {
         <div className="mb-6">
           {/* Title */}
           <div className={`mb-4 ${backgroundStyles.headerBg} rounded-2xl p-6 shadow-xl`}>
-            <h1 className={`text-4xl font-bold ${backgroundStyles.headerTitle} mb-2`}>
+            <h1 className={`text-2xl font-bold ${backgroundStyles.headerTitle} mb-2`}>
               Project Issued Materials Management
             </h1>
             <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Manage project issued materials inventory</p>

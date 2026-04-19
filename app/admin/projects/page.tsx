@@ -506,7 +506,7 @@ export default function ProjectsManagement() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className={`text-4xl font-bold ${styles.text} mb-2`}>Projects Management</h1>
+            <h1 className={`text-2xl font-bold ${styles.text} mb-2`}>Projects Management</h1>
             <p className={styles.textMuted}>Add, edit, and delete projects</p>
           </div>
           {!showForm && (

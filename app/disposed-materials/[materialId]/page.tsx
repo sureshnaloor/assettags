@@ -107,7 +107,7 @@ export default function DisposedMaterialDetailPage() {
         
         <div className="flex items-center gap-3 mb-2">
           <AlertTriangle className="h-8 w-8 text-red-500" />
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Disposed Material Details
           </h1>
         </div>

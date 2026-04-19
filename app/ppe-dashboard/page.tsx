@@ -291,7 +291,7 @@ export default function PPEDashboardPage() {
           {/* Header Section */}
           <div className="mb-8">
             <div className={`${styles.card} ${styles.cardHover} rounded-3xl p-8 transition-all duration-300`}>
-              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${styles.title}`}>
+              <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${styles.title}`}>
                 PPE Management Dashboard
               </h1>
               <p className={`${styles.text} text-lg`}>Overview of Personal Protective Equipment management system</p>
@@ -305,7 +305,7 @@ export default function PPEDashboardPage() {
                 <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Total PPE Items</h3>
                 <div className="text-2xl">🛡️</div>
               </div>
-              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalPPEItems}</div>
+              <div className={`text-3xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalPPEItems}</div>
               <p className={`text-xs ${styles.textMuted}`}>
                 Active PPE items in master
               </p>
@@ -316,7 +316,7 @@ export default function PPEDashboardPage() {
                 <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Total Issue Records</h3>
                 <div className="text-2xl">📋</div>
               </div>
-              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalIssueRecords}</div>
+              <div className={`text-3xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalIssueRecords}</div>
               <p className={`text-xs ${styles.textMuted}`}>
                 Individual PPE issues
               </p>
@@ -327,7 +327,7 @@ export default function PPEDashboardPage() {
                 <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Bulk Issues</h3>
                 <div className="text-2xl">📦</div>
               </div>
-              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalBulkIssues}</div>
+              <div className={`text-3xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalBulkIssues}</div>
               <p className={`text-xs ${styles.textMuted}`}>
                 Bulk PPE issues to departments
               </p>
@@ -338,7 +338,7 @@ export default function PPEDashboardPage() {
                 <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Active Employees</h3>
                 <div className="text-2xl">👥</div>
               </div>
-              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalEmployees}</div>
+              <div className={`text-3xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.totalEmployees}</div>
               <p className={`text-xs ${styles.textMuted}`}>
                 Active employees in system
               </p>
@@ -349,7 +349,7 @@ export default function PPEDashboardPage() {
                 <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Overdue Items</h3>
                 <div className="text-2xl">⚠️</div>
               </div>
-              <div className={`text-4xl font-bold ${styles.accentRed} mb-2`}>{loading ? '...' : stats.overdueItems}</div>
+              <div className={`text-3xl font-bold ${styles.accentRed} mb-2`}>{loading ? '...' : stats.overdueItems}</div>
               <p className={`text-xs ${styles.textMuted}`}>
                 PPE items due for reissue
               </p>
@@ -360,7 +360,7 @@ export default function PPEDashboardPage() {
                 <h3 className={`text-sm font-semibold ${styles.text} uppercase tracking-wider`}>Today's Issues</h3>
                 <div className="text-2xl">🕒</div>
               </div>
-              <div className={`text-4xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.todaysIssues}</div>
+              <div className={`text-3xl font-bold ${styles.accent} mb-2`}>{loading ? '...' : stats.todaysIssues}</div>
               <p className={`text-xs ${styles.textMuted}`}>
                 PPE issues issued today
               </p>

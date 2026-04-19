@@ -14,6 +14,9 @@ const FIXED_ASSET_LIST_ROUTES = new Set([
   'manufacturer',
   'without-custodian',
   'search-by-location',
+  'transport-assets',
+  'portable-assets',
+  'software-assets',
 ]);
 
 function isFixedAssetAssetDetailPath(pathname: string): boolean {

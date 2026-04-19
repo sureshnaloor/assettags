@@ -905,7 +905,7 @@ export default function Home() {
                   />
                 </div>
               </div>
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
                 Asset Management
                 <span className="block">Made Simple</span>
               </h1>
@@ -923,7 +923,7 @@ export default function Home() {
                   className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 text-center hover:bg-white/15 hover:-translate-y-1 transition-all duration-300 group"
                 >
                   <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{stat.icon}</div>
-                  <div className="text-3xl md:text-4xl font-bold text-teal-400 mb-2">{stat.number}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-teal-400 mb-2">{stat.number}</div>
                   <div className="text-slate-300 text-xs uppercase tracking-wider">{stat.label}</div>
                 </div>
               ))}
@@ -952,7 +952,7 @@ export default function Home() {
       {/* Asset Categories Section (from landing page) */}
       <section id="features" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2332] text-center mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1a2332] text-center mb-4">
             Comprehensive Asset Categories
           </h2>
           <p className="text-lg text-slate-600 text-center max-w-2xl mx-auto mb-12">
@@ -998,7 +998,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-[#1a2332] mb-6">
+              <h2 className="text-3xl font-bold text-[#1a2332] mb-6">
                 Instant Asset Access with QR Codes
               </h2>
               <p className="text-lg text-slate-600 mb-6 leading-relaxed">
@@ -1047,7 +1047,7 @@ export default function Home() {
       {/* Features Section (from landing page, using landingFeatures data) */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1a2332] text-center mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1a2332] text-center mb-4">
             Powerful Asset Management Features
           </h2>
           <p className="text-lg text-slate-600 text-center max-w-2xl mx-auto mb-12">
@@ -1074,7 +1074,7 @@ export default function Home() {
       {/* CTA Section (from landing page) */}
       <section id="about" className="py-24 bg-gradient-to-r from-teal-400 to-teal-500 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Ready to Transform Your Asset Management?
           </h2>
           <p className="text-xl mb-12 opacity-90 max-w-2xl mx-auto">
