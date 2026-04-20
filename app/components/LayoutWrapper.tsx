@@ -20,6 +20,20 @@ const FIXED_ASSET_LIST_ROUTES = new Set([
 ]);
 
 function isFixedAssetAssetDetailPath(pathname: string): boolean {
+  // Software asset detail: full-width page like /fixedasset/[id]
+  if (/^\/fixedasset\/software-assets\/.+/.test(pathname)) {
+    return true;
+  }
+  // Transport asset detail (not master list tabs under /masters/)
+  if (/^\/fixedasset\/transport-assets\/.+/.test(pathname)) {
+    if (/^\/fixedasset\/transport-assets\/masters\//.test(pathname)) {
+      return false;
+    }
+    return true;
+  }
+  if (/^\/fixedasset\/portable-assets\/.+/.test(pathname)) {
+    return true;
+  }
   const m = pathname.match(/^\/fixedasset\/([^/]+)$/);
   if (!m) return false;
   return !FIXED_ASSET_LIST_ROUTES.has(m[1]);
