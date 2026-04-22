@@ -4,6 +4,7 @@ import { PencilIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon, TrashIcon, P
 import { Calibration } from '@/types/asset';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { useSession } from 'next-auth/react';
 
 interface CalibrationCompany {
   _id: string;
@@ -333,6 +334,8 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
   const [isNewMode, setIsNewMode] = useState(false);
   const [showAlert, setShowAlert] = useState(true);
   const { show: showToast } = useToast();
+  const { data: session } = useSession();
+  const createdBy = session?.user?.email ?? session?.user?.name ?? '';
   const idleToastKeyRef = useRef<string | null>(null);
 
   // Theme-based style helpers
@@ -434,7 +437,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       calibfile: '',
       calibcertificate: '',
       assetnumber: currentCalibration?.assetnumber ?? '',
-      createdby: 'current-user',
+      createdby: createdBy,
       createdat: new Date(),
     } as Calibration;
   });
@@ -471,12 +474,12 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
         calibfile: '',
         calibcertificate: '',
         assetnumber: currentCalibration?.assetnumber ?? '',
-        createdby: 'current-user',
+        createdby: createdBy,
         createdat: new Date(),
       } as Calibration);
       setSelectedValidityPeriod(12);
     }
-  }, [isNewMode, currentCalibration?.assetnumber]);
+  }, [isNewMode, currentCalibration?.assetnumber, createdBy]);
 
   const [selectedValidityPeriod, setSelectedValidityPeriod] = useState(12);
 
@@ -693,7 +696,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
         body: JSON.stringify({
           calibration: currentCalibration,
           reason: archiveReason,
-          archivedBy: 'current-user', // Replace with actual user
+          archivedBy: createdBy,
         }),
       });      
 
@@ -739,7 +742,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       calibfile: '',
       calibcertificate: '',
       assetnumber: currentCalibration?.assetnumber ?? '',
-      createdby: 'current-user',
+      createdby: createdBy,
       createdat: new Date(),
     } as Calibration);
   };
@@ -1371,7 +1374,7 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
     calibfile: '',
     calibcertificate: '',
     assetnumber: assetnumber,
-    createdby: 'current-user',
+    createdby: '',
     createdat: new Date(),
   } as Calibration));
 
@@ -1384,6 +1387,16 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
       assetnumber: assetnumber
     }));
   }, [assetnumber]);
+
+  const { data: session } = useSession();
+  const createdBy = session?.user?.email ?? session?.user?.name ?? '';
+
+  useEffect(() => {
+    setNewCalibration((prev) => ({
+      ...prev,
+      createdby: createdBy,
+    }));
+  }, [createdBy]);
 
   useEffect(() => {
     if (isOpen) {

@@ -53,7 +53,14 @@ export async function PUT(
       'chassisNumber',
       'engineNumber',
       'vehicleModel',
-      'modelYear'
+      'modelYear',
+      'trackerSerialNumber',
+      'trackerMake',
+      'trackerModel',
+      'trackerInstalledDate',
+      'simSubscriptionStartDate',
+      'trackerDeinstallDate',
+      'trackerRemarks'
     ] as const;
 
     const $set: Record<string, unknown> = {};
@@ -70,13 +77,18 @@ export async function PUT(
             }
             $set[key] = n;
           }
-        } else if (key === 'acquireddate') {
+        } else if (
+          key === 'acquireddate' ||
+          key === 'trackerInstalledDate' ||
+          key === 'simSubscriptionStartDate' ||
+          key === 'trackerDeinstallDate'
+        ) {
           if (v === null || v === undefined || v === '') {
             $set[key] = null;
           } else {
             const d = new Date(String(v));
             if (Number.isNaN(d.getTime())) {
-              return NextResponse.json({ error: 'Invalid Acquired Date.' }, { status: 400 });
+              return NextResponse.json({ error: `Invalid date for ${key}.` }, { status: 400 });
             }
             $set[key] = d;
           }

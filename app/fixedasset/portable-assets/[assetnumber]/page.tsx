@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import CollapsibleSection from '@/app/components/CollapsibleSection';
 import { AssetQRCode } from '@/components/AssetQRCode';
+import CustomDetailsSection from '@/app/components/CustomDetailsSection';
 
 type PortableTypeValue = '' | 'pre_engineered' | 'container_20' | 'container_40' | 'prefabricated_sheet';
 
@@ -528,6 +529,8 @@ export default function PortableAssetDetailPage() {
                 </button>
               </div>
             </CollapsibleSection>
+
+            <CustomDetailsSection assetType="portable" assetnumber={assetnumber} />
 
             <div className="text-center">
               <Link href="/fixedasset/portable-assets" className="text-sm text-teal-400 hover:text-teal-300">

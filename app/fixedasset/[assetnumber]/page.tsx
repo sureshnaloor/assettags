@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 
 import AssetDetails from '../../components/AssetDetails';
 import CustodyDetails from '../../components/CustodyDetails';
+import CustomDetailsSection from '@/app/components/CustomDetailsSection';
 import { AssetData } from '@/types/asset';
 import { Custody } from '@/types/custody';
 import { useRouter } from 'next/navigation';
@@ -226,6 +227,8 @@ export default function FixedAssetPage() {
               assetnumber={assetnumber}
             />
           </CollapsibleSection>
+
+          <CustomDetailsSection assetType="fixedasset" assetnumber={assetnumber} />
 
           <button
             onClick={handleLogLocation}

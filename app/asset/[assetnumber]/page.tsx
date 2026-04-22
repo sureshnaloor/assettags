@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import AssetDetails from '@/app/components/AssetDetails';
 import CalibrationDetails from '@/app/components/CalibrationDetails';
 import CustodyDetails from '@/app/components/CustodyDetails';
+import CustomDetailsSection from '@/app/components/CustomDetailsSection';
 
 
 import { AssetData, Calibration } from '@/types/asset';
@@ -333,6 +334,8 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
               custodyNewHref={`/asset/${params.assetnumber}/custody/new`}
             />
           </CollapsibleSection>
+
+          <CustomDetailsSection assetType="mme" assetnumber={params.assetnumber} theme={theme} />
 
           <button
             onClick={handleLogLocation}

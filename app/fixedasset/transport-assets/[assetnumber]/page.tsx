@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import CollapsibleSection from '@/app/components/CollapsibleSection';
 import { AssetQRCode } from '@/components/AssetQRCode';
+import CustomDetailsSection from '@/app/components/CustomDetailsSection';
 
 interface TransportDetail {
   _id: string;
@@ -23,6 +24,13 @@ interface TransportDetail {
   engineNumber?: string;
   vehicleModel?: string;
   modelYear?: number | null;
+  trackerSerialNumber?: string;
+  trackerMake?: string;
+  trackerModel?: string;
+  trackerInstalledDate?: string | Date | null;
+  simSubscriptionStartDate?: string | Date | null;
+  trackerDeinstallDate?: string | Date | null;
+  trackerRemarks?: string;
 }
 
 interface MasterRow {
@@ -91,6 +99,16 @@ export default function TransportAssetDetailPage() {
   const [brkMasters, setBrkMasters] = useState<MasterRow[]>([]);
   const [preventive, setPreventive] = useState<PreventiveRecord[]>([]);
   const [breakdown, setBreakdown] = useState<BreakdownRecord[]>([]);
+  const [gpsSaving, setGpsSaving] = useState(false);
+  const [gpsForm, setGpsForm] = useState({
+    trackerSerialNumber: '',
+    trackerMake: '',
+    trackerModel: '',
+    trackerInstalledDate: '',
+    simSubscriptionStartDate: '',
+    trackerDeinstallDate: '',
+    trackerRemarks: '',
+  });
 
   const [newPrev, setNewPrev] = useState({
     maintenanceTypeId: '',
@@ -165,6 +183,15 @@ export default function TransportAssetDetailPage() {
         vehicleModel: a.vehicleModel ?? '',
         modelYear: a.modelYear !== null && a.modelYear !== undefined ? String(a.modelYear) : ''
       });
+      setGpsForm({
+        trackerSerialNumber: a.trackerSerialNumber ?? '',
+        trackerMake: a.trackerMake ?? '',
+        trackerModel: a.trackerModel ?? '',
+        trackerInstalledDate: dIn(a.trackerInstalledDate),
+        simSubscriptionStartDate: dIn(a.simSubscriptionStartDate),
+        trackerDeinstallDate: dIn(a.trackerDeinstallDate),
+        trackerRemarks: a.trackerRemarks ?? '',
+      });
       await loadLists();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load');
@@ -211,6 +238,35 @@ export default function TransportAssetDetailPage() {
       alert(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setTopSaving(false);
+    }
+  };
+
+  const saveGps = async () => {
+    try {
+      setGpsSaving(true);
+      const body = {
+        trackerSerialNumber: gpsForm.trackerSerialNumber,
+        trackerMake: gpsForm.trackerMake,
+        trackerModel: gpsForm.trackerModel,
+        trackerInstalledDate: gpsForm.trackerInstalledDate || null,
+        simSubscriptionStartDate: gpsForm.simSubscriptionStartDate || null,
+        trackerDeinstallDate: gpsForm.trackerDeinstallDate || null,
+        trackerRemarks: gpsForm.trackerRemarks,
+      };
+
+      const res = await fetch(base, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((json as { error?: string }).error || 'Save failed');
+      setAsset(json as TransportDetail);
+      alert('GPS tracker details saved.');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setGpsSaving(false);
     }
   };
 
@@ -711,6 +767,85 @@ export default function TransportAssetDetailPage() {
                 </button>
               </div>
             </CollapsibleSection>
+
+            <CollapsibleSection title="GPS Tracker details" defaultExpanded>
+              <div className="w-full max-w-5xl space-y-4 rounded-xl border border-white/15 bg-white/5 p-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="text-xs text-white/70">Tracker serial number</span>
+                    <input
+                      className={inp}
+                      value={gpsForm.trackerSerialNumber}
+                      onChange={(e) => setGpsForm((f) => ({ ...f, trackerSerialNumber: e.target.value }))}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs text-white/70">Make</span>
+                    <input
+                      className={inp}
+                      value={gpsForm.trackerMake}
+                      onChange={(e) => setGpsForm((f) => ({ ...f, trackerMake: e.target.value }))}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs text-white/70">Model</span>
+                    <input
+                      className={inp}
+                      value={gpsForm.trackerModel}
+                      onChange={(e) => setGpsForm((f) => ({ ...f, trackerModel: e.target.value }))}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs text-white/70">Installed date</span>
+                    <input
+                      type="date"
+                      className={inp}
+                      value={gpsForm.trackerInstalledDate}
+                      onChange={(e) => setGpsForm((f) => ({ ...f, trackerInstalledDate: e.target.value }))}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs text-white/70">SIM subscription start date</span>
+                    <input
+                      type="date"
+                      className={inp}
+                      value={gpsForm.simSubscriptionStartDate}
+                      onChange={(e) =>
+                        setGpsForm((f) => ({ ...f, simSubscriptionStartDate: e.target.value }))
+                      }
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs text-white/70">De-install date</span>
+                    <input
+                      type="date"
+                      className={inp}
+                      value={gpsForm.trackerDeinstallDate}
+                      onChange={(e) => setGpsForm((f) => ({ ...f, trackerDeinstallDate: e.target.value }))}
+                    />
+                  </label>
+                  <label className="block sm:col-span-2">
+                    <span className="text-xs text-white/70">Remarks</span>
+                    <textarea
+                      rows={3}
+                      className={inp}
+                      value={gpsForm.trackerRemarks}
+                      onChange={(e) => setGpsForm((f) => ({ ...f, trackerRemarks: e.target.value }))}
+                    />
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={saveGps}
+                  disabled={gpsSaving}
+                  className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium hover:bg-teal-500 text-white disabled:opacity-50"
+                >
+                  {gpsSaving ? 'Saving…' : 'Save GPS tracker details'}
+                </button>
+              </div>
+            </CollapsibleSection>
+
+            <CustomDetailsSection assetType="transport" assetnumber={assetnumber} />
 
             <div className="text-center">
               <Link href="/fixedasset/transport-assets" className="text-sm text-teal-400 hover:text-teal-300">

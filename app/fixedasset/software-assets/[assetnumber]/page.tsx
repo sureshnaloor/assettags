@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import CollapsibleSection from '@/app/components/CollapsibleSection';
 import { AssetQRCode } from '@/components/AssetQRCode';
+import CustomDetailsSection from '@/app/components/CustomDetailsSection';
 
 export type LicenseType = 'perpetual' | 'annual' | 'other_periodic' | '';
 
@@ -478,6 +479,8 @@ export default function SoftwareAssetDetailPage() {
                 </button>
               </div>
             </CollapsibleSection>
+
+            <CustomDetailsSection assetType="software" assetnumber={assetnumber} />
 
             <div className="pb-8 text-center">
               <Link

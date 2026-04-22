@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import AsyncSelect from 'react-select/async';
 import DatePicker from 'react-datepicker';
 import { Employee, Project, Custody } from '@/types/custody';
@@ -22,8 +23,12 @@ export default function NewCustodyPage() {
 
   const router = useRouter();
   const params = useParams() as { assetnumber: string };
+  const { data: session } = useSession();
+  const createdBy = session?.user?.email ?? session?.user?.name ?? '';
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isBulkUploading, setIsBulkUploading] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [locationType, setLocationType] = useState<CustodyLocationType>('warehouse');
@@ -42,6 +47,7 @@ export default function NewCustodyPage() {
   const [warehouseCityNames, setWarehouseCityNames] = useState<string[]>([]);
   const [departmentCityNames, setDepartmentCityNames] = useState<string[]>([]);
   const [locationCitiesLoaded, setLocationCitiesLoaded] = useState(false);
+  const bulkFileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<Partial<Custody>>({
     assetnumber: params.assetnumber,
@@ -297,7 +303,7 @@ export default function NewCustodyPage() {
           custodyto: formData.custodyto ?? null,
           documentnumber: formData.documentnumber || null,
           createdat: new Date(),
-          createdby: 'current-user',
+          createdby: createdBy,
         }),
       });
 
@@ -308,6 +314,60 @@ export default function NewCustodyPage() {
       setError(e instanceof Error ? e.message : 'Failed to save custody record');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDownloadBulkTemplate = async () => {
+    try {
+      setBulkMessage(null);
+      const response = await fetch('/api/custody/template');
+      if (!response.ok) throw new Error('Failed to download template');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'custody_bulk_template.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      setBulkMessage(e instanceof Error ? e.message : 'Failed to download template');
+    }
+  };
+
+  const handleBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsBulkUploading(true);
+      setBulkMessage(null);
+      setError(null);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/custody/import', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        const details = Array.isArray(data.errors) ? ` ${data.errors.join(' | ')}` : '';
+        throw new Error(`${data.error || 'Bulk upload failed.'}${details}`);
+      }
+
+      setBulkMessage(`Bulk upload successful. Inserted ${data.inserted} record(s).`);
+      if (bulkFileInputRef.current) {
+        bulkFileInputRef.current.value = '';
+      }
+    } catch (e) {
+      setBulkMessage(e instanceof Error ? e.message : 'Bulk upload failed');
+    } finally {
+      setIsBulkUploading(false);
     }
   };
 
@@ -327,6 +387,42 @@ export default function NewCustodyPage() {
                 {error}
               </div>
             )}
+
+            <div className="mb-6 rounded-xl border border-white/20 bg-white/5 p-4">
+              <h4 className="text-sm font-semibold text-white mb-2">Bulk Custody Upload</h4>
+              <p className="text-xs text-white/80 mb-3">
+                Download the template, fill it in Excel, then upload. If any row fails basic validation, the whole upload is aborted.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={handleDownloadBulkTemplate}
+                  className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-3 py-2 rounded-lg text-xs"
+                >
+                  Download Template
+                </button>
+                <button
+                  type="button"
+                  onClick={() => bulkFileInputRef.current?.click()}
+                  disabled={isBulkUploading}
+                  className="bg-teal-500 hover:bg-teal-600 disabled:bg-teal-300 text-white px-3 py-2 rounded-lg text-xs"
+                >
+                  {isBulkUploading ? 'Uploading...' : 'Upload Filled File'}
+                </button>
+                <input
+                  ref={bulkFileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  className="hidden"
+                  onChange={handleBulkUpload}
+                />
+              </div>
+              {bulkMessage && (
+                <div className="mt-3 text-xs text-white/90">
+                  {bulkMessage}
+                </div>
+              )}
+            </div>
 
             <div className="space-y-6">
               <div>
