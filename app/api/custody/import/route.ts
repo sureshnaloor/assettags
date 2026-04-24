@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { getServerSession } from 'next-auth/next';
+import { ObjectId } from 'mongodb';
 import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 
@@ -223,6 +224,52 @@ export async function POST(request: Request) {
     }
 
     const { db } = await connectToDatabase();
+
+    // Backfill premisesLabel/location from master locations when only premisesId is provided in Excel.
+    const premisesIdsToResolve = Array.from(
+      new Set(
+        docsToInsert
+          .map((doc) => toOptionalString(doc.premisesId))
+          .filter((id): id is string => Boolean(id))
+          .filter((id) => ObjectId.isValid(id))
+      )
+    );
+
+    if (premisesIdsToResolve.length > 0) {
+      const locationDocs = await db
+        .collection('locations')
+        .find(
+          { _id: { $in: premisesIdsToResolve.map((id) => new ObjectId(id)) } },
+          { projection: { locationName: 1, buildingTower: 1 } }
+        )
+        .toArray();
+
+      const locationById = new Map<string, { locationName?: string; buildingTower?: string }>(
+        locationDocs.map((loc: any) => [String(loc._id), loc])
+      );
+
+      docsToInsert.forEach((doc) => {
+        const premisesId = toOptionalString(doc.premisesId);
+        if (!premisesId) return;
+
+        const matchedLocation = locationById.get(premisesId);
+        if (!matchedLocation) return;
+
+        const fallbackLabel = toOptionalString(matchedLocation.locationName || matchedLocation.buildingTower);
+        if (!fallbackLabel) return;
+
+        const currentPremisesLabel = toOptionalString(doc.premisesLabel);
+        const currentLocation = toOptionalString(doc.location);
+
+        if (!currentPremisesLabel) {
+          doc.premisesLabel = fallbackLabel;
+        }
+        if (!currentLocation) {
+          doc.location = fallbackLabel;
+        }
+      });
+    }
+
     const result = await db.collection('equipmentcustody').insertMany(docsToInsert);
 
     return NextResponse.json({
