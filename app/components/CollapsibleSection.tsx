@@ -11,6 +11,7 @@ interface CollapsibleSectionProps {
   theme?: Theme;
   onThemeChange?: (theme: Theme) => void;
   showThemeSwitcher?: boolean;
+  sectionId?: string;
 }
 
 export default function CollapsibleSection({ 
@@ -19,7 +20,8 @@ export default function CollapsibleSection({
   defaultExpanded = true,
   theme = 'default',
   onThemeChange,
-  showThemeSwitcher = false
+  showThemeSwitcher = false,
+  sectionId,
 }: CollapsibleSectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
@@ -55,7 +57,7 @@ export default function CollapsibleSection({
   };
 
   return (
-    <div className="w-full">
+    <div id={sectionId} className="w-full scroll-mt-24">
       <div className="w-full flex items-center gap-2">
         <button
           onClick={() => setIsExpanded(!isExpanded)}

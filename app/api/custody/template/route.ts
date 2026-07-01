@@ -26,7 +26,7 @@ export async function GET() {
       'shedRoomNumber',
       'custodianDetail',
       'containerNumberRack',
-      'warehouseCity',
+      'warehouseCity', 
       'warehouseLocation',
       'departmentLocation',
       'campOfficeLocation',

@@ -41,11 +41,16 @@ interface BulkFixedAssetRow {
 
 export default function FixedAssetPage() {
   const [data, setData] = useState<FixedAsset[]>([]);
+  const [recentAssets, setRecentAssets] = useState<FixedAsset[]>([]);
   const [assetNumberSearch, setAssetNumberSearch] = useState('');
   const [assetNameSearch, setAssetNameSearch] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [landingSorting, setLandingSorting] = useState<SortingState>([{ id: 'acquiredvalue', desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [landingColumnFilters, setLandingColumnFilters] = useState<ColumnFiltersState>([]);
   const [loading, setLoading] = useState(false);
+  const [landingLoading, setLandingLoading] = useState(true);
+  const [excludeCustody, setExcludeCustody] = useState(false);
   const [showBulkInsertModal, setShowBulkInsertModal] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkFileName, setBulkFileName] = useState('');
@@ -70,6 +75,10 @@ export default function FixedAssetPage() {
     radius: number;
   }>>([]);
   const animationFrameRef = useRef<number>();
+
+  const isSearchActive =
+    (assetNumberSearch?.trim().length ?? 0) >= 2 ||
+    (assetNameSearch?.trim().length ?? 0) >= 2;
 
   const searchAssets = async (assetNumber: string, assetName: string) => {
     if ((!assetNumber?.trim() || assetNumber.trim().length < 2) &&
@@ -300,6 +309,28 @@ export default function FixedAssetPage() {
   };
 
   useEffect(() => {
+    const fetchRecentAssets = async () => {
+      setLandingLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (excludeCustody) params.append('excludeCustody', 'true');
+        const query = params.toString();
+        const response = await fetch(`/api/fixedassets/recent-acquisitions${query ? `?${query}` : ''}`);
+        if (!response.ok) throw new Error('Failed to fetch recent fixed assets');
+        const result = await response.json();
+        setRecentAssets(result.data || []);
+      } catch (error) {
+        console.error('Error fetching recent fixed assets:', error);
+        setRecentAssets([]);
+      } finally {
+        setLandingLoading(false);
+      }
+    };
+
+    fetchRecentAssets();
+  }, [excludeCustody]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       searchAssets(assetNumberSearch, assetNameSearch);
     }, 500);
@@ -449,7 +480,12 @@ export default function FixedAssetPage() {
 
   const backgroundStyles = getBackgroundStyles();
 
-  const columns: ColumnDef<FixedAsset>[] = [
+  const formatCurrency = (value: unknown) =>
+    typeof value === 'number'
+      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR' }).format(value)
+      : 'N/A';
+
+  const buildAssetColumns = (options?: { includeActions?: boolean }): ColumnDef<FixedAsset>[] => [
     {
       accessorKey: 'assetnumber',
       header: ({ column }) => (
@@ -522,18 +558,55 @@ export default function FixedAssetPage() {
       ),
       cell: ({ row }) => {
         const value = row.getValue('acquiredvalue');
-        return typeof value === 'number' ? new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'SAR'
-        }).format(value) : 'N/A';
+        return formatCurrency(value);
       }
     },
     {
-      id: 'qrcode',
-      header: () => <span className={backgroundStyles.textColor}>QR Code</span>,
-      cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} assetType="fixedasset" />,
+      accessorKey: 'acquireddate',
+      header: ({ column }) => (
+        <button
+          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Acquiring Date
+          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+        </button>
+      ),
+      cell: ({ row }) => {
+        const date = row.getValue('acquireddate') as string;
+        return date ? new Date(date).toLocaleDateString() : 'N/A';
+      }
     },
+    ...(options?.includeActions
+      ? [
+          {
+            id: 'actions',
+            header: () => <span className={backgroundStyles.textColor}>Actions</span>,
+            cell: ({ row }) => (
+              <div className="flex flex-wrap gap-2 text-[12px]">
+                <Link
+                  href={`/fixedasset/${row.original.assetnumber}#custody`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${backgroundStyles.linkColor} font-medium transition-colors`}
+                >
+                  Custody
+                </Link>
+              </div>
+            ),
+          } as ColumnDef<FixedAsset>,
+        ]
+      : [
+          {
+            id: 'qrcode',
+            header: () => <span className={backgroundStyles.textColor}>QR Code</span>,
+            cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} assetType="fixedasset" />,
+          } as ColumnDef<FixedAsset>,
+        ]),
   ];
+
+  const columns = buildAssetColumns();
+  const landingColumns = buildAssetColumns({ includeActions: true });
 
   return (
     <div className={backgroundStyles.container}>
@@ -580,24 +653,93 @@ export default function FixedAssetPage() {
           </div>
         </div>
 
+        {isSearchActive && (
+          <div className={`mb-6 rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
+            {loading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
+              </div>
+            ) : data.length === 0 ? (
+              <div className={`text-center py-8 ${backgroundStyles.emptyText}`}>
+                No fixed assets match your search criteria
+              </div>
+            ) : (
+              <div className={theme === 'default' ? 'dark' : undefined}>
+                <ResponsiveTanStackTable
+                  data={data}
+                  columns={columns}
+                  sorting={sorting}
+                  setSorting={setSorting}
+                  columnFilters={columnFilters}
+                  setColumnFilters={setColumnFilters}
+                  getRowId={(row) => row._id}
+                  variant={
+                    theme === 'light'
+                      ? 'light'
+                      : theme === 'glassmorphic'
+                        ? 'glassmorphic'
+                        : 'default'
+                  }
+                />
+              </div>
+            )}
+          </div>
+        )}
+
         <div className={`rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
-          {loading ? (
+          <div className={`border-b px-6 py-4 flex flex-wrap items-start justify-between gap-4 ${theme === 'light' ? 'border-blue-200' : 'border-white/20'}`}>
+            <div>
+              <h2 className={`text-lg font-semibold ${backgroundStyles.textColor}`}>
+                Latest Acquired Fixed Assets
+              </h2>
+              <p className={`mt-1 text-sm ${backgroundStyles.headerSubtitle}`}>
+                {excludeCustody
+                  ? 'Top 100 most recently acquired fixed assets without custody, ranked by value'
+                  : 'Top 100 most recently acquired fixed assets, ranked by value'}
+              </p>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <span className={`text-sm ${backgroundStyles.headerSubtitle}`}>Only without custody</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={excludeCustody}
+                onClick={() => setExcludeCustody((prev) => !prev)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  excludeCustody
+                    ? 'bg-teal-500'
+                    : theme === 'light'
+                      ? 'bg-gray-300'
+                      : 'bg-white/20'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                    excludeCustody ? 'translate-x-5' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </label>
+          </div>
+          {landingLoading ? (
             <div className="flex justify-center items-center h-32">
               <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
             </div>
-          ) : data.length === 0 ? (
+          ) : recentAssets.length === 0 ? (
             <div className={`text-center py-8 ${backgroundStyles.emptyText}`}>
-              Enter search criteria to view fixed assets
+              {excludeCustody
+                ? 'All recent fixed assets have custody records'
+                : 'No recent fixed assets found'}
             </div>
           ) : (
             <div className={theme === 'default' ? 'dark' : undefined}>
               <ResponsiveTanStackTable
-                data={data}
-                columns={columns}
-                sorting={sorting}
-                setSorting={setSorting}
-                columnFilters={columnFilters}
-                setColumnFilters={setColumnFilters}
+                data={recentAssets}
+                columns={landingColumns}
+                sorting={landingSorting}
+                setSorting={setLandingSorting}
+                columnFilters={landingColumnFilters}
+                setColumnFilters={setLandingColumnFilters}
                 getRowId={(row) => row._id}
                 variant={
                   theme === 'light'

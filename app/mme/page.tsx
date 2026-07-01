@@ -43,11 +43,16 @@ interface BulkAssetRow {
 
 export default function MMEPage() {
   const [data, setData] = useState<Equipment[]>([]);
+  const [recentAcquisitions, setRecentAcquisitions] = useState<Equipment[]>([]);
   const [assetNumberSearch, setAssetNumberSearch] = useState('');
   const [assetNameSearch, setAssetNameSearch] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [landingSorting, setLandingSorting] = useState<SortingState>([{ id: 'acquiredvalue', desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [landingColumnFilters, setLandingColumnFilters] = useState<ColumnFiltersState>([]);
   const [loading, setLoading] = useState(false);
+  const [landingLoading, setLandingLoading] = useState(true);
+  const [excludeCustody, setExcludeCustody] = useState(false);
   const [showBulkInsertModal, setShowBulkInsertModal] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkFileName, setBulkFileName] = useState('');
@@ -72,6 +77,10 @@ export default function MMEPage() {
     radius: number;
   }>>([]);
   const animationFrameRef = useRef<number>();
+
+  const isSearchActive =
+    (assetNumberSearch?.trim().length ?? 0) >= 2 ||
+    (assetNameSearch?.trim().length ?? 0) >= 2;
 
   const searchEquipment = async (assetNumber: string, assetName: string) => {
     // Only search if input is at least 2 characters
@@ -311,6 +320,28 @@ export default function MMEPage() {
   };
 
   useEffect(() => {
+    const fetchRecentAcquisitions = async () => {
+      setLandingLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (excludeCustody) params.append('excludeCustody', 'true');
+        const query = params.toString();
+        const response = await fetch(`/api/mme/recent-acquisitions${query ? `?${query}` : ''}`);
+        if (!response.ok) throw new Error('Failed to fetch recent acquisitions');
+        const result = await response.json();
+        setRecentAcquisitions(result.data || []);
+      } catch (error) {
+        console.error('Error fetching recent acquisitions:', error);
+        setRecentAcquisitions([]);
+      } finally {
+        setLandingLoading(false);
+      }
+    };
+
+    fetchRecentAcquisitions();
+  }, [excludeCustody]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       searchEquipment(assetNumberSearch, assetNameSearch);
     }, 500);
@@ -460,8 +491,13 @@ export default function MMEPage() {
   };
 
   const backgroundStyles = getBackgroundStyles();
-  
-  const columns: ColumnDef<Equipment>[] = [
+
+  const formatCurrency = (value: unknown) =>
+    typeof value === 'number'
+      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR' }).format(value)
+      : 'N/A';
+
+  const buildAssetColumns = (options?: { includeActions?: boolean }): ColumnDef<Equipment>[] => [
     {
       accessorKey: 'assetnumber',
       header: ({ column }) => (
@@ -522,10 +558,7 @@ export default function MMEPage() {
       ),
       cell: ({ row }) => {
         const value = row.getValue('acquiredvalue');
-        return typeof value === 'number' ? new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'SAR'
-        }).format(value) : 'N/A';
+        return formatCurrency(value);
       }
     },
     {
@@ -544,12 +577,46 @@ export default function MMEPage() {
         return date ? new Date(date).toLocaleDateString() : 'N/A';
       }
     },
-    {
-      id: 'qrcode',
-      header: () => <span className={backgroundStyles.textColor}>QR Code</span>,
-      cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} assetType="mme" />
-    }
+    ...(options?.includeActions
+      ? [
+          {
+            id: 'actions',
+            header: () => <span className={backgroundStyles.textColor}>Actions</span>,
+            cell: ({ row }: { row: { original: Equipment } }) => (
+              <div className="flex flex-wrap gap-2 text-[12px]">
+                <Link
+                  href={`/asset/${row.original.assetnumber}#custody`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${backgroundStyles.linkColor} font-medium transition-colors`}
+                >
+                  Custody
+                </Link>
+                <Link
+                  href={`/asset/${row.original.assetnumber}#calibration`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${backgroundStyles.linkColor} font-medium transition-colors`}
+                >
+                  Calibration
+                </Link>
+              </div>
+            ),
+          } as ColumnDef<Equipment>,
+        ]
+      : [
+          {
+            id: 'qrcode',
+            header: () => <span className={backgroundStyles.textColor}>QR Code</span>,
+            cell: ({ row }: { row: { original: Equipment } }) => (
+              <AssetQRCode assetNumber={row.original.assetnumber} assetType="mme" />
+            ),
+          } as ColumnDef<Equipment>,
+        ]),
   ];
+
+  const columns = buildAssetColumns();
+  const landingColumns = buildAssetColumns({ includeActions: true });
 
   return (
     <div className={backgroundStyles.container}>
@@ -600,25 +667,95 @@ export default function MMEPage() {
           </div>
         </div>
 
-        {/* Results Section */}
+        {/* Search Results Section */}
+        {isSearchActive && (
+          <div className={`mb-6 rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
+            {loading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
+              </div>
+            ) : data.length === 0 ? (
+              <div className={`text-center py-8 ${backgroundStyles.emptyText}`}>
+                No assets match your search criteria
+              </div>
+            ) : (
+              <div className={theme === 'default' ? 'dark' : undefined}>
+                <ResponsiveTanStackTable
+                  data={data}
+                  columns={columns}
+                  sorting={sorting}
+                  setSorting={setSorting}
+                  columnFilters={columnFilters}
+                  setColumnFilters={setColumnFilters}
+                  getRowId={(row) => row._id}
+                  variant={
+                    theme === 'light'
+                      ? 'light'
+                      : theme === 'glassmorphic'
+                        ? 'glassmorphic'
+                        : 'default'
+                  }
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Landing: recently acquired top assets */}
         <div className={`rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
-          {loading ? (
+          <div className={`border-b px-6 py-4 flex flex-wrap items-start justify-between gap-4 ${theme === 'light' ? 'border-blue-200' : 'border-white/20'}`}>
+            <div>
+              <h2 className={`text-lg font-semibold ${backgroundStyles.textColor}`}>
+                Latest Acquired Assets
+              </h2>
+              <p className={`mt-1 text-sm ${backgroundStyles.headerSubtitle}`}>
+                {excludeCustody
+                  ? 'Top 100 most recently acquired MME assets without custody, ranked by value'
+                  : 'Top 100 most recently acquired MME assets, ranked by value'}
+              </p>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <span className={`text-sm ${backgroundStyles.headerSubtitle}`}>Only without custody</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={excludeCustody}
+                onClick={() => setExcludeCustody((prev) => !prev)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  excludeCustody
+                    ? 'bg-teal-500'
+                    : theme === 'light'
+                      ? 'bg-gray-300'
+                      : 'bg-white/20'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                    excludeCustody ? 'translate-x-5' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </label>
+          </div>
+          {landingLoading ? (
             <div className="flex justify-center items-center h-32">
               <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
             </div>
-          ) : data.length === 0 ? (
+          ) : recentAcquisitions.length === 0 ? (
             <div className={`text-center py-8 ${backgroundStyles.emptyText}`}>
-              Enter search criteria to view assets
+              {excludeCustody
+                ? 'All recent assets have custody records'
+                : 'No recent acquisitions found'}
             </div>
           ) : (
             <div className={theme === 'default' ? 'dark' : undefined}>
               <ResponsiveTanStackTable
-                data={data}
-                columns={columns}
-                sorting={sorting}
-                setSorting={setSorting}
-                columnFilters={columnFilters}
-                setColumnFilters={setColumnFilters}
+                data={recentAcquisitions}
+                columns={landingColumns}
+                sorting={landingSorting}
+                setSorting={setLandingSorting}
+                columnFilters={landingColumnFilters}
+                setColumnFilters={setLandingColumnFilters}
                 getRowId={(row) => row._id}
                 variant={
                   theme === 'light'

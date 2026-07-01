@@ -37,6 +37,15 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
     fetchData();
   }, [params.assetnumber]);
 
+  useEffect(() => {
+    if (loading) return;
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'calibration' || hash === 'custody') {
+      const el = document.getElementById(hash);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [loading]);
+
   // Animated particle background for glassmorphic theme
   useEffect(() => {
     if (theme !== 'glassmorphic') {
@@ -311,6 +320,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
           <CollapsibleSection 
             title="Calibration Details"
             theme={theme}
+            sectionId="calibration"
           >
             <CalibrationDetails 
               currentCalibration={Array.isArray(calibrations) && calibrations.length > 0 ? calibrations[0] : null}
@@ -324,6 +334,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
           <CollapsibleSection 
             title="Custody Details"
             theme={theme}
+            sectionId="custody"
           >
             <CustodyDetails 
               currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}

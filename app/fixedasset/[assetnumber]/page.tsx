@@ -58,6 +58,15 @@ export default function FixedAssetPage() {
     fetchAssetData();
   }, [params?.assetnumber]);
 
+  useEffect(() => {
+    if (loading) return;
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'custody') {
+      const el = document.getElementById(hash);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [loading]);
+
   // Animated particle background
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -215,7 +224,7 @@ export default function FixedAssetPage() {
               />
             </CollapsibleSection>
           )}
-          <CollapsibleSection title="Custody Details">
+          <CollapsibleSection title="Custody Details" sectionId="custody">
             <CustodyDetails 
               currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}
               custodyHistory={custodyRecords.length > 1 ? custodyRecords.slice(1) : []}
