@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useTheme as useNextTheme } from 'next-themes';
 import type { Theme } from '@/app/components/AssetDetails';
 
 interface ThemeContextType {
@@ -10,31 +11,33 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function appThemeFromColorMode(colorMode: string | undefined): Theme {
+  return colorMode === 'light' ? 'light' : 'default';
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light');
+  const { resolvedTheme, setTheme: setNextTheme } = useNextTheme();
+  const [theme, setThemeState] = useState<Theme>('default');
   const [mounted, setMounted] = useState(false);
 
-  // Load theme from localStorage on mount
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem('app-theme') as Theme | null;
-    if (savedTheme && ['default', 'glassmorphic', 'light'].includes(savedTheme)) {
-      setThemeState(savedTheme);
-    }
   }, []);
 
-  // Save theme to localStorage when it changes
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem('app-theme', theme);
-    }
-  }, [theme, mounted]);
+    if (!mounted || !resolvedTheme) return;
+    setThemeState(appThemeFromColorMode(resolvedTheme));
+  }, [mounted, resolvedTheme]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
+    const colorMode = newTheme === 'light' ? 'light' : 'dark';
+    setNextTheme(colorMode);
+    if (mounted) {
+      localStorage.setItem('app-theme', newTheme === 'light' ? 'light' : 'default');
+    }
   };
 
-  // Always render the provider, even before mount, to prevent context errors
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
@@ -49,4 +52,3 @@ export function useAppTheme() {
   }
   return context;
 }
-

@@ -7,7 +7,7 @@ export interface AssetTypeSlice {
   value: number
 }
 
-const DEFAULT_COLORS = ["#3b82f6", "#8b5cf6", "#14b8a6", "#f59e0b", "#ef4444", "#64748b", "#ec4899", "#22c55e"]
+const DEFAULT_COLORS = ["#00B4D8", "#FF6B35", "#10B981", "#F59E0B", "#0077B6", "#64748B", "#EF4444", "#94A3B8"]
 
 interface AssetTypeDistributionProps {
   segments: AssetTypeSlice[]

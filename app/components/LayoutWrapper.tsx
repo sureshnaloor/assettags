@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
+import { isMarketingRoute } from '@/lib/design-tokens';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -44,9 +45,8 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   
   // Don't show sidebar on landing page, dashboard, and asset detail pages
   const shouldShowSidebar = pathname && 
-                           pathname !== '/' &&
+                           !isMarketingRoute(pathname) &&
                            pathname !== '/dashboard' &&
-                           pathname !== '/landing' &&
                            !pathname.match(/^\/asset\/[^\/]+$/) && 
                            !isFixedAssetAssetDetailPath(pathname) &&
                            !pathname.match(/^\/tools\/[^\/]+$/);
@@ -57,7 +57,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="grid flex-1 md:grid-cols-[256px_1fr] items-stretch">
+      <div className="grid flex-1 md:grid-cols-[280px_1fr] items-stretch">
         <Sidebar />
         <main className="flex flex-1 flex-col">
           {children}

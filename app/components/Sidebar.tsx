@@ -146,20 +146,20 @@ export default function Sidebar() {
           footerValue: 'text-gray-900',
           footerValueSecondary: 'text-gray-600'
         };
-      default: // dark theme
+      default: // dark theme — SmartTags design system
         return {
-          sidebarBg: 'bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]',
-          sidebarBorder: 'border-r border-slate-700',
-          sectionTitle: 'text-slate-100 border-b border-slate-700',
-          linkText: 'text-slate-300 hover:text-slate-100',
-          linkHover: 'hover:bg-slate-800 hover:shadow-md hover:shadow-slate-900/20 hover:border-slate-600',
-          linkActive: 'bg-slate-800 text-slate-100 shadow-lg shadow-slate-900/30 border border-slate-600',
-          linkIcon: 'text-teal-400',
-          emptyText: 'text-slate-400',
-          footerBg: 'bg-slate-800/50 border-t border-slate-700',
-          footerLabel: 'text-slate-300',
-          footerValue: 'text-slate-100',
-          footerValueSecondary: 'text-slate-400'
+          sidebarBg: 'bg-primary-navy',
+          sidebarBorder: 'border-r border-primary-light',
+          sectionTitle: 'text-text-primary border-b border-primary-light',
+          linkText: 'text-text-secondary hover:text-text-primary',
+          linkHover: 'hover:bg-primary-slate hover:border-primary-light/50',
+          linkActive: 'bg-accent-teal/15 text-accent-teal border-l-[3px] border-l-accent-teal shadow-none',
+          linkIcon: 'text-accent-teal',
+          emptyText: 'text-text-muted',
+          footerBg: 'bg-primary-slate/50 border-t border-primary-light',
+          footerLabel: 'text-text-muted',
+          footerValue: 'text-text-primary',
+          footerValueSecondary: 'text-text-muted'
         };
     }
   };
@@ -199,7 +199,7 @@ export default function Sidebar() {
   const subLinks = activeSection ? subLinksMap[activeSection] || [] : [];
 
   return (
-    <div className={`hidden ${sidebarStyles.sidebarBorder} ${sidebarStyles.sidebarBg} shadow-xl md:block md:w-64 self-stretch h-full`}>
+    <div className={`hidden ${sidebarStyles.sidebarBorder} ${sidebarStyles.sidebarBg} shadow-xl md:block md:w-[280px] self-stretch h-full`}>
       <div className="flex h-full flex-col gap-3">
         <div className="flex-1 overflow-auto py-6">
           {activeSection && subLinks.length > 0 ? (

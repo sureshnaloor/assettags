@@ -102,29 +102,29 @@ export default function Header() {
           mobileButton: 'text-gray-700 hover:text-blue-600 hover:bg-blue-50',
           loadingBg: 'bg-gray-300'
         };
-      default: // dark theme
+      default: // dark theme — SmartTags design system
         return {
-          headerBg: 'bg-slate-900/95 backdrop-blur-lg border-b border-slate-700',
-          logoTitle: 'bg-gradient-to-r from-slate-100 to-teal-400 bg-clip-text text-transparent',
-          navLink: 'text-slate-200 hover:text-teal-400 hover:bg-slate-800 border-transparent hover:border-slate-600',
-          navIcon: 'text-teal-400',
-          navChevron: 'text-slate-400',
-          dropdownBg: 'bg-slate-800/95 border border-slate-700 shadow-xl',
-          dropdownItem: 'text-slate-200 hover:text-teal-400 hover:bg-slate-700/50',
-          dropdownIcon: 'text-slate-400',
-          profileMenuBg: 'bg-slate-800/95 border border-slate-700 shadow-xl',
-          profileMenuText: 'text-slate-200 border-slate-700',
-          profileMenuItem: 'text-slate-200 hover:text-teal-400 hover:bg-slate-700/50',
-          profileMenuIcon: 'text-slate-400',
-          signOutHover: 'hover:text-red-400',
-          signInButton: 'bg-teal-600 hover:bg-teal-700 text-white',
-          mobileMenuBg: 'bg-slate-900/98 backdrop-blur-lg border-slate-700',
-          mobileSectionTitle: 'text-slate-400',
-          mobileLink: 'text-slate-200 hover:text-teal-400 hover:bg-slate-800',
-          mobileSubLink: 'text-slate-300 hover:text-teal-400 hover:bg-slate-800',
-          mobileIcon: 'text-slate-400',
-          mobileButton: 'text-slate-200 hover:text-teal-400 hover:bg-slate-800',
-          loadingBg: 'bg-slate-700'
+          headerBg: 'bg-[rgba(11,17,32,0.85)] backdrop-blur-xl border-b border-primary-light/30',
+          logoTitle: 'bg-gradient-to-r from-text-primary to-accent-teal bg-clip-text text-transparent',
+          navLink: 'text-text-secondary hover:text-accent-teal hover:bg-primary-slate border-transparent',
+          navIcon: 'text-accent-teal',
+          navChevron: 'text-text-muted',
+          dropdownBg: 'bg-primary-navy/95 backdrop-blur-xl border border-primary-light shadow-ds-lg',
+          dropdownItem: 'text-text-secondary hover:text-accent-teal hover:bg-primary-slate',
+          dropdownIcon: 'text-text-muted',
+          profileMenuBg: 'bg-primary-navy/95 backdrop-blur-xl border border-primary-light shadow-ds-lg',
+          profileMenuText: 'text-text-primary border-primary-light',
+          profileMenuItem: 'text-text-secondary hover:text-accent-teal hover:bg-primary-slate',
+          profileMenuIcon: 'text-text-muted',
+          signOutHover: 'hover:text-error',
+          signInButton: 'bg-cta-gradient hover:brightness-110 text-white shadow-glow-orange',
+          mobileMenuBg: 'bg-primary-dark/98 backdrop-blur-xl border-primary-light/30',
+          mobileSectionTitle: 'text-text-muted',
+          mobileLink: 'text-text-secondary hover:text-accent-teal hover:bg-primary-slate',
+          mobileSubLink: 'text-text-muted hover:text-accent-teal hover:bg-primary-slate',
+          mobileIcon: 'text-text-muted',
+          mobileButton: 'text-text-secondary hover:text-accent-teal hover:bg-primary-slate',
+          loadingBg: 'bg-primary-slate'
         };
     }
   };
@@ -177,7 +177,7 @@ export default function Header() {
 
   return (
     <header className={`sticky top-0 z-50 w-full ${headerStyles.headerBg} shadow-sm`}>
-      <div className="w-full h-16 flex items-center justify-between px-4 lg:px-6">
+      <div className="w-full h-[72px] flex items-center justify-between px-4 lg:px-6">
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center group">

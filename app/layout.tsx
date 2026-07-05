@@ -24,8 +24,8 @@ const geistMono = localFont({
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Asset tags",
-  description: "Gen-latest AI assisted Asset tags for your assets",
+  title: "SmartTags — Asset Intelligence Platform",
+  description: "Every Asset. One Scan. Total Control. Enterprise-grade asset and equipment tagging for modern operations.",
 };
 
 export default function RootLayout({
