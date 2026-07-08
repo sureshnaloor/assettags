@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import CollapsibleSection from '@/app/components/CollapsibleSection';
-import type { Theme } from '@/app/components/AssetDetails';
+import FixedAssetSection from '@/app/components/fixedasset/FixedAssetSection';
+import { fap } from '@/lib/fixedAssetPageDesign';
 
-type AssetType = 'portable' | 'software' | 'transport' | 'mme' | 'fixedasset';
+type AssetType = 'portable' | 'software' | 'transport' | 'facility' | 'mme' | 'fixedasset';
 type FieldType = 'text' | 'number' | 'date';
 
 interface CustomDetailRecord {
@@ -25,7 +25,6 @@ interface CustomDetailRecord {
 interface Props {
   assetType: AssetType;
   assetnumber: string;
-  theme?: Theme;
 }
 
 function formatValue(record: CustomDetailRecord): string {
@@ -49,7 +48,7 @@ function formatMetaDate(value: string | Date | null | undefined): string {
   return d.toLocaleString();
 }
 
-export default function CustomDetailsSection({ assetType, assetnumber, theme = 'default' }: Props) {
+export default function CustomDetailsSection({ assetType, assetnumber }: Props) {
   const [rows, setRows] = useState<CustomDetailRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,57 +72,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
   });
 
   const base = `/api/customdata/${encodeURIComponent(assetType)}/${encodeURIComponent(assetnumber)}`;
-  const getContainerStyles = () => {
-    switch (theme) {
-      case 'glassmorphic':
-        return 'bg-white/10 backdrop-blur-lg border border-white/20';
-      case 'light':
-        return 'bg-white border-2 border-blue-200';
-      default:
-        return 'bg-slate-800 border border-slate-600/60';
-    }
-  };
-
-  const getTextStyles = () => {
-    switch (theme) {
-      case 'glassmorphic':
-        return {
-          primary: 'text-white',
-          secondary: 'text-white/75',
-          muted: 'text-white/60',
-          tableHead: 'bg-black/30 text-white/80',
-          tableRow: 'border-white/10 text-white/90',
-          input: 'border-white/20 bg-white/10 text-white placeholder-white/40',
-          subtleBorder: 'border-white/10',
-          buttonSecondary: 'border-white/20 text-white/80',
-        };
-      case 'light':
-        return {
-          primary: 'text-gray-900',
-          secondary: 'text-gray-700',
-          muted: 'text-gray-500',
-          tableHead: 'bg-blue-50 text-blue-900',
-          tableRow: 'border-blue-100 text-gray-800',
-          input: 'border-blue-300 bg-white text-gray-900 placeholder-gray-400',
-          subtleBorder: 'border-blue-100',
-          buttonSecondary: 'border-blue-300 text-gray-700',
-        };
-      default:
-        return {
-          primary: 'text-zinc-100',
-          secondary: 'text-zinc-300',
-          muted: 'text-zinc-400',
-          tableHead: 'bg-black/30 text-white/80',
-          tableRow: 'border-white/10 text-white/90',
-          input: 'border-white/20 bg-white/10 text-white placeholder-white/40',
-          subtleBorder: 'border-white/10',
-          buttonSecondary: 'border-white/20 text-white/80',
-        };
-    }
-  };
-
-  const styles = getTextStyles();
-  const inputClass = `mt-1 w-full rounded-lg border px-3 py-2 text-sm ${styles.input}`;
+  const inputClass = fap.input;
 
   const load = async () => {
     try {
@@ -254,20 +203,20 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
   };
 
   return (
-    <CollapsibleSection title="Custom details" defaultExpanded theme={theme}>
-      <div className={`w-full max-w-4xl space-y-4 rounded-xl p-6 ${getContainerStyles()}`}>
-        <p className={`text-sm ${styles.secondary}`}>
+    <FixedAssetSection title="Custom details" defaultExpanded>
+      <div className="w-full max-w-4xl space-y-4">
+        <p className={`text-sm ${fap.textSecondary}`}>
           Add custom fields per asset. Choose field type, set a label, then enter a value.
         </p>
 
-        {error && <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</div>}
+        {error && <div className={fap.errorBox}>{error}</div>}
 
         {loading ? (
-          <div className={`text-sm ${styles.secondary}`}>Loading custom details…</div>
+          <div className={`text-sm ${fap.textSecondary}`}>Loading custom details…</div>
         ) : (
-          <div className={`overflow-x-auto rounded-lg border ${styles.subtleBorder}`}>
+          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#2A3B4C]/50">
             <table className="min-w-full text-left text-sm">
-              <thead className={styles.tableHead}>
+              <thead className={fap.tableHead}>
                 <tr>
                   <th className="px-3 py-2">Label</th>
                   <th className="px-3 py-2">Type</th>
@@ -279,11 +228,11 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r._id} className={`border-t ${styles.tableRow}`}>
+                  <tr key={r._id} className={`border-t ${fap.tableRow}`}>
                     <td className="px-3 py-2">
                       {editingId === r._id ? (
                         <input
-                          className={`w-full rounded border px-2 py-1 text-xs ${styles.input}`}
+                          className={`w-full rounded border px-2 py-1 text-xs ${fap.input}`}
                           value={editField.label}
                           onChange={(e) => setEditField((f) => ({ ...f, label: e.target.value }))}
                         />
@@ -294,7 +243,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                     <td className="px-3 py-2 capitalize">
                       {editingId === r._id ? (
                         <select
-                          className={`w-full rounded border px-2 py-1 text-xs ${styles.input}`}
+                          className={`w-full rounded border px-2 py-1 text-xs ${fap.input}`}
                           value={editField.fieldType}
                           onChange={(e) =>
                             setEditField((f) => ({
@@ -319,7 +268,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                         <>
                           {editField.fieldType === 'text' && (
                             <input
-                              className={`w-full rounded border px-2 py-1 text-xs ${styles.input}`}
+                              className={`w-full rounded border px-2 py-1 text-xs ${fap.input}`}
                               value={editField.valueText}
                               onChange={(e) => setEditField((f) => ({ ...f, valueText: e.target.value }))}
                             />
@@ -328,7 +277,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                             <input
                               type="number"
                               step="any"
-                              className={`w-full rounded border px-2 py-1 text-xs ${styles.input}`}
+                              className={`w-full rounded border px-2 py-1 text-xs ${fap.input}`}
                               value={editField.valueNumber}
                               onChange={(e) => setEditField((f) => ({ ...f, valueNumber: e.target.value }))}
                             />
@@ -336,7 +285,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                           {editField.fieldType === 'date' && (
                             <input
                               type="date"
-                              className={`w-full rounded border px-2 py-1 text-xs ${styles.input}`}
+                              className={`w-full rounded border px-2 py-1 text-xs ${fap.input}`}
                               value={editField.valueDate}
                               onChange={(e) => setEditField((f) => ({ ...f, valueDate: e.target.value }))}
                             />
@@ -346,10 +295,10 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                         formatValue(r)
                       )}
                     </td>
-                    <td className={`px-3 py-2 text-xs ${styles.muted}`}>
+                    <td className={`px-3 py-2 text-xs ${fap.textMuted}`}>
                       {r.createdby || '—'}
                     </td>
-                    <td className={`px-3 py-2 text-xs ${styles.muted}`}>
+                    <td className={`px-3 py-2 text-xs ${fap.textMuted}`}>
                       {(r.updatedby || '—') + ' / ' + formatMetaDate(r.updatedat)}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
@@ -359,14 +308,14 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                             type="button"
                             onClick={saveEdit}
                             disabled={editSaving}
-                            className="mr-2 text-teal-300 hover:underline text-xs disabled:opacity-50"
+                            className="mr-2 text-xs text-[#00B4D8] hover:underline disabled:opacity-50"
                           >
                             {editSaving ? 'Saving…' : 'Save'}
                           </button>
                           <button
                             type="button"
                             onClick={() => setEditingId(null)}
-                            className={`mr-2 hover:underline text-xs ${styles.secondary}`}
+                            className={`mr-2 text-xs hover:underline ${fap.textSecondary}`}
                           >
                             Cancel
                           </button>
@@ -376,14 +325,14 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                           <button
                             type="button"
                             onClick={() => openEdit(r)}
-                            className="mr-2 text-teal-300 hover:underline text-xs"
+                            className="mr-2 text-xs text-[#00B4D8] hover:underline"
                           >
                             Edit
                           </button>
                           <button
                             type="button"
                             onClick={() => deleteCustomDetail(r._id)}
-                            className="text-red-300 hover:underline text-xs"
+                            className="text-xs text-[#EF4444] hover:underline"
                           >
                             Delete
                           </button>
@@ -394,7 +343,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                 ))}
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={6} className={`px-3 py-4 text-center ${styles.muted}`}>
+                    <td colSpan={6} className={`px-3 py-4 text-center ${fap.textMuted}`}>
                       No custom details yet.
                     </td>
                   </tr>
@@ -408,14 +357,14 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
           <button
             type="button"
             onClick={() => setIsAdding(true)}
-            className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium hover:bg-teal-500 text-white"
+            className={fap.btnPrimary}
           >
             + Add custom field
           </button>
         ) : (
-          <div className={`grid gap-3 border-t pt-4 sm:grid-cols-2 ${styles.subtleBorder}`}>
+          <div className="grid gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2 dark:border-[#2A3B4C]/50">
             <label className="block">
-              <span className={`text-xs ${styles.secondary}`}>Label</span>
+              <span className={`text-xs ${fap.textSecondary}`}>Label</span>
               <input
                 className={inputClass}
                 value={newField.label}
@@ -424,7 +373,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
               />
             </label>
             <label className="block">
-              <span className={`text-xs ${styles.secondary}`}>Input type</span>
+              <span className={`text-xs ${fap.textSecondary}`}>Input type</span>
               <select
                 className={inputClass}
                 value={newField.fieldType}
@@ -446,7 +395,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
 
             {newField.fieldType === 'text' && (
               <label className="block sm:col-span-2">
-                <span className={`text-xs ${styles.secondary}`}>Value</span>
+                <span className={`text-xs ${fap.textSecondary}`}>Value</span>
                 <input
                   className={inputClass}
                   value={newField.valueText}
@@ -457,7 +406,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
 
             {newField.fieldType === 'number' && (
               <label className="block sm:col-span-2">
-                <span className={`text-xs ${styles.secondary}`}>Value</span>
+                <span className={`text-xs ${fap.textSecondary}`}>Value</span>
                 <input
                   type="number"
                   step="any"
@@ -470,7 +419,7 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
 
             {newField.fieldType === 'date' && (
               <label className="block sm:col-span-2">
-                <span className={`text-xs ${styles.secondary}`}>Value</span>
+                <span className={`text-xs ${fap.textSecondary}`}>Value</span>
                 <input
                   type="date"
                   className={inputClass}
@@ -485,14 +434,14 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
                 type="button"
                 onClick={addCustomDetail}
                 disabled={saving}
-                className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium hover:bg-teal-500 text-white disabled:opacity-50"
+                className={`${fap.btnPrimary} disabled:opacity-50`}
               >
                 {saving ? 'Saving…' : 'Save custom field'}
               </button>
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className={`rounded-lg border px-4 py-2 text-sm ${styles.buttonSecondary}`}
+                className={fap.btnSecondary}
               >
                 Cancel
               </button>
@@ -500,6 +449,6 @@ export default function CustomDetailsSection({ assetType, assetnumber, theme = '
           </div>
         )}
       </div>
-    </CollapsibleSection>
+    </FixedAssetSection>
   );
 }

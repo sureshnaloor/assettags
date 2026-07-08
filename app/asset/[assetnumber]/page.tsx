@@ -346,7 +346,7 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
             />
           </CollapsibleSection>
 
-          <CustomDetailsSection assetType="mme" assetnumber={params.assetnumber} theme={theme} />
+          <CustomDetailsSection assetType="mme" assetnumber={params.assetnumber} />
 
           <button
             onClick={handleLogLocation}

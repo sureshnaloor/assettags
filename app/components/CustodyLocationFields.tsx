@@ -120,16 +120,17 @@ export default function CustodyLocationFields({
   const inputClass =
     classNames?.input ??
     (variant === 'page'
-      ? 'w-full bg-white/10 border border-white/20 text-white text-sm rounded-md p-2 placeholder-white/40'
+      ? 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[rgba(8,145,178,0.2)] dark:border-[#2A3B4C] dark:bg-[#1E293B] dark:text-[#F8F9FA] dark:placeholder:text-[#64748B] dark:focus:border-[#00B4D8] dark:focus:ring-[rgba(0,180,216,0.25)]'
       : 'w-full bg-slate-700/50 text-zinc-100 text-sm rounded-md border-0 ring-1 ring-slate-600 p-2');
 
   const labelClass =
     classNames?.label ??
     (variant === 'page'
-      ? 'block text-sm font-medium text-zinc-200 mb-1'
+      ? 'mb-1 block text-sm font-medium text-[#475569] dark:text-[#94A3B8]'
       : 'block text-sm font-medium text-zinc-300 mb-1');
 
-  const hintClass = classNames?.hint ?? 'text-sm text-zinc-400';
+  const hintClass =
+    classNames?.hint ?? 'text-sm text-[#64748B] dark:text-zinc-400';
 
   const isProjectSite = locationType === 'project_site';
 
@@ -145,7 +146,10 @@ export default function CustodyLocationFields({
               ['project_site', 'Project site'],
             ] as const
           ).map(([value, label]) => (
-            <label key={value} className="flex items-center gap-2 text-sm text-zinc-200">
+            <label
+              key={value}
+              className="flex items-center gap-2 text-sm text-[#475569] dark:text-zinc-200"
+            >
               <input
                 type="radio"
                 name="custody-loc-type"

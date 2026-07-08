@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fap } from '@/lib/fixedAssetPageDesign';
 
 interface Manufacturer {
   _id: string;
@@ -86,49 +87,38 @@ export default function FixedAssetManufacturerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 p-6 text-white">
-      <div className="mx-auto max-w-5xl space-y-6">
-        <h1 className="text-2xl font-bold">Fixed Asset Manufacturer Management</h1>
+    <div className={`${fap.page} p-6`}>
+      <div className={fap.masterContainer}>
+        <h1 className={`text-2xl font-bold ${fap.textPrimary}`}>Fixed Asset Manufacturer Management</h1>
 
-        {error && (
-          <div className="rounded-lg border border-red-400/40 bg-red-500/10 p-3 text-sm text-red-200">
-            {error}
-          </div>
-        )}
+        {error && <div className={fap.errorBox}>{error}</div>}
 
-        <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-          <h2 className="mb-3 text-lg font-semibold">Add Manufacturer</h2>
+        <div className={`${fap.card} p-4`}>
+          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>Add Manufacturer</h2>
           <div className="flex gap-3">
             <input
               type="text"
               value={newManufacturerName}
               onChange={(e) => setNewManufacturerName(e.target.value)}
               placeholder="Manufacturer name"
-              className="flex-1 rounded-md border border-slate-600 bg-slate-900 px-3 py-2"
+              className={`flex-1 ${fap.input}`}
             />
-            <button
-              type="button"
-              onClick={handleAddManufacturer}
-              className="rounded-md bg-blue-600 px-4 py-2 font-medium hover:bg-blue-500"
-            >
+            <button type="button" onClick={handleAddManufacturer} className={fap.btnPrimary}>
               Add
             </button>
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-          <h2 className="mb-3 text-lg font-semibold">View / Edit Manufacturers</h2>
+        <div className={`${fap.card} p-4`}>
+          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>View / Edit Manufacturers</h2>
           {loading ? (
-            <p className="text-sm text-slate-300">Loading manufacturers...</p>
+            <p className={`text-sm ${fap.textSecondary}`}>Loading manufacturers...</p>
           ) : manufacturers.length === 0 ? (
-            <p className="text-sm text-slate-300">No manufacturers found.</p>
+            <p className={`text-sm ${fap.textSecondary}`}>No manufacturers found.</p>
           ) : (
             <div className="space-y-2">
               {manufacturers.map((manufacturer) => (
-                <div
-                  key={manufacturer._id}
-                  className="flex items-center justify-between rounded-md border border-slate-700 bg-slate-900 p-3"
-                >
+                <div key={manufacturer._id} className={fap.listItem}>
                   {editingManufacturer?._id === manufacturer._id ? (
                     <input
                       type="text"
@@ -136,10 +126,10 @@ export default function FixedAssetManufacturerPage() {
                       onChange={(e) =>
                         setEditingManufacturer((prev) => (prev ? { ...prev, name: e.target.value } : null))
                       }
-                      className="mr-3 flex-1 rounded-md border border-slate-600 bg-slate-800 px-3 py-2"
+                      className={`mr-3 flex-1 ${fap.input}`}
                     />
                   ) : (
-                    <span>{manufacturer.name}</span>
+                    <span className={fap.textPrimary}>{manufacturer.name}</span>
                   )}
 
                   <div className="flex gap-2">
@@ -148,15 +138,11 @@ export default function FixedAssetManufacturerPage() {
                         <button
                           type="button"
                           onClick={handleUpdateManufacturer}
-                          className="rounded-md bg-emerald-600 px-3 py-1 text-sm hover:bg-emerald-500"
+                          className="rounded-md bg-emerald-600 px-3 py-1 text-sm text-white hover:bg-emerald-500"
                         >
                           Save
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingManufacturer(null)}
-                          className="rounded-md bg-slate-600 px-3 py-1 text-sm hover:bg-slate-500"
-                        >
+                        <button type="button" onClick={() => setEditingManufacturer(null)} className={fap.btnSecondary}>
                           Cancel
                         </button>
                       </>
@@ -165,14 +151,14 @@ export default function FixedAssetManufacturerPage() {
                         <button
                           type="button"
                           onClick={() => setEditingManufacturer(manufacturer)}
-                          className="rounded-md bg-blue-600 px-3 py-1 text-sm hover:bg-blue-500"
+                          className="rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-500"
                         >
                           Edit
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteManufacturer(manufacturer._id)}
-                          className="rounded-md bg-red-600 px-3 py-1 text-sm hover:bg-red-500"
+                          className="rounded-md bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-500"
                         >
                           Delete
                         </button>

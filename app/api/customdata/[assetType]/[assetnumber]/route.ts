@@ -4,7 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 
 const COLLECTION = 'customdata';
-const ASSET_TYPES = new Set(['portable', 'software', 'transport', 'mme', 'fixedasset']);
+const ASSET_TYPES = new Set(['portable', 'software', 'transport', 'facility', 'mme', 'fixedasset']);
 const FIELD_TYPES = new Set(['text', 'number', 'date']);
 
 function isValidAssetType(value: string): boolean {

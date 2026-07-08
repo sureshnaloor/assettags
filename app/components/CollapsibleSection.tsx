@@ -29,22 +29,22 @@ export default function CollapsibleSection({
   const getRibbonStyles = () => {
     switch (theme) {
       case 'glassmorphic':
-        return 'bg-white/10 backdrop-blur-lg border border-white/20 hover:bg-white/15';
+        return 'border border-slate-200 bg-white hover:bg-slate-50 dark:border-white/20 dark:bg-white/10 dark:backdrop-blur-lg dark:hover:bg-white/15';
       case 'light':
         return 'bg-blue-100/90 border border-blue-200 hover:bg-blue-200/90';
       default:
-        return 'bg-sky-600/80 dark:bg-sky-700/80 hover:bg-sky-600/90 dark:hover:bg-sky-700/90';
+        return 'border border-sky-200 bg-sky-100 hover:bg-sky-200 dark:border-sky-600/50 dark:bg-sky-700/80 dark:hover:bg-sky-700/90';
     }
   };
 
   const getTextStyles = () => {
     switch (theme) {
       case 'glassmorphic':
-        return 'text-white';
+        return 'text-[#0F172A] dark:text-white';
       case 'light':
         return 'text-blue-900';
       default:
-        return 'text-emerald-200 dark:text-emerald-300';
+        return 'text-sky-900 dark:text-emerald-300';
     }
   };
 

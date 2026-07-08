@@ -12,6 +12,7 @@ interface AssetQRCodeProps {
     | 'fixedasset'
     | 'softwareasset'
     | 'transportasset'
+    | 'facilityasset'
     | 'portableasset'
     | 'Tool'
     | 'Zero-Value Material'
@@ -28,6 +29,8 @@ function buildAssetUrl(origin: string, assetNumber: string, assetType: NonNullab
       return `${origin}/fixedasset/software-assets/${enc}`;
     case 'transportasset':
       return `${origin}/fixedasset/transport-assets/${enc}`;
+    case 'facilityasset':
+      return `${origin}/fixedasset/facility-assets/${enc}`;
     case 'portableasset':
       return `${origin}/fixedasset/portable-assets/${enc}`;
     case 'Tool':

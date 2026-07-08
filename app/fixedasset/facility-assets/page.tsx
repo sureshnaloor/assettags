@@ -16,22 +16,7 @@ import FixedAssetStatusBadge from '@/app/components/fixedasset/FixedAssetStatusB
 import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
 import { computeAssetStats, sortBtn, th } from '@/lib/fixedAssetListHelpers';
 
-export type PortableTypeValue =
-  | ''
-  | 'pre_engineered'
-  | 'container_20'
-  | 'container_40'
-  | 'prefabricated_sheet';
-
-const PORTABLE_TYPE_LABELS: Record<string, string> = {
-  '': '—',
-  pre_engineered: 'Pre engineered',
-  container_20: "Container 20'",
-  container_40: "Container 40'",
-  prefabricated_sheet: 'Prefabricated sheet type'
-};
-
-interface PortableAsset {
+interface FacilityAsset {
   _id: string;
   assetnumber: string;
   assetdescription: string;
@@ -42,11 +27,9 @@ interface PortableAsset {
   acquireddate?: string | Date | null;
   location: string;
   department: string;
-  portableType?: PortableTypeValue | string;
-  installationLocation?: string;
 }
 
-interface BulkPortableAssetRow {
+interface BulkFacilityAssetRow {
   assetnumber: string;
   assetdescription: string;
   assetcategory?: string;
@@ -56,8 +39,6 @@ interface BulkPortableAssetRow {
   acquireddate?: string;
   location?: string;
   department?: string;
-  portableType?: string;
-  installationLocation?: string;
   sourceRow?: number;
 }
 
@@ -70,9 +51,7 @@ const emptyForm = () => ({
   acquiredvalue: '',
   acquireddate: '',
   location: '',
-  department: '',
-  portableType: '' as PortableTypeValue | '',
-  installationLocation: ''
+  department: ''
 });
 
 function formatDateInput(value: string | Date | null | undefined): string {
@@ -82,8 +61,8 @@ function formatDateInput(value: string | Date | null | undefined): string {
   return d.toISOString().slice(0, 10);
 }
 
-export default function PortableAssetsPage() {
-  const [data, setData] = useState<PortableAsset[]>([]);
+export default function FacilityAssetsPage() {
+  const [data, setData] = useState<FacilityAsset[]>([]);
   const [assetNumberSearch, setAssetNumberSearch] = useState('');
   const [assetNameSearch, setAssetNameSearch] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -96,8 +75,8 @@ export default function PortableAssetsPage() {
   const [showBulkInsertModal, setShowBulkInsertModal] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkFileName, setBulkFileName] = useState('');
-  const [bulkRows, setBulkRows] = useState<BulkPortableAssetRow[]>([]);
-  const [validatedRows, setValidatedRows] = useState<BulkPortableAssetRow[]>([]);
+  const [bulkRows, setBulkRows] = useState<BulkFacilityAssetRow[]>([]);
+  const [validatedRows, setValidatedRows] = useState<BulkFacilityAssetRow[]>([]);
   const [validationMessage, setValidationMessage] = useState('');
   const [validationSummary, setValidationSummary] = useState<{
     totalUploaded: number;
@@ -128,7 +107,7 @@ export default function PortableAssetsPage() {
 
   const normalizeHeader = (header: unknown) => String(header ?? '').trim().toLowerCase();
 
-  const parseBulkFile = async (file: File): Promise<BulkPortableAssetRow[]> => {
+  const parseBulkFile = async (file: File): Promise<BulkFacilityAssetRow[]> => {
     const arrayBuffer = await file.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
     const sheetName = workbook.SheetNames[0];
@@ -158,7 +137,7 @@ export default function PortableAssetsPage() {
       return String(row[idx] ?? '').trim();
     };
 
-    const parsed: BulkPortableAssetRow[] = [];
+    const parsed: BulkFacilityAssetRow[] = [];
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
@@ -171,8 +150,6 @@ export default function PortableAssetsPage() {
       const acquireddate = getCell(row, ['acquired date', 'acquireddate']);
       const location = getCell(row, ['location']);
       const department = getCell(row, ['department']);
-      const portableType = getCell(row, ['portable type', 'portabletype']);
-      const installationLocation = getCell(row, ['installation location', 'installationlocation']);
 
       const hasAnyData = [
         assetnumber,
@@ -183,9 +160,7 @@ export default function PortableAssetsPage() {
         acquiredValueText,
         acquireddate,
         location,
-        department,
-        portableType,
-        installationLocation
+        department
       ].some((value) => value !== '');
       if (!hasAnyData) {
         continue;
@@ -202,8 +177,6 @@ export default function PortableAssetsPage() {
         acquireddate,
         location,
         department,
-        portableType,
-        installationLocation,
         sourceRow: i + 1
       });
     }
@@ -222,12 +195,12 @@ export default function PortableAssetsPage() {
       if (assetNumberSearch.trim().length >= 2) params.append('assetNumber', assetNumberSearch.trim());
       if (assetNameSearch.trim().length >= 2) params.append('assetName', assetNameSearch.trim());
 
-      const response = await fetch(`/api/portableassets?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch portable assets');
+      const response = await fetch(`/api/facilityassets?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch facility assets');
       const json = await response.json();
       setData(Array.isArray(json) ? json : []);
     } catch (error) {
-      console.error('Error fetching portable assets:', error);
+      console.error('Error fetching facility assets:', error);
       setData([]);
     } finally {
       setLoading(false);
@@ -243,7 +216,7 @@ export default function PortableAssetsPage() {
 
   const handleDownloadTemplate = async () => {
     try {
-      const response = await fetch('/api/portableassets/template');
+      const response = await fetch('/api/facilityassets/template');
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error((data as { error?: string }).error || 'Failed to download template.');
@@ -253,7 +226,7 @@ export default function PortableAssetsPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'portableassets_bulk_insert_template.xlsx';
+      link.download = 'facilityassets_bulk_insert_template.xlsx';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -290,7 +263,7 @@ export default function PortableAssetsPage() {
 
     try {
       setBulkLoading(true);
-      const response = await fetch('/api/portableassets/bulk-import', {
+      const response = await fetch('/api/facilityassets/bulk-import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'validate', rows: bulkRows })
@@ -329,7 +302,7 @@ export default function PortableAssetsPage() {
 
     try {
       setBulkLoading(true);
-      const response = await fetch('/api/portableassets/bulk-import', {
+      const response = await fetch('/api/facilityassets/bulk-import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'insert', rows: validatedRows })
@@ -340,7 +313,7 @@ export default function PortableAssetsPage() {
         throw new Error(result.details || result.error || 'Insert failed.');
       }
 
-      alert(result.message || 'Portable assets inserted successfully.');
+      alert(result.message || 'Facility assets inserted successfully.');
       setShowBulkInsertModal(false);
       resetBulkState();
       loadData();
@@ -368,9 +341,7 @@ export default function PortableAssetsPage() {
         assetsubcategory: form.assetsubcategory,
         assetstatus: form.assetstatus,
         location: form.location,
-        department: form.department,
-        portableType: form.portableType || '',
-        installationLocation: form.installationLocation
+        department: form.department
       };
       if (form.acquiredvalue.trim() !== '') {
         body.acquiredvalue = Number(form.acquiredvalue);
@@ -379,7 +350,7 @@ export default function PortableAssetsPage() {
         body.acquireddate = form.acquireddate;
       }
 
-      const res = await fetch('/api/portableassets', {
+      const res = await fetch('/api/facilityassets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -387,20 +358,20 @@ export default function PortableAssetsPage() {
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error((json as { error?: string }).error || 'Failed to add portable asset.');
+        throw new Error((json as { error?: string }).error || 'Failed to add facility asset.');
       }
 
       setForm(emptyForm());
       loadData();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to add.';
-      openBulkErrorModal('Add Portable Asset', message);
+      openBulkErrorModal('Add Facility Asset', message);
     } finally {
       setSaving(false);
     }
   };
 
-  const openEdit = (row: PortableAsset) => {
+  const openEdit = (row: FacilityAsset) => {
     setEditAssetNumber(row.assetnumber);
     setEditForm({
       assetnumber: row.assetnumber,
@@ -412,9 +383,7 @@ export default function PortableAssetsPage() {
         row.acquiredvalue !== null && row.acquiredvalue !== undefined ? String(row.acquiredvalue) : '',
       acquireddate: formatDateInput(row.acquireddate),
       location: row.location ?? '',
-      department: row.department ?? '',
-      portableType: (row.portableType as PortableTypeValue | '') ?? '',
-      installationLocation: row.installationLocation ?? ''
+      department: row.department ?? ''
     });
     setEditOpen(true);
   };
@@ -430,9 +399,7 @@ export default function PortableAssetsPage() {
         assetsubcategory: editForm.assetsubcategory,
         assetstatus: editForm.assetstatus,
         location: editForm.location,
-        department: editForm.department,
-        portableType: editForm.portableType || '',
-        installationLocation: editForm.installationLocation
+        department: editForm.department
       };
       if (editForm.acquiredvalue.trim() !== '') {
         body.acquiredvalue = Number(editForm.acquiredvalue);
@@ -441,7 +408,7 @@ export default function PortableAssetsPage() {
       }
       body.acquireddate = editForm.acquireddate || null;
 
-      const res = await fetch(`/api/portableassets/${encodeURIComponent(editAssetNumber)}`, {
+      const res = await fetch(`/api/facilityassets/${encodeURIComponent(editAssetNumber)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -456,19 +423,19 @@ export default function PortableAssetsPage() {
       loadData();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Update failed.';
-      openBulkErrorModal('Edit Portable Asset', message);
+      openBulkErrorModal('Edit Facility Asset', message);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (assetnumber: string) => {
-    if (!window.confirm(`Delete portable asset "${assetnumber}"? This cannot be undone.`)) {
+    if (!window.confirm(`Delete facility asset "${assetnumber}"? This cannot be undone.`)) {
       return;
     }
 
     try {
-      const res = await fetch(`/api/portableassets/${encodeURIComponent(assetnumber)}`, {
+      const res = await fetch(`/api/facilityassets/${encodeURIComponent(assetnumber)}`, {
         method: 'DELETE'
       });
       if (!res.ok) {
@@ -478,13 +445,13 @@ export default function PortableAssetsPage() {
       loadData();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Delete failed.';
-      openBulkErrorModal('Delete Portable Asset', message);
+      openBulkErrorModal('Delete Facility Asset', message);
     }
   };
 
   const stats = computeAssetStats(data);
 
-  const columns: ColumnDef<PortableAsset>[] = [
+  const columns: ColumnDef<FacilityAsset>[] = [
     {
       accessorKey: 'assetnumber',
       header: ({ column }) => (
@@ -494,7 +461,7 @@ export default function PortableAssetsPage() {
         </button>
       ),
       cell: ({ row }) => (
-        <Link href={`/fixedasset/portable-assets/${encodeURIComponent(row.original.assetnumber)}`} className={fap.link}>
+        <Link href={`/fixedasset/facility-assets/${encodeURIComponent(row.original.assetnumber)}`} className={fap.link}>
           {row.original.assetnumber}
         </Link>
       ),
@@ -525,24 +492,6 @@ export default function PortableAssetsPage() {
     },
     { accessorKey: 'department', header: () => <span className={th}>Department</span> },
     {
-      accessorKey: 'portableType',
-      header: () => <span className={th}>Portable type</span>,
-      cell: ({ row }) => (
-        <span className="text-sm text-[#0F172A] dark:text-[#F8F9FA]">
-          {PORTABLE_TYPE_LABELS[row.original.portableType ?? ''] ?? row.original.portableType ?? '—'}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'installationLocation',
-      header: () => <span className={th}>Installation</span>,
-      cell: ({ row }) => (
-        <span className="max-w-[200px] truncate text-sm text-[#475569] dark:text-[#94A3B8]">
-          {row.original.installationLocation || '—'}
-        </span>
-      ),
-    },
-    {
       accessorKey: 'acquiredvalue',
       header: ({ column }) => (
         <button type="button" className={sortBtn} onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -563,7 +512,7 @@ export default function PortableAssetsPage() {
         <AssetQRCode
           assetNumber={row.original.assetnumber}
           assetDescription={row.original.assetdescription}
-          assetType="portableasset"
+          assetType="facilityasset"
         />
       ),
     },
@@ -589,8 +538,8 @@ export default function PortableAssetsPage() {
     <div className={fap.page}>
       <div className={fap.listContainer}>
         <FixedAssetPageHeader
-          title="Portable Assets"
-          subtitle="Add portable assets individually or in bulk. Open an asset for installation location and modifications."
+          title="Facility Assets"
+          subtitle="Search and manage facility equipment — AC units, washing machines, refrigerators, and more."
         />
 
         <div className={`${fap.card} ${fap.cardPadding} mb-8`}>
@@ -623,15 +572,15 @@ export default function PortableAssetsPage() {
         <FixedAssetStatBar stats={stats} />
 
         <form onSubmit={handleAddSubmit} className={`${fap.card} ${fap.cardPadding} mb-8 space-y-4`}>
-          <h2 className={fap.sectionTitle}>Add portable asset</h2>
+          <h2 className={fap.sectionTitle}>Add facility asset</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className={fap.label}>Asset number *</label>
-              <input className={fap.input} value={form.assetnumber} onChange={(e) => setForm((f) => ({ ...f, assetnumber: e.target.value }))} placeholder="e.g. PA-9001" required />
+              <input className={fap.input} value={form.assetnumber} onChange={(e) => setForm((f) => ({ ...f, assetnumber: e.target.value }))} placeholder="e.g. FA-1001" required />
             </div>
             <div className="md:col-span-2">
               <label className={fap.label}>Description *</label>
-              <input className={fap.input} value={form.assetdescription} onChange={(e) => setForm((f) => ({ ...f, assetdescription: e.target.value }))} placeholder="License or product name" required />
+              <input className={fap.input} value={form.assetdescription} onChange={(e) => setForm((f) => ({ ...f, assetdescription: e.target.value }))} placeholder="e.g. Split AC 2 ton" required />
             </div>
             {(
               [
@@ -655,24 +604,6 @@ export default function PortableAssetsPage() {
               <label className={fap.label}>Acquired date</label>
               <input type="date" className={fap.input} value={form.acquireddate} onChange={(e) => setForm((f) => ({ ...f, acquireddate: e.target.value }))} />
             </div>
-            <div>
-              <label className={fap.label}>Portable type</label>
-              <select
-                className={fap.input}
-                value={form.portableType}
-                onChange={(e) => setForm((f) => ({ ...f, portableType: e.target.value as PortableTypeValue | '' }))}
-              >
-                <option value="">Not set</option>
-                <option value="pre_engineered">Pre engineered</option>
-                <option value="container_20">Container 20&apos;</option>
-                <option value="container_40">Container 40&apos;</option>
-                <option value="prefabricated_sheet">Prefabricated sheet type</option>
-              </select>
-            </div>
-            <div className="md:col-span-2">
-              <label className={fap.label}>Installation location</label>
-              <input className={fap.input} value={form.installationLocation} onChange={(e) => setForm((f) => ({ ...f, installationLocation: e.target.value }))} placeholder="Where the unit is installed on site" />
-            </div>
           </div>
           <div className="flex flex-wrap gap-3">
             <button type="submit" disabled={saving} className={fap.btnPrimary}>{saving ? 'Saving…' : 'Add asset'}</button>
@@ -682,15 +613,15 @@ export default function PortableAssetsPage() {
 
         <div className={fap.tableWrap}>
           <div className="border-b border-slate-200 dark:border-[#2A3B4C]/50 px-6 py-4">
-            <h2 className={fap.sectionTitle}>Portable asset records</h2>
-            <p className={fap.sectionDesc}>Click an asset ID to open installation location and modification details.</p>
+            <h2 className={fap.sectionTitle}>Facility asset records</h2>
+            <p className={fap.sectionDesc}>Click an asset ID to open AMC and on-call maintenance details.</p>
           </div>
           {loading ? (
             <div className="flex h-32 items-center justify-center">
               <div className={fap.spinner} />
             </div>
           ) : data.length === 0 ? (
-            <div className="py-12 text-center text-[#475569] dark:text-[#94A3B8]">No portable assets yet. Add one above or use bulk insert.</div>
+            <div className="py-12 text-center text-[#475569] dark:text-[#94A3B8]">No facility assets yet. Add one above or use bulk insert.</div>
           ) : (
             <ResponsiveTanStackTable
               data={data}
@@ -708,7 +639,7 @@ export default function PortableAssetsPage() {
         {showBulkInsertModal && (
           <div className={fap.modalOverlay}>
             <div className={`${fap.modal} max-w-4xl`}>
-              <h3 className="mb-4 text-2xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">Bulk insert portable assets</h3>
+              <h3 className="mb-4 text-2xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">Bulk insert facility assets</h3>
               <p className="mb-4 text-sm text-[#475569] dark:text-[#94A3B8]">
                 Download the template, fill rows, validate to skip existing asset numbers, then insert new rows only.
               </p>
@@ -726,16 +657,6 @@ export default function PortableAssetsPage() {
                     Total uploaded: {validationSummary.totalUploaded} | New rows: {validationSummary.validForInsert} |
                     Existing skipped: {validationSummary.skippedExisting.length}
                   </p>
-                  {validationSummary.skippedExisting.length > 0 ? (
-                    <div className="mt-2 max-h-24 overflow-auto text-xs text-[#475569] dark:text-[#94A3B8]">
-                      {validationSummary.skippedExisting.map((item, idx) => (
-                        <div key={`${item.assetnumber}-${idx}`}>
-                          Existing asset number skipped: {item.assetnumber}
-                          {item.sourceRow ? ` (row ${item.sourceRow})` : ''}
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
                 </div>
               ) : null}
               {validatedRows.length > 0 ? (
@@ -777,7 +698,7 @@ export default function PortableAssetsPage() {
         {editOpen && (
           <div className={fap.modalOverlay}>
             <div className={`${fap.modal} max-w-2xl`}>
-              <h3 className="mb-4 text-xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">Edit portable asset {editAssetNumber}</h3>
+              <h3 className="mb-4 text-xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">Edit facility asset {editAssetNumber}</h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <label className={fap.label}>Description</label>
@@ -804,24 +725,6 @@ export default function PortableAssetsPage() {
                 <div>
                   <label className={fap.label}>Acquired date</label>
                   <input type="date" className={fap.input} value={editForm.acquireddate} onChange={(e) => setEditForm((f) => ({ ...f, acquireddate: e.target.value }))} />
-                </div>
-                <div>
-                  <label className={fap.label}>Portable type</label>
-                  <select
-                    className={fap.input}
-                    value={editForm.portableType}
-                    onChange={(e) => setEditForm((f) => ({ ...f, portableType: e.target.value as PortableTypeValue | '' }))}
-                  >
-                    <option value="">Not set</option>
-                    <option value="pre_engineered">Pre engineered</option>
-                    <option value="container_20">Container 20&apos;</option>
-                    <option value="container_40">Container 40&apos;</option>
-                    <option value="prefabricated_sheet">Prefabricated sheet type</option>
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className={fap.label}>Installation location</label>
-                  <input className={fap.input} value={editForm.installationLocation} onChange={(e) => setEditForm((f) => ({ ...f, installationLocation: e.target.value }))} />
                 </div>
               </div>
               <div className="mt-6 flex flex-wrap justify-end gap-3">

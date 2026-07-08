@@ -25,7 +25,7 @@ interface ResponsiveTanStackTableProps<TData> {
   setGlobalFilter?: OnChangeFn<string>;
   className?: string;
   getRowId?: (row: TData) => string;
-  variant?: 'default' | 'glassmorphic' | 'light';
+  variant?: 'default' | 'glassmorphic' | 'light' | 'smarttags';
 }
 
 function ResponsiveTanStackTable<TData>({
@@ -43,6 +43,7 @@ function ResponsiveTanStackTable<TData>({
 }: ResponsiveTanStackTableProps<TData>) {
   const isGlassmorphic = variant === 'glassmorphic';
   const isLight = variant === 'light';
+  const isSmartTags = variant === 'smarttags';
   const table = useReactTable({
     data,
     columns,
@@ -66,7 +67,7 @@ function ResponsiveTanStackTable<TData>({
       <div className="hidden lg:block">
         <div className="relative w-full overflow-auto">
           <table className="w-full caption-bottom text-sm">
-            <thead className={cn("[&_tr]:border-b", isGlassmorphic ? "border-white/10" : isLight ? "border-blue-200" : "")}>
+            <thead className={cn("[&_tr]:border-b", isGlassmorphic ? "border-white/10" : isLight ? "border-blue-200" : isSmartTags ? "border-slate-200 dark:border-[#2A3B4C]/50" : "")}>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className={cn(
                   "border-b transition-colors",
@@ -74,17 +75,21 @@ function ResponsiveTanStackTable<TData>({
                     ? "border-white/10 bg-white/5 backdrop-blur-md"
                     : isLight
                     ? "bg-blue-50/80 border-blue-200"
+                    : isSmartTags
+                    ? "border-slate-200 bg-slate-100 dark:border-[#2A3B4C]/50 dark:bg-[#2A3B4C]"
                     : "bg-slate-50/50 dark:bg-slate-800/50"
                 )}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
                       className={cn(
-                        "h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+                        "h-12 px-4 text-left align-middle font-medium uppercase tracking-wider [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
                         isGlassmorphic 
                           ? "text-white/90"
                           : isLight
                           ? "text-gray-800"
+                          : isSmartTags
+                          ? "text-xs font-semibold text-[#475569] dark:text-[#94A3B8]"
                           : "text-slate-700 dark:text-slate-300"
                       )}
                     >
@@ -118,6 +123,13 @@ function ResponsiveTanStackTable<TData>({
                           index % 2 === 0 
                             ? "bg-white hover:bg-blue-50/50" 
                             : "bg-blue-50/30 hover:bg-blue-100/50"
+                        )
+                      : isSmartTags
+                      ? cn(
+                          "border-slate-200/70 dark:border-[#2A3B4C]/30",
+                          index % 2 === 0
+                            ? "bg-white hover:bg-cyan-50/60 dark:bg-[#111827] dark:hover:bg-[rgba(0,180,216,0.05)]"
+                            : "bg-slate-50 hover:bg-cyan-50/60 dark:bg-[#1E293B] dark:hover:bg-[rgba(0,180,216,0.05)]"
                         )
                       : cn(
                           "hover:bg-slate-100/80 dark:hover:bg-slate-700/50",

@@ -1,17 +1,22 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+
+import { useState, useEffect } from 'react';
 import {
   ColumnDef,
   SortingState,
   ColumnFiltersState
 } from '@tanstack/react-table';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Search } from 'lucide-react';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
 
 import { AssetQRCode } from '@/components/AssetQRCode';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
-import { useAppTheme } from '@/app/contexts/ThemeContext';
+import FixedAssetPageHeader from '@/app/components/fixedasset/FixedAssetPageHeader';
+import FixedAssetStatBar from '@/app/components/fixedasset/FixedAssetStatBar';
+import FixedAssetStatusBadge from '@/app/components/fixedasset/FixedAssetStatusBadge';
+import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
+import { computeAssetStats, sortBtn, th } from '@/lib/fixedAssetListHelpers';
 
 interface FixedAsset {
   _id: string;
@@ -65,20 +70,12 @@ export default function FixedAssetPage() {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorModalTitle, setErrorModalTitle] = useState('Bulk Insert Error');
   const [errorModalContent, setErrorModalContent] = useState('');
-  const { theme } = useAppTheme();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Array<{
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    radius: number;
-  }>>([]);
-  const animationFrameRef = useRef<number>();
 
   const isSearchActive =
     (assetNumberSearch?.trim().length ?? 0) >= 2 ||
     (assetNameSearch?.trim().length ?? 0) >= 2;
+
+  const stats = computeAssetStats(isSearchActive ? data : recentAssets);
 
   const searchAssets = async (assetNumber: string, assetName: string) => {
     if ((!assetNumber?.trim() || assetNumber.trim().length < 2) &&
@@ -338,163 +335,17 @@ export default function FixedAssetPage() {
     return () => clearTimeout(timer);
   }, [assetNumberSearch, assetNameSearch]);
 
-  // Animated particle background for glassmorphic theme only
-  useEffect(() => {
-    if (theme !== 'glassmorphic') {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      return;
-    }
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resizeCanvas();
-
-    particlesRef.current = [];
-    for (let i = 0; i < 50; i++) {
-      particlesRef.current.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 3 + 1
-      });
-    }
-
-    const animate = () => {
-      if (!ctx || !canvas || theme !== 'glassmorphic') return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particlesRef.current.forEach((particle, i) => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
-        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
-
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(45, 212, 191, 0.6)';
-        ctx.fill();
-
-        particlesRef.current.forEach((otherParticle, j) => {
-          if (i !== j) {
-            const dx = particle.x - otherParticle.x;
-            const dy = particle.y - otherParticle.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < 100) {
-              ctx.beginPath();
-              ctx.moveTo(particle.x, particle.y);
-              ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
-          }
-        });
-      });
-
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    const handleResize = () => {
-      resizeCanvas();
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [theme]);
-
-  const getBackgroundStyles = () => {
-    switch (theme) {
-      case 'glassmorphic':
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
-          textColor: 'text-white',
-          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          headerHover: 'hover:bg-white/15',
-          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
-          headerSubtitle: 'text-white/80',
-          searchBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
-          resultsBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
-          emptyText: 'text-white/70',
-          spinnerColor: 'border-teal-400',
-          linkColor: 'text-teal-400 hover:text-teal-300',
-          cellText: 'text-white'
-        };
-      case 'light':
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
-          textColor: 'text-gray-900',
-          headerBg: 'bg-white border-2 border-blue-200 shadow-lg',
-          headerHover: 'hover:bg-blue-50',
-          headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
-          headerSubtitle: 'text-gray-700',
-          searchBg: 'bg-white border-2 border-blue-200 shadow-md',
-          inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
-          resultsBg: 'border-2 border-blue-200 bg-white shadow-md',
-          emptyText: 'text-gray-600',
-          spinnerColor: 'border-blue-500',
-          linkColor: 'text-blue-600 hover:text-blue-700',
-          cellText: 'text-gray-900'
-        };
-      default:
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
-          textColor: 'text-white',
-          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          headerHover: 'hover:bg-white/15',
-          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
-          headerSubtitle: 'text-white/80',
-          searchBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
-          resultsBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
-          emptyText: 'text-white/70',
-          spinnerColor: 'border-teal-400',
-          linkColor: 'text-teal-400 hover:text-teal-300',
-          cellText: 'text-white'
-        };
-    }
-  };
-
-  const backgroundStyles = getBackgroundStyles();
-
-  const formatCurrency = (value: unknown) =>
-    typeof value === 'number'
-      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR' }).format(value)
-      : 'N/A';
-
   const buildAssetColumns = (options?: { includeActions?: boolean }): ColumnDef<FixedAsset>[] => [
     {
       accessorKey: 'assetnumber',
       header: ({ column }) => (
         <button
-          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          type="button"
+          className={sortBtn}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Asset Number
-          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+          <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
       cell: ({ row }) => (
@@ -502,7 +353,7 @@ export default function FixedAssetPage() {
           href={`/fixedasset/${row.original.assetnumber}`}
           target="_blank"
           rel="noopener noreferrer"
-          className={`${backgroundStyles.linkColor} transition-colors font-semibold`}
+          className={fap.link}
         >
           {row.original.assetnumber}
         </Link>
@@ -512,83 +363,95 @@ export default function FixedAssetPage() {
       accessorKey: 'assetdescription',
       header: ({ column }) => (
         <button
-          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          type="button"
+          className={sortBtn}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Description
-          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+          <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
       cell: ({ row }) => (
-        <div className={`max-w-[300px] truncate text-[12px] ${backgroundStyles.cellText}`}>
+        <div className="max-w-[300px] truncate text-sm text-[#0F172A] dark:text-[#F8F9FA]">
           {row.getValue('assetdescription')}
         </div>
       ),
     },
     {
       accessorKey: 'assetcategory',
-      header: () => <span className={backgroundStyles.textColor}>Category</span>,
+      header: () => <span className={th}>Category</span>,
     },
     {
       accessorKey: 'assetsubcategory',
-      header: () => <span className={backgroundStyles.textColor}>Subcategory</span>,
+      header: () => <span className={th}>Subcategory</span>,
     },
     {
       accessorKey: 'assetstatus',
-      header: () => <span className={backgroundStyles.textColor}>Status</span>,
+      header: () => <span className={th}>Status</span>,
+      cell: ({ row }) => <FixedAssetStatusBadge status={row.original.assetstatus} />,
     },
     {
       accessorKey: 'location',
-      header: () => <span className={backgroundStyles.textColor}>Location</span>,
+      header: () => <span className={th}>Location</span>,
+      cell: ({ row }) => (
+        <span className="text-sm text-[#475569] dark:text-[#94A3B8]">{row.original.location || '—'}</span>
+      ),
     },
     {
       accessorKey: 'department',
-      header: () => <span className={backgroundStyles.textColor}>Department</span>,
+      header: () => <span className={th}>Department</span>,
     },
     {
       accessorKey: 'acquiredvalue',
       header: ({ column }) => (
         <button
-          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          type="button"
+          className={sortBtn}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Value
-          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+          <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
-      cell: ({ row }) => {
-        const value = row.getValue('acquiredvalue');
-        return formatCurrency(value);
-      }
+      cell: ({ row }) => (
+        <span className="font-semibold text-[#0F172A] dark:text-[#F8F9FA]">
+          {formatCurrency(row.original.acquiredvalue)}
+        </span>
+      ),
     },
     {
       accessorKey: 'acquireddate',
       header: ({ column }) => (
         <button
-          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          type="button"
+          className={sortBtn}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Acquiring Date
-          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+          <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
       cell: ({ row }) => {
         const date = row.getValue('acquireddate') as string;
-        return date ? new Date(date).toLocaleDateString() : 'N/A';
-      }
+        return (
+          <span className="text-sm text-[#475569] dark:text-[#94A3B8]">
+            {date ? new Date(date).toLocaleDateString() : '—'}
+          </span>
+        );
+      },
     },
     ...(options?.includeActions
       ? [
           {
             id: 'actions',
-            header: () => <span className={backgroundStyles.textColor}>Actions</span>,
+            header: () => <span className={th}>Actions</span>,
             cell: ({ row }) => (
               <div className="flex flex-wrap gap-2 text-[12px]">
                 <Link
                   href={`/fixedasset/${row.original.assetnumber}#custody`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${backgroundStyles.linkColor} font-medium transition-colors`}
+                  className={fap.link}
                 >
                   Custody
                 </Link>
@@ -599,8 +462,10 @@ export default function FixedAssetPage() {
       : [
           {
             id: 'qrcode',
-            header: () => <span className={backgroundStyles.textColor}>QR Code</span>,
-            cell: ({ row }) => <AssetQRCode assetNumber={row.original.assetnumber} assetType="fixedasset" />,
+            header: () => <span className={th}>QR Code</span>,
+            cell: ({ row }) => (
+              <AssetQRCode assetNumber={row.original.assetnumber} assetType="fixedasset" />
+            ),
           } as ColumnDef<FixedAsset>,
         ]),
   ];
@@ -609,108 +474,100 @@ export default function FixedAssetPage() {
   const landingColumns = buildAssetColumns({ includeActions: true });
 
   return (
-    <div className={backgroundStyles.container}>
-      {theme === 'glassmorphic' && (
-        <canvas ref={canvasRef} className="absolute inset-0 z-10" />
-      )}
+    <div className={fap.page}>
+      <div className={fap.listContainer}>
+        <FixedAssetPageHeader
+          title="Fixed Assets"
+          subtitle="Search and manage fixed assets"
+        />
 
-      <div className={`relative ${theme === 'glassmorphic' ? 'z-20' : 'z-10'} flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen`}>
-        <div className="mb-8">
-          <div className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300`}>
-            <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
-              Fixed Assets
-            </h1>
-            <p className={`${backgroundStyles.headerSubtitle} text-lg`}>Search and manage fixed assets</p>
-          </div>
-        </div>
-
-        <div className={`mb-6 p-6 ${backgroundStyles.searchBg} rounded-xl shadow-lg`}>
-          <div className="flex flex-wrap gap-4">
-            <input
-              type="text"
-              value={assetNumberSearch}
-              onChange={(e) => setAssetNumberSearch(e.target.value)}
-              placeholder="Search by asset number..."
-              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-            />
-            <input
-              type="text"
-              value={assetNameSearch}
-              onChange={(e) => setAssetNameSearch(e.target.value)}
-              placeholder="Search by asset description..."
-              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-            />
+        <div className={`${fap.card} ${fap.cardPadding} mb-8`}>
+          <h2 className={fap.sectionTitle}>Search &amp; filter</h2>
+          <p className={`${fap.sectionDesc} mb-4`}>Filter by asset number or description (2+ characters).</p>
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="relative min-w-[240px] flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
+              <input
+                type="text"
+                value={assetNumberSearch}
+                onChange={(e) => setAssetNumberSearch(e.target.value)}
+                placeholder="Search by asset number…"
+                className={fap.searchInput}
+              />
+            </div>
+            <div className="relative min-w-[240px] flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
+              <input
+                type="text"
+                value={assetNameSearch}
+                onChange={(e) => setAssetNameSearch(e.target.value)}
+                placeholder="Search by asset description…"
+                className={fap.searchInput}
+              />
+            </div>
             <button
               type="button"
               onClick={() => {
                 resetBulkState();
                 setShowBulkInsertModal(true);
               }}
-              className={`px-4 py-3 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+              className={fap.btnSecondary}
             >
-              Bulk Insert
+              Bulk insert
             </button>
           </div>
         </div>
 
+        <FixedAssetStatBar stats={stats} />
+
         {isSearchActive && (
-          <div className={`mb-6 rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
+          <div className={`${fap.tableWrap} mb-8`}>
+            <div className="border-b border-slate-200 dark:border-[#2A3B4C]/50 px-6 py-4">
+              <h2 className={fap.sectionTitle}>Search results</h2>
+              <p className={fap.sectionDesc}>Fixed assets matching your search criteria.</p>
+            </div>
             {loading ? (
-              <div className="flex justify-center items-center h-32">
-                <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
+              <div className="flex h-32 items-center justify-center">
+                <div className={fap.spinner} />
               </div>
             ) : data.length === 0 ? (
-              <div className={`text-center py-8 ${backgroundStyles.emptyText}`}>
+              <div className="py-12 text-center text-[#475569] dark:text-[#94A3B8]">
                 No fixed assets match your search criteria
               </div>
             ) : (
-              <div className={theme === 'default' ? 'dark' : undefined}>
-                <ResponsiveTanStackTable
-                  data={data}
-                  columns={columns}
-                  sorting={sorting}
-                  setSorting={setSorting}
-                  columnFilters={columnFilters}
-                  setColumnFilters={setColumnFilters}
-                  getRowId={(row) => row._id}
-                  variant={
-                    theme === 'light'
-                      ? 'light'
-                      : theme === 'glassmorphic'
-                        ? 'glassmorphic'
-                        : 'default'
-                  }
-                />
-              </div>
+              <ResponsiveTanStackTable
+                data={data}
+                columns={columns}
+                sorting={sorting}
+                setSorting={setSorting}
+                columnFilters={columnFilters}
+                setColumnFilters={setColumnFilters}
+                getRowId={(row) => row._id}
+                variant="smarttags"
+              />
             )}
           </div>
         )}
 
-        <div className={`rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
-          <div className={`border-b px-6 py-4 flex flex-wrap items-start justify-between gap-4 ${theme === 'light' ? 'border-blue-200' : 'border-white/20'}`}>
+        <div className={fap.tableWrap}>
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 dark:border-[#2A3B4C]/50 px-6 py-4">
             <div>
-              <h2 className={`text-lg font-semibold ${backgroundStyles.textColor}`}>
-                Latest Acquired Fixed Assets
-              </h2>
-              <p className={`mt-1 text-sm ${backgroundStyles.headerSubtitle}`}>
+              <h2 className={fap.sectionTitle}>Latest acquired fixed assets</h2>
+              <p className={fap.sectionDesc}>
                 {excludeCustody
                   ? 'Top 100 most recently acquired fixed assets without custody, ranked by value'
                   : 'Top 100 most recently acquired fixed assets, ranked by value'}
               </p>
             </div>
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <span className={`text-sm ${backgroundStyles.headerSubtitle}`}>Only without custody</span>
+            <label className="flex cursor-pointer select-none items-center gap-3">
+              <span className="text-sm text-[#475569] dark:text-[#94A3B8]">Only without custody</span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={excludeCustody}
                 onClick={() => setExcludeCustody((prev) => !prev)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  excludeCustody
-                    ? 'bg-teal-500'
-                    : theme === 'light'
-                      ? 'bg-gray-300'
-                      : 'bg-white/20'
+                  excludeCustody ? 'bg-[#00B4D8]' : 'bg-slate-100 dark:bg-[#2A3B4C]'
                 }`}
               >
                 <span
@@ -722,76 +579,64 @@ export default function FixedAssetPage() {
             </label>
           </div>
           {landingLoading ? (
-            <div className="flex justify-center items-center h-32">
-              <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}></div>
+            <div className="flex h-32 items-center justify-center">
+              <div className={fap.spinner} />
             </div>
           ) : recentAssets.length === 0 ? (
-            <div className={`text-center py-8 ${backgroundStyles.emptyText}`}>
+            <div className="py-12 text-center text-[#475569] dark:text-[#94A3B8]">
               {excludeCustody
                 ? 'All recent fixed assets have custody records'
                 : 'No recent fixed assets found'}
             </div>
           ) : (
-            <div className={theme === 'default' ? 'dark' : undefined}>
-              <ResponsiveTanStackTable
-                data={recentAssets}
-                columns={landingColumns}
-                sorting={landingSorting}
-                setSorting={setLandingSorting}
-                columnFilters={landingColumnFilters}
-                setColumnFilters={setLandingColumnFilters}
-                getRowId={(row) => row._id}
-                variant={
-                  theme === 'light'
-                    ? 'light'
-                    : theme === 'glassmorphic'
-                      ? 'glassmorphic'
-                      : 'default'
-                }
-              />
-            </div>
+            <ResponsiveTanStackTable
+              data={recentAssets}
+              columns={landingColumns}
+              sorting={landingSorting}
+              setSorting={setLandingSorting}
+              columnFilters={landingColumnFilters}
+              setColumnFilters={setLandingColumnFilters}
+              getRowId={(row) => row._id}
+              variant="smarttags"
+            />
           )}
         </div>
 
         {showBulkInsertModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className={`${backgroundStyles.searchBg} w-full max-w-4xl rounded-2xl p-6 shadow-xl`}>
-              <h3 className={`mb-4 text-2xl font-semibold ${backgroundStyles.textColor}`}>Bulk Insert Fixed Assets</h3>
-              <p className={`mb-4 text-sm ${backgroundStyles.headerSubtitle}`}>
+          <div className={fap.modalOverlay}>
+            <div className={`${fap.modal} max-w-4xl`}>
+              <h3 className="mb-4 text-2xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">Bulk insert fixed assets</h3>
+              <p className="mb-4 text-sm text-[#475569] dark:text-[#94A3B8]">
                 Download template, fill rows, validate to skip existing asset numbers, then insert only new rows.
               </p>
 
               <div className="mb-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={handleDownloadTemplate}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
-                >
-                  Download Template
+                <button type="button" onClick={handleDownloadTemplate} className={fap.btnSecondary}>
+                  Download template
                 </button>
                 <input
                   type="file"
                   accept=".xlsx,.xls,.csv"
                   onChange={handleBulkFileSelect}
-                  className={`text-sm ${backgroundStyles.textColor}`}
+                  className="text-sm text-[#475569] dark:text-[#94A3B8]"
                 />
               </div>
 
               {bulkFileName && (
-                <p className={`mb-3 text-sm ${backgroundStyles.headerSubtitle}`}>
+                <p className="mb-3 text-sm text-[#475569] dark:text-[#94A3B8]">
                   Selected file: {bulkFileName} ({bulkRows.length} rows detected)
                 </p>
               )}
 
               {validationSummary && (
-                <div className={`mb-4 rounded-xl border p-4 ${backgroundStyles.inputBg}`}>
-                  <p className={backgroundStyles.textColor}>{validationMessage}</p>
-                  <p className={`mt-2 text-sm ${backgroundStyles.headerSubtitle}`}>
+                <div className={`${fap.surfaceBorder} mb-4 p-4`}>
+                  <p className="text-[#0F172A] dark:text-[#F8F9FA]">{validationMessage}</p>
+                  <p className="mt-2 text-sm text-[#475569] dark:text-[#94A3B8]">
                     Total uploaded: {validationSummary.totalUploaded} | New rows: {validationSummary.validForInsert} |
                     Existing skipped: {validationSummary.skippedExisting.length}
                   </p>
                   {validationSummary.skippedExisting.length > 0 && (
-                    <div className={`mt-2 max-h-24 overflow-auto text-xs ${backgroundStyles.headerSubtitle}`}>
+                    <div className="mt-2 max-h-24 overflow-auto text-xs text-[#475569] dark:text-[#94A3B8]">
                       {validationSummary.skippedExisting.map((item, idx) => (
                         <div key={`${item.assetnumber}-${idx}`}>
                           Existing assetnumber skipped: {item.assetnumber}
@@ -804,30 +649,30 @@ export default function FixedAssetPage() {
               )}
 
               {validatedRows.length > 0 && (
-                <div className={`mb-4 rounded-xl border p-4 ${backgroundStyles.inputBg}`}>
-                  <p className={`mb-3 text-sm font-medium ${backgroundStyles.textColor}`}>
+                <div className={`${fap.surfaceBorder} mb-4 p-4`}>
+                  <p className="mb-3 text-sm font-medium text-[#0F172A] dark:text-[#F8F9FA]">
                     Preview of rows ready to insert ({validatedRows.length})
                   </p>
-                  <div className="max-h-64 overflow-auto rounded-lg border border-white/20">
+                  <div className="max-h-64 overflow-auto rounded-lg border border-slate-200 dark:border-[#2A3B4C]/50">
                     <table className="min-w-full text-left text-xs">
-                      <thead className="sticky top-0 bg-black/20">
-                        <tr>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Asset No</th>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Description</th>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Category</th>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Status</th>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Value</th>
+                      <thead className="sticky top-0 bg-slate-50 dark:bg-[#1E293B]">
+                        <tr className="text-[#64748B]">
+                          <th className="px-3 py-2">Asset No</th>
+                          <th className="px-3 py-2">Description</th>
+                          <th className="px-3 py-2">Category</th>
+                          <th className="px-3 py-2">Status</th>
+                          <th className="px-3 py-2">Value</th>
                         </tr>
                       </thead>
                       <tbody>
                         {validatedRows.map((row, idx) => (
-                          <tr key={`${row.assetnumber}-${idx}`} className="border-t border-white/10">
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetnumber}</td>
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetdescription}</td>
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetcategory || '-'}</td>
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetstatus || '-'}</td>
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>
-                              {row.acquiredvalue !== undefined ? row.acquiredvalue : '-'}
+                          <tr key={`${row.assetnumber}-${idx}`} className="border-t border-slate-200/70 dark:border-[#2A3B4C]/30">
+                            <td className="px-3 py-2 text-[#475569] dark:text-[#94A3B8]">{row.assetnumber}</td>
+                            <td className="px-3 py-2 text-[#475569] dark:text-[#94A3B8]">{row.assetdescription}</td>
+                            <td className="px-3 py-2 text-[#475569] dark:text-[#94A3B8]">{row.assetcategory || '—'}</td>
+                            <td className="px-3 py-2 text-[#475569] dark:text-[#94A3B8]">{row.assetstatus || '—'}</td>
+                            <td className="px-3 py-2 text-[#475569] dark:text-[#94A3B8]">
+                              {row.acquiredvalue !== undefined ? row.acquiredvalue : '—'}
                             </td>
                           </tr>
                         ))}
@@ -844,7 +689,7 @@ export default function FixedAssetPage() {
                     setShowBulkInsertModal(false);
                     resetBulkState();
                   }}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+                  className={fap.btnSecondary}
                 >
                   Cancel
                 </button>
@@ -852,17 +697,17 @@ export default function FixedAssetPage() {
                   type="button"
                   onClick={handleValidateBulk}
                   disabled={bulkLoading || bulkRows.length === 0}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+                  className={fap.btnSecondary}
                 >
-                  {bulkLoading ? 'Processing...' : 'Validate'}
+                  {bulkLoading ? 'Processing…' : 'Validate'}
                 </button>
                 <button
                   type="button"
                   onClick={handleInsertBulk}
                   disabled={bulkLoading || validatedRows.length === 0}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+                  className={fap.btnPrimary}
                 >
-                  {bulkLoading ? 'Processing...' : 'Insert'}
+                  {bulkLoading ? 'Processing…' : 'Insert'}
                 </button>
               </div>
             </div>
@@ -870,18 +715,14 @@ export default function FixedAssetPage() {
         )}
 
         {errorModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className={`${backgroundStyles.searchBg} w-full max-w-2xl rounded-2xl p-6 shadow-xl`}>
-              <h3 className={`mb-3 text-xl font-semibold ${backgroundStyles.textColor}`}>{errorModalTitle}</h3>
-              <div className={`max-h-80 overflow-auto whitespace-pre-wrap rounded-xl border p-4 text-sm ${backgroundStyles.inputBg}`}>
+          <div className={fap.modalOverlay}>
+            <div className={`${fap.modal} max-w-2xl`}>
+              <h3 className="mb-3 text-xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">{errorModalTitle}</h3>
+              <div className={`${fap.surfaceBorder} max-h-80 overflow-auto whitespace-pre-wrap p-4 text-sm text-[#475569] dark:text-[#94A3B8]`}>
                 {errorModalContent}
               </div>
               <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setErrorModalOpen(false)}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
-                >
+                <button type="button" onClick={() => setErrorModalOpen(false)} className={fap.btnSecondary}>
                   Close
                 </button>
               </div>

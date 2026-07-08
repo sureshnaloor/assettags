@@ -11,7 +11,7 @@ interface ColorModeToggleProps {
   showLabel?: boolean;
 }
 
-export default function ThemeSwitcher({ className, showLabel = true }: ColorModeToggleProps) {
+export default function ThemeSwitcher({ className, showLabel = false }: ColorModeToggleProps) {
   const { resolvedTheme, setTheme } = useNextTheme();
   const { setTheme: setAppTheme } = useAppTheme();
   const [mounted, setMounted] = useState(false);
@@ -35,7 +35,8 @@ export default function ThemeSwitcher({ className, showLabel = true }: ColorMode
       type="button"
       onClick={toggle}
       className={cn(
-        'flex items-center gap-2 rounded-full border border-primary-light px-3 py-2 text-sm font-medium transition-all duration-200',
+        'flex items-center justify-center rounded-full border border-primary-light p-2 text-sm font-medium transition-all duration-200',
+        showLabel && 'gap-2 px-3',
         'text-text-secondary hover:border-accent-teal hover:bg-accent-teal/10 hover:text-accent-teal',
         className
       )}

@@ -10,7 +10,7 @@ import Link from 'next/link';
 
 import { AssetQRCode } from '@/components/AssetQRCode';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
-import { useAppTheme } from '@/app/contexts/ThemeContext';
+import { fap } from '@/lib/fixedAssetPageDesign';
 
 interface SoftwareAsset {
   _id: string;
@@ -87,7 +87,22 @@ export default function SoftwareAssetsPage() {
   const [editForm, setEditForm] = useState(emptyForm());
   const [editAssetNumber, setEditAssetNumber] = useState('');
 
-  const { theme } = useAppTheme();
+  const backgroundStyles = {
+    container: fap.page,
+    textColor: fap.textPrimary,
+    headerBg: `${fap.card} transition-all duration-300 hover:bg-slate-50 dark:hover:bg-[#1E293B]/90`,
+    headerHover: '',
+    headerTitle:
+      'text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-[#0891B2] to-[#0077B6] bg-clip-text text-transparent dark:from-white dark:to-[#00B4D8]',
+    headerSubtitle: fap.subtitle,
+    panelBg: fap.card,
+    inputBg: fap.input,
+    resultsBg: fap.tableWrap,
+    emptyText: fap.textMuted,
+    spinnerColor: 'border-[#00B4D8]',
+    linkColor: fap.link,
+    cellText: fap.textPrimary,
+  };
 
   const openBulkErrorModal = (title: string, content: string) => {
     setErrorModalTitle(title);
@@ -447,62 +462,7 @@ export default function SoftwareAssetsPage() {
     }
   };
 
-  const getBackgroundStyles = () => {
-    switch (theme) {
-      case 'glassmorphic':
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
-          textColor: 'text-white',
-          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          headerHover: 'hover:bg-white/15',
-          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
-          headerSubtitle: 'text-white/80',
-          panelBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
-          resultsBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
-          emptyText: 'text-white/70',
-          spinnerColor: 'border-teal-400',
-          linkColor: 'text-teal-400 hover:text-teal-300',
-          cellText: 'text-white'
-        };
-      case 'light':
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
-          textColor: 'text-gray-900',
-          headerBg: 'bg-white border-2 border-blue-200 shadow-lg',
-          headerHover: 'hover:bg-blue-50',
-          headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
-          headerSubtitle: 'text-gray-700',
-          panelBg: 'bg-white border-2 border-blue-200 shadow-md',
-          inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
-          resultsBg: 'border-2 border-blue-200 bg-white shadow-md',
-          emptyText: 'text-gray-600',
-          spinnerColor: 'border-blue-500',
-          linkColor: 'text-blue-600 hover:text-blue-700',
-          cellText: 'text-gray-900'
-        };
-      default:
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
-          textColor: 'text-white',
-          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          headerHover: 'hover:bg-white/15',
-          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
-          headerSubtitle: 'text-white/80',
-          panelBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
-          resultsBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
-          emptyText: 'text-white/70',
-          spinnerColor: 'border-teal-400',
-          linkColor: 'text-teal-400 hover:text-teal-300',
-          cellText: 'text-white'
-        };
-    }
-  };
-
-  const backgroundStyles = getBackgroundStyles();
-
-  const inputClass = `w-full px-3 py-2 rounded-lg ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent text-sm`;
+  const inputClass = fap.input;
 
   const columns: ColumnDef<SoftwareAsset>[] = [
     {
@@ -728,7 +688,7 @@ export default function SoftwareAssetsPage() {
             <button
               type="submit"
               disabled={saving}
-              className={`px-5 py-2.5 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+              className={`${fap.btnPrimary} disabled:opacity-50`}
             >
               {saving ? 'Saving…' : 'Add'}
             </button>
@@ -738,7 +698,7 @@ export default function SoftwareAssetsPage() {
                 resetBulkState();
                 setShowBulkInsertModal(true);
               }}
-              className={`px-5 py-2.5 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+              className={fap.btnSecondary}
             >
               Bulk insert
             </button>
@@ -769,7 +729,7 @@ export default function SoftwareAssetsPage() {
         </div>
 
         <div className={`rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
-          <div className={`px-4 py-3 border-b border-white/10 ${backgroundStyles.panelBg}`}>
+          <div className={`px-4 py-3 border-b border-slate-200 dark:border-[#2A3B4C]/50 ${backgroundStyles.panelBg}`}>
             <h2 className={`text-lg font-semibold ${backgroundStyles.textColor}`}>Software asset records</h2>
           </div>
           {loading ? (
@@ -783,20 +743,16 @@ export default function SoftwareAssetsPage() {
               No software assets yet. Add one above or use bulk insert.
             </div>
           ) : (
-            <div className={theme === 'default' ? 'dark' : undefined}>
-              <ResponsiveTanStackTable
-                data={data}
-                columns={columns}
-                sorting={sorting}
-                setSorting={setSorting}
-                columnFilters={columnFilters}
-                setColumnFilters={setColumnFilters}
-                getRowId={(row) => row._id}
-                variant={
-                  theme === 'light' ? 'light' : theme === 'glassmorphic' ? 'glassmorphic' : 'default'
-                }
-              />
-            </div>
+            <ResponsiveTanStackTable
+              data={data}
+              columns={columns}
+              sorting={sorting}
+              setSorting={setSorting}
+              columnFilters={columnFilters}
+              setColumnFilters={setColumnFilters}
+              variant="smarttags"
+              getRowId={(row) => row._id}
+            />
           )}
         </div>
 

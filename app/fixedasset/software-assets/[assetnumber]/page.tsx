@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-import CollapsibleSection from '@/app/components/CollapsibleSection';
+import FixedAssetSection from '@/app/components/fixedasset/FixedAssetSection';
 import { AssetQRCode } from '@/components/AssetQRCode';
 import CustomDetailsSection from '@/app/components/CustomDetailsSection';
+import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
 
 export type LicenseType = 'perpetual' | 'annual' | 'other_periodic' | '';
 
@@ -198,20 +199,20 @@ export default function SoftwareAssetDetailPage() {
 
   if (!assetnumber) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332] p-6 text-white">
+      <div className={`${fap.page} p-6 ${fap.textPrimary}`}>
         Invalid asset.
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
-      <div className="relative z-20 flex flex-col min-h-screen p-4 md:p-6">
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+    <div className={fap.page}>
+      <div className={`${fap.detailContainer} flex flex-col gap-4`}>
+        <div className="mb-2 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => router.push('/fixedasset/software-assets')}
-            className="text-teal-400 hover:text-teal-300 text-sm font-medium"
+            className={`text-sm font-medium ${fap.link}`}
           >
             ← Software assets list
           </button>
@@ -219,29 +220,25 @@ export default function SoftwareAssetDetailPage() {
 
         {loading && (
           <div className="flex justify-center py-20">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-teal-400 border-t-transparent" />
+            <div className={fap.spinner} />
           </div>
         )}
 
-        {!loading && error && (
-          <div className="rounded-xl border border-red-400/40 bg-red-500/10 p-6 text-red-200">
-            {error}
-          </div>
-        )}
+        {!loading && error && <div className={fap.errorBox}>{error}</div>}
 
         {!loading && asset && (
           <main className="mx-auto flex w-full max-w-4xl flex-col gap-4">
-            <div className="rounded-2xl border border-white/20 bg-white/5 p-6 backdrop-blur-md">
+            <div className={`${fap.card} ${fap.cardPadding}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs uppercase tracking-wide text-teal-300/90">Software asset</p>
-                  <h1 className="mt-1 text-2xl font-bold text-white md:text-3xl">{asset.assetnumber}</h1>
-                  <p className="mt-2 text-sm text-white/70">
+                  <p className="text-xs uppercase tracking-wide text-[#00B4D8]">Software asset</p>
+                  <h1 className={`mt-1 ${fap.title}`}>{asset.assetnumber}</h1>
+                  <p className={`mt-2 text-sm ${fap.textSecondary}`}>
                     Quick read-only summary — edit fields in the sections below.
                   </p>
                 </div>
-                <div className="shrink-0 rounded-xl border border-white/15 bg-black/20 p-3">
-                  <p className="mb-2 text-xs text-white/50">QR code</p>
+                <div className={`shrink-0 rounded-xl border border-slate-200 p-3 dark:border-[#2A3B4C]/50`}>
+                  <p className={`mb-2 text-xs ${fap.textMuted}`}>QR code</p>
                   <AssetQRCode
                     assetNumber={asset.assetnumber}
                     assetDescription={asset.assetdescription}
@@ -251,131 +248,114 @@ export default function SoftwareAssetDetailPage() {
               </div>
               <dl className="mt-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                 <div>
-                  <dt className="text-white/60">Name / description</dt>
-                  <dd className="font-medium text-white">{asset.assetdescription || '—'}</dd>
+                  <dt className={fap.textMuted}>Name / description</dt>
+                  <dd className={`font-medium ${fap.textPrimary}`}>{asset.assetdescription || '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-white/60">Category</dt>
-                  <dd className="font-medium text-white">{asset.assetcategory || '—'}</dd>
+                  <dt className={fap.textMuted}>Category</dt>
+                  <dd className={`font-medium ${fap.textPrimary}`}>{asset.assetcategory || '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-white/60">Subcategory</dt>
-                  <dd className="font-medium text-white">{asset.assetsubcategory || '—'}</dd>
+                  <dt className={fap.textMuted}>Subcategory</dt>
+                  <dd className={`font-medium ${fap.textPrimary}`}>{asset.assetsubcategory || '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-white/60">Status</dt>
-                  <dd className="font-medium text-white">{asset.assetstatus || '—'}</dd>
+                  <dt className={fap.textMuted}>Status</dt>
+                  <dd className={`font-medium ${fap.textPrimary}`}>{asset.assetstatus || '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-white/60">Acquisition value</dt>
-                  <dd className="font-medium text-white">
-                    {typeof asset.acquiredvalue === 'number'
-                      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR' }).format(
-                          asset.acquiredvalue
-                        )
-                      : '—'}
+                  <dt className={fap.textMuted}>Acquisition value</dt>
+                  <dd className={`font-medium ${fap.textPrimary}`}>
+                    {typeof asset.acquiredvalue === 'number' ? formatCurrency(asset.acquiredvalue) : '—'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-white/60">Acquisition date</dt>
-                  <dd className="font-medium text-white">{formatDisplayDate(asset.acquireddate)}</dd>
+                  <dt className={fap.textMuted}>Acquisition date</dt>
+                  <dd className={`font-medium ${fap.textPrimary}`}>{formatDisplayDate(asset.acquireddate)}</dd>
                 </div>
               </dl>
             </div>
 
-            <CollapsibleSection title="Edit asset details" defaultExpanded>
-              <div className="w-full max-w-3xl space-y-4 rounded-xl border border-white/15 bg-white/5 p-6">
+            <FixedAssetSection title="Edit asset details" defaultExpanded>
+              <div className="w-full max-w-3xl space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block sm:col-span-2">
-                    <span className="text-xs text-white/70">Name / description</span>
+                    <span className={fap.fieldLabel}>Name / description</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-400"
+                      className={fap.input}
                       value={topForm.assetdescription}
                       onChange={(e) => setTopForm((f) => ({ ...f, assetdescription: e.target.value }))}
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs text-white/70">Category</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Category</span>
+                    <input className={fap.input}
                       value={topForm.assetcategory}
                       onChange={(e) => setTopForm((f) => ({ ...f, assetcategory: e.target.value }))}
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs text-white/70">Subcategory</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Subcategory</span>
+                    <input className={fap.input}
                       value={topForm.assetsubcategory}
                       onChange={(e) => setTopForm((f) => ({ ...f, assetsubcategory: e.target.value }))}
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs text-white/70">Status</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Status</span>
+                    <input className={fap.input}
                       value={topForm.assetstatus}
                       onChange={(e) => setTopForm((f) => ({ ...f, assetstatus: e.target.value }))}
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs text-white/70">Acquisition value</span>
+                    <span className={fap.fieldLabel}>Acquisition value</span>
                     <input
                       type="number"
                       step="any"
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                      className={fap.input}
                       value={topForm.acquiredvalue}
                       onChange={(e) => setTopForm((f) => ({ ...f, acquiredvalue: e.target.value }))}
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs text-white/70">Acquisition date</span>
-                    <input
-                      type="date"
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Acquisition date</span>
+                    <input type="date" className={fap.input}
                       value={topForm.acquireddate}
                       onChange={(e) => setTopForm((f) => ({ ...f, acquireddate: e.target.value }))}
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs text-white/70">Location</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Location</span>
+                    <input className={fap.input}
                       value={topForm.location}
                       onChange={(e) => setTopForm((f) => ({ ...f, location: e.target.value }))}
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs text-white/70">Department</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Department</span>
+                    <input className={fap.input}
                       value={topForm.department}
                       onChange={(e) => setTopForm((f) => ({ ...f, department: e.target.value }))}
                     />
                   </label>
                 </div>
-                <button
-                  type="button"
-                  onClick={saveTop}
-                  disabled={topSaving}
-                  className="rounded-xl bg-teal-500 px-5 py-2.5 font-medium text-white hover:bg-teal-600 disabled:opacity-50"
-                >
+                <button type="button" onClick={saveTop} disabled={topSaving} className={fap.btnPrimary}>
                   {topSaving ? 'Saving…' : 'Save asset details'}
                 </button>
               </div>
-            </CollapsibleSection>
+            </FixedAssetSection>
 
-            <CollapsibleSection title="Installation device & license" defaultExpanded>
-              <div className="w-full max-w-3xl space-y-4 rounded-xl border border-white/15 bg-white/5 p-6">
-                <p className="text-sm text-white/70">
+            <FixedAssetSection title="Installation device & license" defaultExpanded>
+              <div className="w-full max-w-3xl space-y-4">
+                <p className={`text-sm ${fap.textSecondary}`}>
                   Record where the software is installed and how it is licensed. Use device asset number and/or serial
                   as applicable.
                 </p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
-                    <span className="text-xs text-white/70">Device asset number</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Device asset number</span>
+                    <input className={fap.input}
                       value={licenseForm.deviceAssetNumber}
                       onChange={(e) =>
                         setLicenseForm((f) => ({ ...f, deviceAssetNumber: e.target.value }))
@@ -384,9 +364,8 @@ export default function SoftwareAssetDetailPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs text-white/70">Device serial number</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Device serial number</span>
+                    <input className={fap.input}
                       value={licenseForm.deviceSerialNumber}
                       onChange={(e) =>
                         setLicenseForm((f) => ({ ...f, deviceSerialNumber: e.target.value }))
@@ -395,9 +374,8 @@ export default function SoftwareAssetDetailPage() {
                     />
                   </label>
                   <label className="block sm:col-span-2">
-                    <span className="text-xs text-white/70">Device location</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>Device location</span>
+                    <input className={fap.input}
                       value={licenseForm.deviceLocation}
                       onChange={(e) =>
                         setLicenseForm((f) => ({ ...f, deviceLocation: e.target.value }))
@@ -405,17 +383,15 @@ export default function SoftwareAssetDetailPage() {
                     />
                   </label>
                   <label className="block sm:col-span-2">
-                    <span className="text-xs text-white/70">License number</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>License number</span>
+                    <input className={fap.input}
                       value={licenseForm.licenseNumber}
                       onChange={(e) => setLicenseForm((f) => ({ ...f, licenseNumber: e.target.value }))}
                     />
                   </label>
                   <label className="block sm:col-span-2">
-                    <span className="text-xs text-white/70">License type</span>
-                    <select
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                    <span className={fap.fieldLabel}>License type</span>
+                    <select className={fap.input}
                       value={licenseForm.licenseType}
                       onChange={(e) =>
                         setLicenseForm((f) => ({
@@ -433,10 +409,8 @@ export default function SoftwareAssetDetailPage() {
                   {licenseForm.licenseType !== 'perpetual' && licenseForm.licenseType !== '' && (
                     <>
                       <label className="block">
-                        <span className="text-xs text-white/70">License start date</span>
-                        <input
-                          type="date"
-                          className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                        <span className={fap.fieldLabel}>License start date</span>
+                        <input type="date" className={fap.input}
                           value={licenseForm.licenseStartDate}
                           onChange={(e) =>
                             setLicenseForm((f) => ({ ...f, licenseStartDate: e.target.value }))
@@ -444,10 +418,8 @@ export default function SoftwareAssetDetailPage() {
                         />
                       </label>
                       <label className="block">
-                        <span className="text-xs text-white/70">End / expiry date</span>
-                        <input
-                          type="date"
-                          className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+                        <span className={fap.fieldLabel}>End / expiry date</span>
+                        <input type="date" className={fap.input}
                           value={licenseForm.licenseEndDate}
                           onChange={(e) =>
                             setLicenseForm((f) => ({ ...f, licenseEndDate: e.target.value }))
@@ -457,10 +429,10 @@ export default function SoftwareAssetDetailPage() {
                     </>
                   )}
                   <label className="block sm:col-span-2">
-                    <span className="text-xs text-white/70">Remarks</span>
+                    <span className={fap.fieldLabel}>Remarks</span>
                     <textarea
                       rows={3}
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40"
+                      className={fap.input}
                       value={licenseForm.licenseRemarks}
                       onChange={(e) =>
                         setLicenseForm((f) => ({ ...f, licenseRemarks: e.target.value }))
@@ -469,24 +441,16 @@ export default function SoftwareAssetDetailPage() {
                     />
                   </label>
                 </div>
-                <button
-                  type="button"
-                  onClick={saveLicense}
-                  disabled={licenseSaving}
-                  className="rounded-xl bg-teal-500 px-5 py-2.5 font-medium text-white hover:bg-teal-600 disabled:opacity-50"
-                >
+                <button type="button" onClick={saveLicense} disabled={licenseSaving} className={fap.btnPrimary}>
                   {licenseSaving ? 'Saving…' : 'Save installation & license'}
                 </button>
               </div>
-            </CollapsibleSection>
+            </FixedAssetSection>
 
             <CustomDetailsSection assetType="software" assetnumber={assetnumber} />
 
             <div className="pb-8 text-center">
-              <Link
-                href="/fixedasset/software-assets"
-                className="text-sm text-teal-400 hover:text-teal-300"
-              >
+              <Link href="/fixedasset/software-assets" className={`text-sm ${fap.link}`}>
                 Back to list
               </Link>
             </div>

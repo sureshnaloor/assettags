@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import AsyncSelect from 'react-select/async';
@@ -7,23 +7,15 @@ import DatePicker from 'react-datepicker';
 import { Employee, Project, Custody } from '@/types/custody';
 import CustodyLocationFields from '@/app/components/CustodyLocationFields';
 import type { CustodyLocationType } from '@/lib/custodyLocation';
+import { useAppTheme } from '@/app/contexts/ThemeContext';
+import { fap } from '@/lib/fixedAssetPageDesign';
 
 export default function NewCustodyPage() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<
-    Array<{
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      radius: number;
-    }>
-  >([]);
-  const animationFrameRef = useRef<number>();
-
   const router = useRouter();
   const params = useParams() as { assetnumber: string };
   const { data: session } = useSession();
+  const { theme } = useAppTheme();
+  const isLight = theme === 'light';
   const createdBy = session?.user?.email ?? session?.user?.name ?? '';
 
   const [isSaving, setIsSaving] = useState(false);
@@ -104,84 +96,40 @@ export default function NewCustodyPage() {
     );
   }, [departmentCityNames, locationType]);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resizeCanvas();
-
-    particlesRef.current = [];
-    for (let i = 0; i < 50; i++) {
-      particlesRef.current.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 3 + 1,
-      });
-    }
-
-    const animate = () => {
-      if (!ctx || !canvas) return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particlesRef.current.forEach((particle, i) => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
-        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
-
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(45, 212, 191, 0.6)';
-        ctx.fill();
-
-        particlesRef.current.forEach((otherParticle, j) => {
-          if (i !== j) {
-            const dx = particle.x - otherParticle.x;
-            const dy = particle.y - otherParticle.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < 100) {
-              ctx.beginPath();
-              ctx.moveTo(particle.x, particle.y);
-              ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = `rgba(45, 212, 191, ${0.3 * (1 - distance / 100)})`;
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
-          }
-        });
-      });
-
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    const handleResize = () => {
-      resizeCanvas();
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
+  const asyncSelectStyles = useMemo(
+    () => ({
+      control: (base: Record<string, unknown>) => ({
+        ...base,
+        background: isLight ? '#ffffff' : '#1E293B',
+        borderColor: isLight ? '#cbd5e1' : '#2A3B4C',
+        color: isLight ? '#0F172A' : '#F8F9FA',
+        minHeight: 38,
+      }),
+      menu: (base: Record<string, unknown>) => ({
+        ...base,
+        background: isLight ? '#ffffff' : '#111827',
+        border: isLight ? '1px solid #e2e8f0' : '1px solid #2A3B4C',
+      }),
+      option: (base: Record<string, unknown>, state: { isFocused: boolean }) => ({
+        ...base,
+        backgroundColor: state.isFocused
+          ? isLight
+            ? '#f1f5f9'
+            : 'rgba(42, 59, 76, 0.8)'
+          : 'transparent',
+        color: isLight ? '#0F172A' : '#F8F9FA',
+      }),
+      singleValue: (base: Record<string, unknown>) => ({
+        ...base,
+        color: isLight ? '#0F172A' : '#F8F9FA',
+      }),
+      input: (base: Record<string, unknown>) => ({
+        ...base,
+        color: isLight ? '#0F172A' : '#F8F9FA',
+      }),
+    }),
+    [isLight]
+  );
 
   const fetchProjects = async () => {
     try {
@@ -372,43 +320,31 @@ export default function NewCustodyPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]">
-      <canvas ref={canvasRef} className="absolute inset-0 z-10" />
+    <div className={fap.page}>
+      <main className={`${fap.detailContainer} mx-auto max-w-2xl`}>
+        <div className={`${fap.card} ${fap.cardPadding}`}>
+          <h3 className={`mb-6 text-2xl font-semibold ${fap.textPrimary}`}>New Custody Record</h3>
 
-      <div className="relative z-20 flex flex-col min-h-screen">
-        <main className="flex-1 container mx-auto p-6">
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl p-6 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-semibold text-white mb-6 bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent">
-              New Custody Record
-            </h3>
+          {error && <div className={`${fap.errorBox} mb-6`}>{error}</div>}
 
-            {error && (
-              <div className="bg-red-500/20 text-red-300 px-4 py-2 rounded-lg text-sm mb-6 border border-red-400/30">
-                {error}
-              </div>
-            )}
-
-            <div className="mb-6 rounded-xl border border-white/20 bg-white/5 p-4">
-              <h4 className="text-sm font-semibold text-white mb-2">Bulk Custody Upload</h4>
-              <p className="text-xs text-white/80 mb-3">
-                Download the template, fill it in Excel, then upload. If any row fails basic validation, the whole upload is aborted.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={handleDownloadBulkTemplate}
-                  className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-3 py-2 rounded-lg text-xs"
-                >
-                  Download Template
-                </button>
-                <button
-                  type="button"
-                  onClick={() => bulkFileInputRef.current?.click()}
-                  disabled={isBulkUploading}
-                  className="bg-teal-500 hover:bg-teal-600 disabled:bg-teal-300 text-white px-3 py-2 rounded-lg text-xs"
-                >
-                  {isBulkUploading ? 'Uploading...' : 'Upload Filled File'}
-                </button>
+          <div className={`mb-6 rounded-xl border border-slate-200 p-4 dark:border-[#2A3B4C]/50 ${fap.surface}`}>
+            <h4 className={`mb-2 text-sm font-semibold ${fap.textPrimary}`}>Bulk Custody Upload</h4>
+            <p className={`mb-3 text-xs ${fap.textSecondary}`}>
+              Download the template, fill it in Excel, then upload. If any row fails basic validation, the whole
+              upload is aborted.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button type="button" onClick={handleDownloadBulkTemplate} className={fap.btnSecondary}>
+                Download Template
+              </button>
+              <button
+                type="button"
+                onClick={() => bulkFileInputRef.current?.click()}
+                disabled={isBulkUploading}
+                className={fap.btnPrimary}
+              >
+                {isBulkUploading ? 'Uploading...' : 'Upload Filled File'}
+              </button>
                 <input
                   ref={bulkFileInputRef}
                   type="file"
@@ -417,16 +353,12 @@ export default function NewCustodyPage() {
                   onChange={handleBulkUpload}
                 />
               </div>
-              {bulkMessage && (
-                <div className="mt-3 text-xs text-white/90">
-                  {bulkMessage}
-                </div>
-              )}
+              {bulkMessage && <div className={`mt-3 text-xs ${fap.textSecondary}`}>{bulkMessage}</div>}
             </div>
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-1">Employee Number</label>
+                <label className={`mb-1 block text-sm font-medium ${fap.textPrimary}`}>Employee Number</label>
                 <AsyncSelect
                   loadOptions={loadEmployeeOptions}
                   defaultOptions={false}
@@ -440,33 +372,7 @@ export default function NewCustodyPage() {
                       }));
                     }
                   }}
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      backdropFilter: 'blur(12px)',
-                      borderColor: 'rgba(255, 255, 255, 0.2)',
-                    }),
-                    menu: (base) => ({
-                      ...base,
-                      background: 'rgba(26, 35, 50, 0.95)',
-                      backdropFilter: 'blur(12px)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                    }),
-                    option: (base, state) => ({
-                      ...base,
-                      backgroundColor: state.isFocused ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-                      color: 'rgb(255, 255, 255)',
-                    }),
-                    singleValue: (base) => ({
-                      ...base,
-                      color: 'rgb(255, 255, 255)',
-                    }),
-                    input: (base) => ({
-                      ...base,
-                      color: 'rgb(255, 255, 255)',
-                    }),
-                  }}
+                  styles={asyncSelectStyles}
                   className="text-sm"
                   placeholder="Search by employee number or name..."
                   isClearable
@@ -508,8 +414,8 @@ export default function NewCustodyPage() {
               />
 
               <div>
-                <label className="block text-sm font-medium text-white mb-1">
-                  Custody From Date <span className="text-red-400">*</span>
+                <label className={`mb-1 block text-sm font-medium ${fap.textPrimary}`}>
+                  Custody From Date <span className="text-red-500">*</span>
                 </label>
                 <DatePicker
                   selected={formData.custodyfrom}
@@ -521,14 +427,14 @@ export default function NewCustodyPage() {
                       }));
                     }
                   }}
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                  className={fap.input}
                   dateFormat="yyyy-MM-dd"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-1">Custody To Date</label>
+                <label className={`mb-1 block text-sm font-medium ${fap.textPrimary}`}>Custody To Date</label>
                 <DatePicker
                   selected={formData.custodyto}
                   onChange={(date: Date | null) =>
@@ -537,7 +443,7 @@ export default function NewCustodyPage() {
                       custodyto: date,
                     }))
                   }
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                  className={fap.input}
                   dateFormat="yyyy-MM-dd"
                   isClearable
                   minDate={formData.custodyfrom || undefined}
@@ -545,7 +451,9 @@ export default function NewCustodyPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-1">Gatepass Document Number</label>
+                <label className={`mb-1 block text-sm font-medium ${fap.textPrimary}`}>
+                  Gatepass Document Number
+                </label>
                 <input
                   type="text"
                   value={formData.documentnumber || ''}
@@ -555,32 +463,24 @@ export default function NewCustodyPage() {
                       documentnumber: e.target.value,
                     }))
                   }
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/70 text-sm p-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                  className={fap.input}
                   placeholder="Enter gatepass document number..."
                 />
               </div>
             </div>
 
-            <div className="mt-8 border-t border-white/20 pt-6">
+            <div className="mt-8 border-t border-slate-200 pt-6 dark:border-[#2A3B4C]/50">
               <div className="flex gap-4">
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex-1 bg-teal-500 hover:bg-teal-600 disabled:bg-teal-300 text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors"
-                >
+                <button onClick={handleSave} disabled={isSaving} className={`flex-1 ${fap.btnPrimary}`}>
                   {isSaving ? 'Saving...' : 'Save'}
                 </button>
-                <button
-                  onClick={() => router.back()}
-                  className="flex-1 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors"
-                >
+                <button onClick={() => router.back()} className={`flex-1 ${fap.btnSecondary}`}>
                   Cancel
                 </button>
               </div>
             </div>
           </div>
         </main>
-      </div>
     </div>
   );
 }

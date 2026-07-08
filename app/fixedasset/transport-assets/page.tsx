@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ColumnDef, SortingState, ColumnFiltersState } from '@tanstack/react-table';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Search } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
@@ -10,7 +10,11 @@ import Link from 'next/link';
 
 import { AssetQRCode } from '@/components/AssetQRCode';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
-import { useAppTheme } from '@/app/contexts/ThemeContext';
+import FixedAssetPageHeader from '@/app/components/fixedasset/FixedAssetPageHeader';
+import FixedAssetStatBar from '@/app/components/fixedasset/FixedAssetStatBar';
+import FixedAssetStatusBadge from '@/app/components/fixedasset/FixedAssetStatusBadge';
+import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
+import { computeAssetStats, sortBtn, th } from '@/lib/fixedAssetListHelpers';
 
 interface TransportAsset {
   _id: string;
@@ -101,8 +105,6 @@ export default function TransportAssetsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState(emptyForm());
   const [editAssetNumber, setEditAssetNumber] = useState('');
-
-  const { theme } = useAppTheme();
 
   const openBulkErrorModal = (title: string, content: string) => {
     setErrorModalTitle(title);
@@ -495,62 +497,7 @@ export default function TransportAssetsPage() {
     }
   };
 
-  const getBackgroundStyles = () => {
-    switch (theme) {
-      case 'glassmorphic':
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
-          textColor: 'text-white',
-          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          headerHover: 'hover:bg-white/15',
-          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
-          headerSubtitle: 'text-white/80',
-          panelBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
-          resultsBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
-          emptyText: 'text-white/70',
-          spinnerColor: 'border-teal-400',
-          linkColor: 'text-teal-400 hover:text-teal-300',
-          cellText: 'text-white'
-        };
-      case 'light':
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
-          textColor: 'text-gray-900',
-          headerBg: 'bg-white border-2 border-blue-200 shadow-lg',
-          headerHover: 'hover:bg-blue-50',
-          headerTitle: 'bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent',
-          headerSubtitle: 'text-gray-700',
-          panelBg: 'bg-white border-2 border-blue-200 shadow-md',
-          inputBg: 'bg-white border-2 border-blue-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500',
-          resultsBg: 'border-2 border-blue-200 bg-white shadow-md',
-          emptyText: 'text-gray-600',
-          spinnerColor: 'border-blue-500',
-          linkColor: 'text-blue-600 hover:text-blue-700',
-          cellText: 'text-gray-900'
-        };
-      default:
-        return {
-          container: 'relative min-h-screen overflow-hidden bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332]',
-          textColor: 'text-white',
-          headerBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          headerHover: 'hover:bg-white/15',
-          headerTitle: 'bg-gradient-to-r from-white to-teal-400 bg-clip-text text-transparent',
-          headerSubtitle: 'text-white/80',
-          panelBg: 'bg-white/10 backdrop-blur-lg border border-white/20',
-          inputBg: 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:ring-teal-400',
-          resultsBg: 'border border-white/20 bg-white/10 backdrop-blur-lg',
-          emptyText: 'text-white/70',
-          spinnerColor: 'border-teal-400',
-          linkColor: 'text-teal-400 hover:text-teal-300',
-          cellText: 'text-white'
-        };
-    }
-  };
-
-  const backgroundStyles = getBackgroundStyles();
-
-  const inputClass = `w-full px-3 py-2 rounded-lg ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent text-sm`;
+  const stats = computeAssetStats(data);
 
   const columns: ColumnDef<TransportAsset>[] = [
     {
@@ -558,17 +505,17 @@ export default function TransportAssetsPage() {
       header: ({ column }) => (
         <button
           type="button"
-          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          className={sortBtn}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Asset Number
-          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+          Asset ID
+          <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
       cell: ({ row }) => (
         <Link
           href={`/fixedasset/transport-assets/${encodeURIComponent(row.original.assetnumber)}`}
-          className={`font-semibold ${backgroundStyles.linkColor} hover:underline`}
+          className={fap.link}
         >
           {row.original.assetnumber}
         </Link>
@@ -579,51 +526,53 @@ export default function TransportAssetsPage() {
       header: ({ column }) => (
         <button
           type="button"
-          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          className={sortBtn}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Description
-          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+          <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
       cell: ({ row }) => (
-        <div className={`max-w-[280px] truncate text-[12px] ${backgroundStyles.cellText}`}>
+        <div className="max-w-[280px] truncate text-sm text-[#0F172A] dark:text-[#F8F9FA]">
           {row.getValue('assetdescription')}
         </div>
       )
     },
     {
       accessorKey: 'assetcategory',
-      header: () => <span className={backgroundStyles.textColor}>Category</span>
+      header: () => <span className={th}>Category</span>
     },
     {
       accessorKey: 'assetsubcategory',
-      header: () => <span className={backgroundStyles.textColor}>Subcategory</span>
+      header: () => <span className={th}>Subcategory</span>
     },
     {
       accessorKey: 'assetstatus',
-      header: () => <span className={backgroundStyles.textColor}>Status</span>
+      header: () => <span className={th}>Status</span>,
+      cell: ({ row }) => <FixedAssetStatusBadge status={row.original.assetstatus} />
     },
     {
       accessorKey: 'location',
-      header: () => <span className={backgroundStyles.textColor}>Location</span>
+      header: () => <span className={th}>Location</span>,
+      cell: ({ row }) => <span className="text-sm text-[#475569] dark:text-[#94A3B8]">{row.original.location || '—'}</span>
     },
     {
       accessorKey: 'department',
-      header: () => <span className={backgroundStyles.textColor}>Department</span>
+      header: () => <span className={th}>Department</span>
     },
     {
       accessorKey: 'plateNumber',
-      header: () => <span className={backgroundStyles.textColor}>Plate</span>,
+      header: () => <span className={th}>Plate</span>,
       cell: ({ row }) => (
-        <span className={backgroundStyles.cellText}>{row.original.plateNumber || '—'}</span>
+        <span className="font-mono text-sm text-[#0F172A] dark:text-[#F8F9FA]">{row.original.plateNumber || '—'}</span>
       )
     },
     {
       accessorKey: 'vehicleModel',
-      header: () => <span className={backgroundStyles.textColor}>Model</span>,
+      header: () => <span className={th}>Model</span>,
       cell: ({ row }) => (
-        <span className={backgroundStyles.cellText}>{row.original.vehicleModel || '—'}</span>
+        <span className="text-sm text-[#475569] dark:text-[#94A3B8]">{row.original.vehicleModel || '—'}</span>
       )
     },
     {
@@ -631,23 +580,22 @@ export default function TransportAssetsPage() {
       header: ({ column }) => (
         <button
           type="button"
-          className={`flex items-center gap-1 ${backgroundStyles.textColor} hover:opacity-80 transition-opacity`}
+          className={sortBtn}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Value
-          <ArrowUpDown className={`h-4 w-4 ${backgroundStyles.textColor}`} />
+          <ArrowUpDown className="h-4 w-4" />
         </button>
       ),
-      cell: ({ row }) => {
-        const value = row.getValue('acquiredvalue');
-        return typeof value === 'number'
-          ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SAR' }).format(value)
-          : '—';
-      }
+      cell: ({ row }) => (
+        <span className="font-semibold text-[#0F172A] dark:text-[#F8F9FA]">
+          {formatCurrency(row.original.acquiredvalue)}
+        </span>
+      )
     },
     {
       id: 'qrcode',
-      header: () => <span className={backgroundStyles.textColor}>QR</span>,
+      header: () => <span className={th}>QR</span>,
       cell: ({ row }) => (
         <AssetQRCode
           assetNumber={row.original.assetnumber}
@@ -658,13 +606,13 @@ export default function TransportAssetsPage() {
     },
     {
       id: 'actions',
-      header: () => <span className={backgroundStyles.textColor}>Actions</span>,
+      header: () => <span className={th}>Actions</span>,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => openEdit(row.original)}
-            className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs ${backgroundStyles.inputBg}`}
+            className={fap.btnSecondary}
             aria-label="Edit"
           >
             <PencilIcon className="h-4 w-4" />
@@ -673,7 +621,7 @@ export default function TransportAssetsPage() {
           <button
             type="button"
             onClick={() => handleDelete(row.original.assetnumber)}
-            className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs border-red-400/50 text-red-300 hover:bg-red-500/10`}
+            className={fap.btnDanger}
             aria-label="Delete"
           >
             <TrashIcon className="h-4 w-4" />
@@ -685,31 +633,52 @@ export default function TransportAssetsPage() {
   ];
 
   return (
-    <div className={backgroundStyles.container}>
-      <div className="relative z-20 flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
-        <div className="mb-4">
-          <div
-            className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300`}
-          >
-            <h1 className={`text-2xl md:text-3xl font-bold mb-4 ${backgroundStyles.headerTitle}`}>
-              Transport Assets
-            </h1>
-            <p className={`${backgroundStyles.headerSubtitle} text-lg`}>
-              Add transport assets individually or in bulk. Open an asset for vehicle identifiers and maintenance history.
-            </p>
+    <div className={fap.page}>
+      <div className={fap.listContainer}>
+        <FixedAssetPageHeader
+          title="Transport Assets"
+          subtitle="Search and manage fleet assets with plate numbers, vehicle models, and transport maintenance details."
+        />
+
+        <div className={`${fap.card} ${fap.cardPadding} mb-8`}>
+          <h2 className={fap.sectionTitle}>Search &amp; filter</h2>
+          <p className={`${fap.sectionDesc} mb-4`}>Filter by asset number or description (2+ characters).</p>
+          <div className="flex flex-wrap gap-4">
+            <div className="relative min-w-[240px] flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
+              <input
+                type="text"
+                value={assetNumberSearch}
+                onChange={(e) => setAssetNumberSearch(e.target.value)}
+                placeholder="Search by asset ID…"
+                className={fap.searchInput}
+              />
+            </div>
+            <div className="relative min-w-[240px] flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
+              <input
+                type="text"
+                value={assetNameSearch}
+                onChange={(e) => setAssetNameSearch(e.target.value)}
+                placeholder="Search by description…"
+                className={fap.searchInput}
+              />
+            </div>
           </div>
         </div>
 
+        <FixedAssetStatBar stats={stats} />
+
         <form
           onSubmit={handleAddSubmit}
-          className={`p-6 ${backgroundStyles.panelBg} rounded-xl shadow-lg space-y-4`}
+          className={`${fap.card} ${fap.cardPadding} mb-8 space-y-4`}
         >
-          <h2 className={`text-lg font-semibold ${backgroundStyles.textColor}`}>Add transport asset</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <h2 className={fap.sectionTitle}>Add transport asset</h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Asset number *</label>
+              <label className={fap.label}>Asset number *</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.assetnumber}
                 onChange={(e) => setForm((f) => ({ ...f, assetnumber: e.target.value }))}
                 placeholder="e.g. TA-3001"
@@ -717,9 +686,9 @@ export default function TransportAssetsPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Description *</label>
+              <label className={fap.label}>Description *</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.assetdescription}
                 onChange={(e) => setForm((f) => ({ ...f, assetdescription: e.target.value }))}
                 placeholder="Vehicle description"
@@ -727,101 +696,101 @@ export default function TransportAssetsPage() {
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Category</label>
+              <label className={fap.label}>Category</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.assetcategory}
                 onChange={(e) => setForm((f) => ({ ...f, assetcategory: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Subcategory</label>
+              <label className={fap.label}>Subcategory</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.assetsubcategory}
                 onChange={(e) => setForm((f) => ({ ...f, assetsubcategory: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Status</label>
+              <label className={fap.label}>Status</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.assetstatus}
                 onChange={(e) => setForm((f) => ({ ...f, assetstatus: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Acquired value</label>
+              <label className={fap.label}>Acquired value</label>
               <input
                 type="number"
                 step="any"
-                className={inputClass}
+                className={fap.input}
                 value={form.acquiredvalue}
                 onChange={(e) => setForm((f) => ({ ...f, acquiredvalue: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Acquired date</label>
+              <label className={fap.label}>Acquired date</label>
               <input
                 type="date"
-                className={inputClass}
+                className={fap.input}
                 value={form.acquireddate}
                 onChange={(e) => setForm((f) => ({ ...f, acquireddate: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Location</label>
+              <label className={fap.label}>Location</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.location}
                 onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Department</label>
+              <label className={fap.label}>Department</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.department}
                 onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Plate number</label>
+              <label className={fap.label}>Plate number</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.plateNumber}
                 onChange={(e) => setForm((f) => ({ ...f, plateNumber: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Chassis number</label>
+              <label className={fap.label}>Chassis number</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.chassisNumber}
                 onChange={(e) => setForm((f) => ({ ...f, chassisNumber: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Engine number</label>
+              <label className={fap.label}>Engine number</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.engineNumber}
                 onChange={(e) => setForm((f) => ({ ...f, engineNumber: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Model</label>
+              <label className={fap.label}>Model</label>
               <input
-                className={inputClass}
+                className={fap.input}
                 value={form.vehicleModel}
                 onChange={(e) => setForm((f) => ({ ...f, vehicleModel: e.target.value }))}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Year</label>
+              <label className={fap.label}>Year</label>
               <input
                 type="number"
-                className={inputClass}
+                className={fap.input}
                 value={form.modelYear}
                 onChange={(e) => setForm((f) => ({ ...f, modelYear: e.target.value }))}
               />
@@ -831,9 +800,9 @@ export default function TransportAssetsPage() {
             <button
               type="submit"
               disabled={saving}
-              className={`px-5 py-2.5 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+              className={fap.btnPrimary}
             >
-              {saving ? 'Saving…' : 'Add'}
+              {saving ? 'Saving…' : 'Add asset'}
             </button>
             <button
               type="button"
@@ -841,73 +810,45 @@ export default function TransportAssetsPage() {
                 resetBulkState();
                 setShowBulkInsertModal(true);
               }}
-              className={`px-5 py-2.5 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+              className={fap.btnSecondary}
             >
               Bulk insert
             </button>
           </div>
         </form>
 
-        <div className={`p-6 ${backgroundStyles.panelBg} rounded-xl shadow-lg`}>
-          <h2 className={`text-lg font-semibold mb-4 ${backgroundStyles.textColor}`}>Filter (optional)</h2>
-          <div className="flex flex-wrap gap-4">
-            <input
-              type="text"
-              value={assetNumberSearch}
-              onChange={(e) => setAssetNumberSearch(e.target.value)}
-              placeholder="Asset number (2+ characters to filter)…"
-              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-            />
-            <input
-              type="text"
-              value={assetNameSearch}
-              onChange={(e) => setAssetNameSearch(e.target.value)}
-              placeholder="Description (2+ characters to filter)…"
-              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-            />
-          </div>
-          <p className={`mt-2 text-sm ${backgroundStyles.headerSubtitle}`}>
-            Leave filters short or empty to list all transport assets.
-          </p>
-        </div>
-
-        <div className={`rounded-xl ${backgroundStyles.resultsBg} shadow-xl`}>
-          <div className={`px-4 py-3 border-b border-white/10 ${backgroundStyles.panelBg}`}>
-            <h2 className={`text-lg font-semibold ${backgroundStyles.textColor}`}>Transport asset records</h2>
+        <div className={fap.tableWrap}>
+          <div className="border-b border-slate-200 dark:border-[#2A3B4C]/50 px-6 py-4">
+            <h2 className={fap.sectionTitle}>Transport asset records</h2>
+            <p className={fap.sectionDesc}>Click an asset ID to open vehicle identifiers and maintenance history.</p>
           </div>
           {loading ? (
-            <div className="flex justify-center items-center h-32">
-              <div
-                className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${backgroundStyles.spinnerColor}`}
-              />
+            <div className="flex h-32 items-center justify-center">
+              <div className={fap.spinner} />
             </div>
           ) : data.length === 0 ? (
-            <div className={`text-center py-10 ${backgroundStyles.emptyText}`}>
+            <div className="py-12 text-center text-[#475569] dark:text-[#94A3B8]">
               No transport assets yet. Add one above or use bulk insert.
             </div>
           ) : (
-            <div className={theme === 'default' ? 'dark' : undefined}>
-              <ResponsiveTanStackTable
-                data={data}
-                columns={columns}
-                sorting={sorting}
-                setSorting={setSorting}
-                columnFilters={columnFilters}
-                setColumnFilters={setColumnFilters}
-                getRowId={(row) => row._id}
-                variant={
-                  theme === 'light' ? 'light' : theme === 'glassmorphic' ? 'glassmorphic' : 'default'
-                }
-              />
-            </div>
+            <ResponsiveTanStackTable
+              data={data}
+              columns={columns}
+              sorting={sorting}
+              setSorting={setSorting}
+              columnFilters={columnFilters}
+              setColumnFilters={setColumnFilters}
+              getRowId={(row) => row._id}
+              variant="smarttags"
+            />
           )}
         </div>
 
         {showBulkInsertModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className={`${backgroundStyles.panelBg} w-full max-w-4xl rounded-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto`}>
-              <h3 className={`mb-4 text-2xl font-semibold ${backgroundStyles.textColor}`}>Bulk insert transport assets</h3>
-              <p className={`mb-4 text-sm ${backgroundStyles.headerSubtitle}`}>
+          <div className={fap.modalOverlay}>
+            <div className={`${fap.modal} max-w-4xl`}>
+              <h3 className="mb-4 text-2xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">Bulk insert transport assets</h3>
+              <p className="mb-4 text-sm text-[#475569] dark:text-[#94A3B8]">
                 Download the template, fill rows, validate to skip existing asset numbers, then insert new rows only.
               </p>
 
@@ -915,7 +856,7 @@ export default function TransportAssetsPage() {
                 <button
                   type="button"
                   onClick={handleDownloadTemplate}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+                  className={fap.btnSecondary}
                 >
                   Download template
                 </button>
@@ -923,25 +864,25 @@ export default function TransportAssetsPage() {
                   type="file"
                   accept=".xlsx,.xls,.csv"
                   onChange={handleBulkFileSelect}
-                  className={`text-sm ${backgroundStyles.textColor}`}
+                  className="text-sm text-[#475569] dark:text-[#94A3B8]"
                 />
               </div>
 
               {bulkFileName && (
-                <p className={`mb-3 text-sm ${backgroundStyles.headerSubtitle}`}>
+                <p className="mb-3 text-sm text-[#475569] dark:text-[#94A3B8]">
                   Selected file: {bulkFileName} ({bulkRows.length} rows detected)
                 </p>
               )}
 
               {validationSummary && (
-                <div className={`mb-4 rounded-xl border p-4 ${backgroundStyles.inputBg}`}>
-                  <p className={backgroundStyles.textColor}>{validationMessage}</p>
-                  <p className={`mt-2 text-sm ${backgroundStyles.headerSubtitle}`}>
+                <div className={`${fap.surfaceBorder} mb-4 p-4`}>
+                  <p className="text-[#0F172A] dark:text-[#F8F9FA]">{validationMessage}</p>
+                  <p className="mt-2 text-sm text-[#475569] dark:text-[#94A3B8]">
                     Total uploaded: {validationSummary.totalUploaded} | New rows: {validationSummary.validForInsert} |
                     Existing skipped: {validationSummary.skippedExisting.length}
                   </p>
                   {validationSummary.skippedExisting.length > 0 && (
-                    <div className={`mt-2 max-h-24 overflow-auto text-xs ${backgroundStyles.headerSubtitle}`}>
+                    <div className="mt-2 max-h-24 overflow-auto text-xs text-[#475569] dark:text-[#94A3B8]">
                       {validationSummary.skippedExisting.map((item, idx) => (
                         <div key={`${item.assetnumber}-${idx}`}>
                           Existing asset number skipped: {item.assetnumber}
@@ -954,31 +895,33 @@ export default function TransportAssetsPage() {
               )}
 
               {validatedRows.length > 0 && (
-                <div className={`mb-4 rounded-xl border p-4 ${backgroundStyles.inputBg}`}>
-                  <p className={`mb-3 text-sm font-medium ${backgroundStyles.textColor}`}>
+                <div className={`${fap.surfaceBorder} mb-4 p-4`}>
+                  <p className="mb-3 text-sm font-medium text-[#0F172A] dark:text-[#F8F9FA]">
                     Preview ({validatedRows.length} rows)
                   </p>
-                  <div className="max-h-64 overflow-auto rounded-lg border border-white/20">
-                    <table className="min-w-full text-left text-xs">
-                      <thead className="sticky top-0 bg-black/20">
-                        <tr>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Asset No</th>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Description</th>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Category</th>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Status</th>
-                          <th className={`px-3 py-2 ${backgroundStyles.textColor}`}>Value</th>
+                  <div className="max-h-64 overflow-auto rounded-lg border border-slate-200 dark:border-[#2A3B4C]/50">
+                    <table className="min-w-full text-left text-xs text-[#475569] dark:text-[#94A3B8]">
+                      <thead className="sticky top-0 bg-slate-50 dark:bg-[#1E293B]">
+                        <tr className="text-[#64748B]">
+                          <th className="px-3 py-2">Asset No</th>
+                          <th className="px-3 py-2">Description</th>
+                          <th className="px-3 py-2">Category</th>
+                          <th className="px-3 py-2">Status</th>
+                          <th className="px-3 py-2">Plate</th>
+                          <th className="px-3 py-2">Model</th>
+                          <th className="px-3 py-2">Value</th>
                         </tr>
                       </thead>
                       <tbody>
                         {validatedRows.map((row, idx) => (
-                          <tr key={`${row.assetnumber}-${idx}`} className="border-t border-white/10">
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetnumber}</td>
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetdescription}</td>
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetcategory || '—'}</td>
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>{row.assetstatus || '—'}</td>
-                            <td className={`px-3 py-2 ${backgroundStyles.headerSubtitle}`}>
-                              {row.acquiredvalue !== undefined ? row.acquiredvalue : '—'}
-                            </td>
+                          <tr key={`${row.assetnumber}-${idx}`} className="border-t border-slate-200/70 dark:border-[#2A3B4C]/30">
+                            <td className="px-3 py-2">{row.assetnumber}</td>
+                            <td className="px-3 py-2">{row.assetdescription}</td>
+                            <td className="px-3 py-2">{row.assetcategory || '—'}</td>
+                            <td className="px-3 py-2">{row.assetstatus || '—'}</td>
+                            <td className="px-3 py-2">{row.plateNumber || '—'}</td>
+                            <td className="px-3 py-2">{row.vehicleModel || '—'}</td>
+                            <td className="px-3 py-2">{row.acquiredvalue ?? '—'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -994,7 +937,7 @@ export default function TransportAssetsPage() {
                     setShowBulkInsertModal(false);
                     resetBulkState();
                   }}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+                  className={fap.btnSecondary}
                 >
                   Cancel
                 </button>
@@ -1002,7 +945,7 @@ export default function TransportAssetsPage() {
                   type="button"
                   onClick={handleValidateBulk}
                   disabled={bulkLoading || bulkRows.length === 0}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+                  className={fap.btnSecondary}
                 >
                   {bulkLoading ? 'Processing…' : 'Validate'}
                 </button>
@@ -1010,7 +953,7 @@ export default function TransportAssetsPage() {
                   type="button"
                   onClick={handleInsertBulk}
                   disabled={bulkLoading || validatedRows.length === 0}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+                  className={fap.btnPrimary}
                 >
                   {bulkLoading ? 'Processing…' : 'Insert'}
                 </button>
@@ -1020,116 +963,116 @@ export default function TransportAssetsPage() {
         )}
 
         {editOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className={`${backgroundStyles.panelBg} w-full max-w-2xl rounded-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto`}>
-              <h3 className={`mb-4 text-xl font-semibold ${backgroundStyles.textColor}`}>
+          <div className={fap.modalOverlay}>
+            <div className={`${fap.modal} max-w-2xl`}>
+              <h3 className="mb-4 text-xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">
                 Edit transport asset {editAssetNumber}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Description</label>
+                  <label className={fap.label}>Description</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.assetdescription}
                     onChange={(e) => setEditForm((f) => ({ ...f, assetdescription: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Category</label>
+                  <label className={fap.label}>Category</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.assetcategory}
                     onChange={(e) => setEditForm((f) => ({ ...f, assetcategory: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Subcategory</label>
+                  <label className={fap.label}>Subcategory</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.assetsubcategory}
                     onChange={(e) => setEditForm((f) => ({ ...f, assetsubcategory: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Status</label>
+                  <label className={fap.label}>Status</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.assetstatus}
                     onChange={(e) => setEditForm((f) => ({ ...f, assetstatus: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Acquired value</label>
+                  <label className={fap.label}>Acquired value</label>
                   <input
                     type="number"
                     step="any"
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.acquiredvalue}
                     onChange={(e) => setEditForm((f) => ({ ...f, acquiredvalue: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Acquired date</label>
+                  <label className={fap.label}>Acquired date</label>
                   <input
                     type="date"
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.acquireddate}
                     onChange={(e) => setEditForm((f) => ({ ...f, acquireddate: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Location</label>
+                  <label className={fap.label}>Location</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.location}
                     onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Department</label>
+                  <label className={fap.label}>Department</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.department}
                     onChange={(e) => setEditForm((f) => ({ ...f, department: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Plate number</label>
+                  <label className={fap.label}>Plate number</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.plateNumber}
                     onChange={(e) => setEditForm((f) => ({ ...f, plateNumber: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Chassis number</label>
+                  <label className={fap.label}>Chassis number</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.chassisNumber}
                     onChange={(e) => setEditForm((f) => ({ ...f, chassisNumber: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Engine number</label>
+                  <label className={fap.label}>Engine number</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.engineNumber}
                     onChange={(e) => setEditForm((f) => ({ ...f, engineNumber: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Model</label>
+                  <label className={fap.label}>Model</label>
                   <input
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.vehicleModel}
                     onChange={(e) => setEditForm((f) => ({ ...f, vehicleModel: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm mb-1 ${backgroundStyles.headerSubtitle}`}>Year</label>
+                  <label className={fap.label}>Year</label>
                   <input
                     type="number"
-                    className={inputClass}
+                    className={fap.input}
                     value={editForm.modelYear}
                     onChange={(e) => setEditForm((f) => ({ ...f, modelYear: e.target.value }))}
                   />
@@ -1139,7 +1082,7 @@ export default function TransportAssetsPage() {
                 <button
                   type="button"
                   onClick={() => setEditOpen(false)}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+                  className={fap.btnSecondary}
                 >
                   Cancel
                 </button>
@@ -1147,7 +1090,7 @@ export default function TransportAssetsPage() {
                   type="button"
                   onClick={handleEditSave}
                   disabled={saving}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg} disabled:opacity-50`}
+                  className={fap.btnPrimary}
                 >
                   {saving ? 'Saving…' : 'Save'}
                 </button>
@@ -1157,17 +1100,17 @@ export default function TransportAssetsPage() {
         )}
 
         {errorModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className={`${backgroundStyles.panelBg} w-full max-w-2xl rounded-2xl p-6 shadow-xl`}>
-              <h3 className={`mb-3 text-xl font-semibold ${backgroundStyles.textColor}`}>{errorModalTitle}</h3>
-              <div className={`max-h-80 overflow-auto whitespace-pre-wrap rounded-xl border p-4 text-sm ${backgroundStyles.inputBg}`}>
+          <div className={fap.modalOverlay}>
+            <div className={`${fap.modal} max-w-2xl`}>
+              <h3 className="mb-3 text-xl font-semibold text-[#0F172A] dark:text-[#F8F9FA]">{errorModalTitle}</h3>
+              <div className={`${fap.surfaceBorder} max-h-80 overflow-auto whitespace-pre-wrap p-4 text-sm text-[#475569] dark:text-[#94A3B8]`}>
                 {errorModalContent}
               </div>
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setErrorModalOpen(false)}
-                  className={`px-4 py-2 rounded-xl border transition-all ${backgroundStyles.inputBg}`}
+                  className={fap.btnSecondary}
                 >
                   Close
                 </button>

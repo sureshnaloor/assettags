@@ -58,6 +58,7 @@ const subLinksMap: Record<string, SidebarSubLink[]> = {
     { name: 'Search by year of acquisition', href: '/assets-search-by-year-of-acquisition' },
     { name: 'Search by Location', href: '/fixedasset/search-by-location' },
     { name: 'Transport Assets', href: '/fixedasset/transport-assets' },
+    { name: 'Facility Assets', href: '/fixedasset/facility-assets' },
     { name: 'Portable Assets', href: '/fixedasset/portable-assets' },
     { name: 'Software Assets', href: '/fixedasset/software-assets' },
     { name: 'Fixed Asset Master Data', href: '#', isGroupLabel: true },

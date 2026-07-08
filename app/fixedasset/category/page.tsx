@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fap } from '@/lib/fixedAssetPageDesign';
 
 interface Category {
   _id: string;
@@ -86,49 +87,38 @@ export default function FixedAssetCategoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 p-6 text-white">
-      <div className="mx-auto max-w-5xl space-y-6">
-        <h1 className="text-2xl font-bold">Fixed Asset Category Management</h1>
+    <div className={`${fap.page} p-6`}>
+      <div className={fap.masterContainer}>
+        <h1 className={`text-2xl font-bold ${fap.textPrimary}`}>Fixed Asset Category Management</h1>
 
-        {error && (
-          <div className="rounded-lg border border-red-400/40 bg-red-500/10 p-3 text-sm text-red-200">
-            {error}
-          </div>
-        )}
+        {error && <div className={fap.errorBox}>{error}</div>}
 
-        <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-          <h2 className="mb-3 text-lg font-semibold">Add Category</h2>
+        <div className={`${fap.card} p-4`}>
+          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>Add Category</h2>
           <div className="flex gap-3">
             <input
               type="text"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
               placeholder="Category name"
-              className="flex-1 rounded-md border border-slate-600 bg-slate-900 px-3 py-2"
+              className={`flex-1 ${fap.input}`}
             />
-            <button
-              type="button"
-              onClick={handleAddCategory}
-              className="rounded-md bg-blue-600 px-4 py-2 font-medium hover:bg-blue-500"
-            >
+            <button type="button" onClick={handleAddCategory} className={fap.btnPrimary}>
               Add
             </button>
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-          <h2 className="mb-3 text-lg font-semibold">View / Edit Categories</h2>
+        <div className={`${fap.card} p-4`}>
+          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>View / Edit Categories</h2>
           {loading ? (
-            <p className="text-sm text-slate-300">Loading categories...</p>
+            <p className={`text-sm ${fap.textSecondary}`}>Loading categories...</p>
           ) : categories.length === 0 ? (
-            <p className="text-sm text-slate-300">No categories found.</p>
+            <p className={`text-sm ${fap.textSecondary}`}>No categories found.</p>
           ) : (
             <div className="space-y-2">
               {categories.map((category) => (
-                <div
-                  key={category._id}
-                  className="flex items-center justify-between rounded-md border border-slate-700 bg-slate-900 p-3"
-                >
+                <div key={category._id} className={fap.listItem}>
                   {editingCategory?._id === category._id ? (
                     <input
                       type="text"
@@ -136,10 +126,10 @@ export default function FixedAssetCategoryPage() {
                       onChange={(e) =>
                         setEditingCategory((prev) => (prev ? { ...prev, name: e.target.value } : null))
                       }
-                      className="mr-3 flex-1 rounded-md border border-slate-600 bg-slate-800 px-3 py-2"
+                      className={`mr-3 flex-1 ${fap.input}`}
                     />
                   ) : (
-                    <span>{category.name}</span>
+                    <span className={fap.textPrimary}>{category.name}</span>
                   )}
 
                   <div className="flex gap-2">
@@ -148,14 +138,14 @@ export default function FixedAssetCategoryPage() {
                         <button
                           type="button"
                           onClick={handleUpdateCategory}
-                          className="rounded-md bg-emerald-600 px-3 py-1 text-sm hover:bg-emerald-500"
+                          className="rounded-md bg-emerald-600 px-3 py-1 text-sm text-white hover:bg-emerald-500"
                         >
                           Save
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditingCategory(null)}
-                          className="rounded-md bg-slate-600 px-3 py-1 text-sm hover:bg-slate-500"
+                          className={fap.btnSecondary}
                         >
                           Cancel
                         </button>
@@ -165,14 +155,14 @@ export default function FixedAssetCategoryPage() {
                         <button
                           type="button"
                           onClick={() => setEditingCategory(category)}
-                          className="rounded-md bg-blue-600 px-3 py-1 text-sm hover:bg-blue-500"
+                          className="rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-500"
                         >
                           Edit
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteCategory(category._id)}
-                          className="rounded-md bg-red-600 px-3 py-1 text-sm hover:bg-red-500"
+                          className="rounded-md bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-500"
                         >
                           Delete
                         </button>

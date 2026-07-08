@@ -16,6 +16,7 @@ const FIXED_ASSET_LIST_ROUTES = new Set([
   'without-custodian',
   'search-by-location',
   'transport-assets',
+  'facility-assets',
   'portable-assets',
   'software-assets',
 ]);
@@ -30,6 +31,9 @@ function isFixedAssetAssetDetailPath(pathname: string): boolean {
     if (/^\/fixedasset\/transport-assets\/masters\//.test(pathname)) {
       return false;
     }
+    return true;
+  }
+  if (/^\/fixedasset\/facility-assets\/.+/.test(pathname)) {
     return true;
   }
   if (/^\/fixedasset\/portable-assets\/.+/.test(pathname)) {
