@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import MasterDataPageShell from '@/app/components/MasterDataPageShell';
+import { useThemeSurfaces } from '@/lib/themePageStyles';
 import { fap } from '@/lib/fixedAssetPageDesign';
 
 interface Category {
@@ -14,6 +16,7 @@ export default function FixedAssetCategoryPage() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const s = useThemeSurfaces();
 
   const fetchCategories = async () => {
     try {
@@ -87,21 +90,20 @@ export default function FixedAssetCategoryPage() {
   };
 
   return (
-    <div className={`${fap.page} p-6`}>
-      <div className={fap.masterContainer}>
-        <h1 className={`text-2xl font-bold ${fap.textPrimary}`}>Fixed Asset Category Management</h1>
+    <MasterDataPageShell>
+        <h1 className={s.pageTitle}>Fixed Asset Category Management</h1>
 
-        {error && <div className={fap.errorBox}>{error}</div>}
+        {error && <div className={s.errorBox}>{error}</div>}
 
-        <div className={`${fap.card} p-4`}>
-          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>Add Category</h2>
+        <div className={`${s.card} p-4`}>
+          <h2 className={s.sectionTitle}>Add Category</h2>
           <div className="flex gap-3">
             <input
               type="text"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
               placeholder="Category name"
-              className={`flex-1 ${fap.input}`}
+              className={`flex-1 ${s.input}`}
             />
             <button type="button" onClick={handleAddCategory} className={fap.btnPrimary}>
               Add
@@ -109,8 +111,8 @@ export default function FixedAssetCategoryPage() {
           </div>
         </div>
 
-        <div className={`${fap.card} p-4`}>
-          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>View / Edit Categories</h2>
+        <div className={`${s.card} p-4`}>
+          <h2 className={s.sectionTitle}>View / Edit Categories</h2>
           {loading ? (
             <p className={`text-sm ${fap.textSecondary}`}>Loading categories...</p>
           ) : categories.length === 0 ? (
@@ -118,7 +120,7 @@ export default function FixedAssetCategoryPage() {
           ) : (
             <div className="space-y-2">
               {categories.map((category) => (
-                <div key={category._id} className={fap.listItem}>
+                <div key={category._id} className={s.listItem}>
                   {editingCategory?._id === category._id ? (
                     <input
                       type="text"
@@ -129,7 +131,7 @@ export default function FixedAssetCategoryPage() {
                       className={`mr-3 flex-1 ${fap.input}`}
                     />
                   ) : (
-                    <span className={fap.textPrimary}>{category.name}</span>
+                    <span className={s.textPrimary}>{category.name}</span>
                   )}
 
                   <div className="flex gap-2">
@@ -145,7 +147,7 @@ export default function FixedAssetCategoryPage() {
                         <button
                           type="button"
                           onClick={() => setEditingCategory(null)}
-                          className={fap.btnSecondary}
+                          className={s.btnSecondary}
                         >
                           Cancel
                         </button>
@@ -174,7 +176,6 @@ export default function FixedAssetCategoryPage() {
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </MasterDataPageShell>
   );
 }

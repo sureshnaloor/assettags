@@ -63,7 +63,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     <div className="flex flex-col flex-1">
       <div className="grid flex-1 md:grid-cols-[280px_1fr] items-stretch">
         <Sidebar />
-        <main className="flex flex-1 flex-col">
+        <main className="flex min-h-0 flex-1 flex-col bg-transparent">
           {children}
         </main>
       </div>

@@ -22,6 +22,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
+    const stored = localStorage.getItem('app-theme');
+    if (stored === 'light' || stored === 'default') {
+      setThemeState(stored);
+    }
   }, []);
 
   useEffect(() => {

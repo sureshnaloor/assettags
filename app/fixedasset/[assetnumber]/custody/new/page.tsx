@@ -8,6 +8,7 @@ import { Employee, Project, Custody } from '@/types/custody';
 import CustodyLocationFields from '@/app/components/CustodyLocationFields';
 import type { CustodyLocationType } from '@/lib/custodyLocation';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
+import ThemedPageShell from '@/app/components/ThemedPageShell';
 import { fap } from '@/lib/fixedAssetPageDesign';
 
 export default function NewCustodyPage() {
@@ -320,8 +321,7 @@ export default function NewCustodyPage() {
   };
 
   return (
-    <div className={fap.page}>
-      <main className={`${fap.detailContainer} mx-auto max-w-2xl`}>
+    <ThemedPageShell className="px-4 py-6 md:px-8 md:py-10" maxWidth="max-w-2xl">
         <div className={`${fap.card} ${fap.cardPadding}`}>
           <h3 className={`mb-6 text-2xl font-semibold ${fap.textPrimary}`}>New Custody Record</h3>
 
@@ -480,7 +480,6 @@ export default function NewCustodyPage() {
               </div>
             </div>
           </div>
-        </main>
-    </div>
+    </ThemedPageShell>
   );
 }

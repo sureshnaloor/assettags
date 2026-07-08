@@ -6,6 +6,8 @@ import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
+import ThemedPageShell from '@/app/components/ThemedPageShell';
+import { useThemeSurfaces } from '@/lib/themePageStyles';
 import { fap } from '@/lib/fixedAssetPageDesign';
 
 const DEBOUNCE_MS = 400;
@@ -43,6 +45,7 @@ export default function FixedAssetSearchByLocationPage() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const s = useThemeSurfaces();
 
   const runSearch = useCallback(async (term: string) => {
     const trimmed = (term || '').trim();
@@ -97,7 +100,7 @@ export default function FixedAssetSearchByLocationPage() {
           href={`/fixedasset/${row.original.assetnumber}`}
           target="_blank"
           rel="noopener noreferrer"
-          className={fap.link}
+          className={s.link}
         >
           {row.original.assetnumber}
         </Link>
@@ -130,19 +133,19 @@ export default function FixedAssetSearchByLocationPage() {
   ];
 
   return (
-    <div className={`${fap.page} p-4 md:p-6`}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <div className={`${fap.card} ${fap.cardPadding}`}>
-          <h1 className={fap.title}>Assets Search by Location</h1>
-          <p className={`mt-2 ${fap.subtitle}`}>
+    <ThemedPageShell>
+      <div className="flex flex-col gap-6">
+        <div className={`${s.card} ${s.cardPadding}`}>
+          <h1 className={s.heroTitle}>Assets Search by Location</h1>
+          <p className={`mt-2 ${s.heroSubtitle}`}>
             Find fixed assets by location. Type at least 5 characters; use * as wildcard (e.g. *camp* or safco).
           </p>
         </div>
 
-        <div className={`${fap.card} p-6`}>
+        <div className={`${s.card} p-6`}>
           <div className="flex flex-wrap items-end gap-3">
             <div className="min-w-[200px] flex-1">
-              <label htmlFor="location-search" className={`mb-1 block text-sm font-medium ${fap.textSecondary}`}>
+              <label htmlFor="location-search" className={`mb-1 block text-sm font-medium ${s.textSecondary}`}>
                 Location search
               </label>
               <input
@@ -152,42 +155,42 @@ export default function FixedAssetSearchByLocationPage() {
                 onChange={(e) => setSearchText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && searchByLocation()}
                 placeholder="e.g. *camp* or safco (min 5 chars)"
-                className={fap.searchInput}
+                className={s.searchInput}
               />
             </div>
             <button
               type="button"
               onClick={searchByLocation}
               disabled={loading || searchText.trim().length < MIN_SEARCH_LENGTH}
-              className={`${fap.btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}
+              className={`${s.btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {loading ? 'Searching...' : 'Search'}
             </button>
           </div>
-          <p className={`mt-3 text-xs ${fap.textMuted}`}>
+          <p className={`mt-3 text-xs ${s.textMuted}`}>
             Search runs after you type at least 5 characters (debounced). Searches warehouse, department, and
             camp/office locations; case-insensitive. Use * as wildcard.
           </p>
         </div>
 
-        <div className={fap.tableWrap}>
+        <div className={s.tableWrap}>
           {loading ? (
             <div className="flex h-32 items-center justify-center">
-              <div className={fap.spinner} />
+              <div className={s.spinner} />
             </div>
           ) : !hasSearched ? (
-            <div className={`py-8 text-center ${fap.textMuted}`}>
+            <div className={`py-8 text-center ${s.textMuted}`}>
               Enter at least 5 characters to search by location (e.g. &quot;camp&quot; or &quot;*safco*&quot;).
               Search runs automatically.
             </div>
           ) : data.length === 0 ? (
-            <div className={`py-8 text-center ${fap.textMuted}`}>
+            <div className={`py-8 text-center ${s.textMuted}`}>
               No fixed assets found for location &quot;{searchText.trim()}&quot;
             </div>
           ) : (
             <>
-              <div className="border-b border-slate-200 px-4 py-2 dark:border-[#2A3B4C]/50">
-                <p className={`text-sm ${fap.textSecondary}`}>
+              <div className="border-b border-b px-4 py-2 {s.tableSummaryBorder}">
+                <p className={`text-sm ${s.textSecondary}`}>
                   Found {data.length} asset{data.length !== 1 ? 's' : ''} for location &quot;{searchText.trim()}&quot;
                 </p>
               </div>
@@ -205,6 +208,6 @@ export default function FixedAssetSearchByLocationPage() {
           )}
         </div>
       </div>
-    </div>
+    </ThemedPageShell>
   );
 }

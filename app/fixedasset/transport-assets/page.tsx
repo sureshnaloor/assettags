@@ -13,6 +13,7 @@ import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 import FixedAssetPageHeader from '@/app/components/fixedasset/FixedAssetPageHeader';
 import FixedAssetStatBar from '@/app/components/fixedasset/FixedAssetStatBar';
 import FixedAssetStatusBadge from '@/app/components/fixedasset/FixedAssetStatusBadge';
+import FixedAssetListShell from '@/app/components/fixedasset/FixedAssetListShell';
 import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
 import { computeAssetStats, sortBtn, th } from '@/lib/fixedAssetListHelpers';
 
@@ -633,8 +634,7 @@ export default function TransportAssetsPage() {
   ];
 
   return (
-    <div className={fap.page}>
-      <div className={fap.listContainer}>
+    <FixedAssetListShell>
         <FixedAssetPageHeader
           title="Transport Assets"
           subtitle="Search and manage fleet assets with plate numbers, vehicle models, and transport maintenance details."
@@ -1118,7 +1118,6 @@ export default function TransportAssetsPage() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </FixedAssetListShell>
   );
 }

@@ -12,6 +12,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import { AssetQRCode } from '@/components/AssetQRCode';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
+import ThemedPageShell from '@/app/components/ThemedPageShell';
+import { useThemeSurfaces } from '@/lib/themePageStyles';
 import { fap } from '@/lib/fixedAssetPageDesign';
 
 interface FixedAsset {
@@ -29,6 +31,7 @@ interface FixedAsset {
 }
 
 export default function FixedAssetWithoutCustodianPage() {
+  const s = useThemeSurfaces();
   const [data, setData] = useState<FixedAsset[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -225,28 +228,28 @@ export default function FixedAssetWithoutCustodianPage() {
   ];
 
   return (
-    <div className={`${fap.page} p-4 md:p-6`}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <div className={`${fap.card} ${fap.cardPadding}`}>
-          <h1 className={fap.title}>Fixed Assets Without Custodian</h1>
-          <p className={`mt-2 ${fap.subtitle}`}>
+    <ThemedPageShell>
+      <div className="flex flex-col gap-6">
+        <div className={`${s.card} ${s.cardPadding}`}>
+          <h1 className={s.heroTitle}>Fixed Assets Without Custodian</h1>
+          <p className={`mt-2 ${s.heroSubtitle}`}>
             Search for fixed assets without custodian information
           </p>
         </div>
 
         {!hasSearched && (
-          <div className={`${fap.card} p-4`}>
-            <p className={`text-sm ${fap.textSecondary}`}>
+          <div className={`${s.card} p-4`}>
+            <p className={`text-sm ${s.textSecondary}`}>
               Please set your filters (acquisition value range, date range, and category) and click Search to view
               fixed assets without custodian information.
             </p>
           </div>
         )}
 
-        <div className={`${fap.card} p-6`}>
+        <div className={`${s.card} p-6`}>
           <div className="space-y-4">
             <div>
-              <label className={`mb-3 block text-sm font-medium ${fap.textPrimary}`}>
+              <label className={`mb-3 block text-sm font-medium ${s.textPrimary}`}>
                 Acquisition Value Range: {minValue.toLocaleString()} - {maxValue.toLocaleString()} SAR
               </label>
               <div className="slider-container-fixedasset relative h-8" style={{ zIndex: 10 }}>
@@ -305,7 +308,7 @@ export default function FixedAssetWithoutCustodianPage() {
                 }}
               ></div>
             </div>
-            <div className={`mt-1 flex justify-between text-xs ${fap.textMuted}`}>
+            <div className={`mt-1 flex justify-between text-xs ${s.textMuted}`}>
               <span>0 SAR</span>
               <span>1,000,000 SAR</span>
             </div>
@@ -314,7 +317,7 @@ export default function FixedAssetWithoutCustodianPage() {
           {/* Date Range and Category */}
           <div className="flex gap-4 items-end">
             <div className="flex-1 max-w-[200px]">
-              <label className={`mb-2 block text-sm font-medium ${fap.textPrimary}`}>
+              <label className={`mb-2 block text-sm font-medium ${s.textPrimary}`}>
                 From Date
               </label>
               <div className="relative" style={{ zIndex: 1000 }}>
@@ -325,7 +328,7 @@ export default function FixedAssetWithoutCustodianPage() {
                 startDate={minDate || undefined}
                 endDate={maxDate || undefined}
                 maxDate={maxDate || undefined}
-                  className={fap.input}
+                  className={s.input}
                   dateFormat="yyyy-MM-dd"
                   isClearable
                   placeholderText="Select start date"
@@ -334,7 +337,7 @@ export default function FixedAssetWithoutCustodianPage() {
               </div>
             </div>
             <div className="flex-1 max-w-[200px]">
-              <label className={`mb-2 block text-sm font-medium ${fap.textPrimary}`}>
+              <label className={`mb-2 block text-sm font-medium ${s.textPrimary}`}>
                 To Date
               </label>
               <div className="relative" style={{ zIndex: 1000 }}>
@@ -345,7 +348,7 @@ export default function FixedAssetWithoutCustodianPage() {
                 startDate={minDate || undefined}
                 endDate={maxDate || undefined}
                 minDate={minDate || undefined}
-                  className={fap.input}
+                  className={s.input}
                   dateFormat="yyyy-MM-dd"
                   isClearable
                   placeholderText="Select end date"
@@ -354,13 +357,13 @@ export default function FixedAssetWithoutCustodianPage() {
               </div>
             </div>
             <div className="flex-1 max-w-[200px]">
-              <label className={`mb-2 block text-sm font-medium ${fap.textPrimary}`}>
+              <label className={`mb-2 block text-sm font-medium ${s.textPrimary}`}>
                 Asset Category
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className={fap.input}
+                className={s.input}
                 disabled={loadingCategories}
               >
                 <option value="">All Categories</option>
@@ -384,23 +387,23 @@ export default function FixedAssetWithoutCustodianPage() {
         </div>
       </div>
 
-      <div className={fap.tableWrap}>
+      <div className={s.tableWrap}>
         {loading ? (
           <div className="flex h-32 items-center justify-center">
-            <div className={fap.spinner} />
+            <div className={s.spinner} />
           </div>
         ) : !hasSearched ? (
-          <div className={`py-8 text-center ${fap.textMuted}`}>
+          <div className={`py-8 text-center ${s.textMuted}`}>
             No search performed yet. Use the filters above to search for fixed assets.
           </div>
         ) : data.length === 0 ? (
-          <div className={`py-8 text-center ${fap.textMuted}`}>
+          <div className={`py-8 text-center ${s.textMuted}`}>
             No fixed assets found without custodian information matching the selected filters
           </div>
         ) : (
           <>
-            <div className="border-b border-slate-200 p-4 dark:border-[#2A3B4C]/50">
-              <p className={`text-sm ${fap.textSecondary}`}>
+            <div className={`border-b p-4 ${s.tableSummaryBorder}`}>
+              <p className={`text-sm ${s.textSecondary}`}>
                 Found {data.length} fixed asset{data.length !== 1 ? 's' : ''} without custodian information
               </p>
             </div>
@@ -418,7 +421,7 @@ export default function FixedAssetWithoutCustodianPage() {
         )}
       </div>
       </div>
-    </div>
+    </ThemedPageShell>
   );
 }
 

@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import MasterDataPageShell from '@/app/components/MasterDataPageShell';
+import { useThemeSurfaces } from '@/lib/themePageStyles';
 import { fap } from '@/lib/fixedAssetPageDesign';
 
 interface Category {
@@ -22,6 +24,7 @@ export default function FixedAssetSubcategoryPage() {
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const s = useThemeSurfaces();
 
   const fetchCategories = async () => {
     const response = await fetch('/api/categories/fixedasset');
@@ -121,19 +124,18 @@ export default function FixedAssetSubcategoryPage() {
   };
 
   return (
-    <div className={`${fap.page} p-6`}>
-      <div className={fap.masterContainer}>
-        <h1 className={`text-2xl font-bold ${fap.textPrimary}`}>Fixed Asset Subcategory Management</h1>
+    <MasterDataPageShell>
+        <h1 className={s.pageTitle}>Fixed Asset Subcategory Management</h1>
 
-        {error && <div className={fap.errorBox}>{error}</div>}
+        {error && <div className={s.errorBox}>{error}</div>}
 
-        <div className={`${fap.card} p-4`}>
-          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>Add Subcategory</h2>
+        <div className={`${s.card} p-4`}>
+          <h2 className={s.sectionTitle}>Add Subcategory</h2>
           <div className="flex flex-wrap gap-3">
             <select
               value={newSubcategory.category}
               onChange={(e) => setNewSubcategory((prev) => ({ ...prev, category: e.target.value }))}
-              className={fap.input}
+              className={s.input}
             >
               <option value="">Select Category</option>
               {categories.map((category) => (
@@ -147,7 +149,7 @@ export default function FixedAssetSubcategoryPage() {
               value={newSubcategory.name}
               onChange={(e) => setNewSubcategory((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="Subcategory name"
-              className={`min-w-[240px] flex-1 ${fap.input}`}
+              className={`min-w-[240px] flex-1 ${s.input}`}
             />
             <button type="button" onClick={handleAddSubcategory} className={fap.btnPrimary}>
               Add
@@ -155,7 +157,7 @@ export default function FixedAssetSubcategoryPage() {
           </div>
         </div>
 
-        <div className={`${fap.card} p-4`}>
+        <div className={`${s.card} p-4`}>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <h2 className={`text-lg font-semibold ${fap.textPrimary}`}>
               View / Edit Subcategories ({groupedCount})
@@ -163,7 +165,7 @@ export default function FixedAssetSubcategoryPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className={`text-sm ${fap.input}`}
+              className={`text-sm ${s.input}`}
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
@@ -181,7 +183,7 @@ export default function FixedAssetSubcategoryPage() {
           ) : (
             <div className="space-y-2">
               {subcategories.map((subcategory) => (
-                <div key={subcategory._id} className={fap.listItem}>
+                <div key={subcategory._id} className={s.listItem}>
                   {editingSubcategory?._id === subcategory._id ? (
                     <div className="mr-3 flex flex-1 flex-wrap gap-2">
                       <select
@@ -189,7 +191,7 @@ export default function FixedAssetSubcategoryPage() {
                         onChange={(e) =>
                           setEditingSubcategory((prev) => (prev ? { ...prev, category: e.target.value } : null))
                         }
-                        className={fap.input}
+                        className={s.input}
                       >
                         {categories.map((category) => (
                           <option key={category._id} value={category.name}>
@@ -207,8 +209,8 @@ export default function FixedAssetSubcategoryPage() {
                       />
                     </div>
                   ) : (
-                    <span className={fap.textPrimary}>
-                      <span className={fap.textMuted}>{subcategory.category}</span> - {subcategory.name}
+                    <span className={s.textPrimary}>
+                      <span className={s.textMuted}>{subcategory.category}</span> - {subcategory.name}
                     </span>
                   )}
 
@@ -225,7 +227,7 @@ export default function FixedAssetSubcategoryPage() {
                         <button
                           type="button"
                           onClick={() => setEditingSubcategory(null)}
-                          className={fap.btnSecondary}
+                          className={s.btnSecondary}
                         >
                           Cancel
                         </button>
@@ -254,7 +256,6 @@ export default function FixedAssetSubcategoryPage() {
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </MasterDataPageShell>
   );
 }

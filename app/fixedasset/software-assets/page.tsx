@@ -10,6 +10,7 @@ import Link from 'next/link';
 
 import { AssetQRCode } from '@/components/AssetQRCode';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
+import FixedAssetListShell from '@/app/components/fixedasset/FixedAssetListShell';
 import { fap } from '@/lib/fixedAssetPageDesign';
 
 interface SoftwareAsset {
@@ -88,7 +89,6 @@ export default function SoftwareAssetsPage() {
   const [editAssetNumber, setEditAssetNumber] = useState('');
 
   const backgroundStyles = {
-    container: fap.page,
     textColor: fap.textPrimary,
     headerBg: `${fap.card} transition-all duration-300 hover:bg-slate-50 dark:hover:bg-[#1E293B]/90`,
     headerHover: '',
@@ -583,8 +583,8 @@ export default function SoftwareAssetsPage() {
   ];
 
   return (
-    <div className={backgroundStyles.container}>
-      <div className="relative z-20 flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 min-h-screen">
+    <FixedAssetListShell>
+      <div className="flex flex-col gap-4 md:gap-8">
         <div className="mb-4">
           <div
             className={`${backgroundStyles.headerBg} rounded-3xl p-8 ${backgroundStyles.headerHover} transition-all duration-300`}
@@ -988,6 +988,6 @@ export default function SoftwareAssetsPage() {
           </div>
         )}
       </div>
-    </div>
+    </FixedAssetListShell>
   );
 }

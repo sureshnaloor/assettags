@@ -15,6 +15,7 @@ import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
 import FixedAssetPageHeader from '@/app/components/fixedasset/FixedAssetPageHeader';
 import FixedAssetStatBar from '@/app/components/fixedasset/FixedAssetStatBar';
 import FixedAssetStatusBadge from '@/app/components/fixedasset/FixedAssetStatusBadge';
+import FixedAssetListShell from '@/app/components/fixedasset/FixedAssetListShell';
 import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
 import { computeAssetStats, sortBtn, th } from '@/lib/fixedAssetListHelpers';
 
@@ -474,8 +475,7 @@ export default function FixedAssetPage() {
   const landingColumns = buildAssetColumns({ includeActions: true });
 
   return (
-    <div className={fap.page}>
-      <div className={fap.listContainer}>
+    <FixedAssetListShell>
         <FixedAssetPageHeader
           title="Fixed Assets"
           subtitle="Search and manage fixed assets"
@@ -729,7 +729,6 @@ export default function FixedAssetPage() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </FixedAssetListShell>
   );
 }

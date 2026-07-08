@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import MasterDataPageShell from '@/app/components/MasterDataPageShell';
+import { useThemeSurfaces } from '@/lib/themePageStyles';
 import { fap } from '@/lib/fixedAssetPageDesign';
 
 interface Manufacturer {
@@ -14,6 +16,7 @@ export default function FixedAssetManufacturerPage() {
   const [editingManufacturer, setEditingManufacturer] = useState<Manufacturer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const s = useThemeSurfaces();
 
   const fetchManufacturers = async () => {
     try {
@@ -87,21 +90,20 @@ export default function FixedAssetManufacturerPage() {
   };
 
   return (
-    <div className={`${fap.page} p-6`}>
-      <div className={fap.masterContainer}>
-        <h1 className={`text-2xl font-bold ${fap.textPrimary}`}>Fixed Asset Manufacturer Management</h1>
+    <MasterDataPageShell>
+        <h1 className={s.pageTitle}>Fixed Asset Manufacturer Management</h1>
 
-        {error && <div className={fap.errorBox}>{error}</div>}
+        {error && <div className={s.errorBox}>{error}</div>}
 
-        <div className={`${fap.card} p-4`}>
-          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>Add Manufacturer</h2>
+        <div className={`${s.card} p-4`}>
+          <h2 className={s.sectionTitle}>Add Manufacturer</h2>
           <div className="flex gap-3">
             <input
               type="text"
               value={newManufacturerName}
               onChange={(e) => setNewManufacturerName(e.target.value)}
               placeholder="Manufacturer name"
-              className={`flex-1 ${fap.input}`}
+              className={`flex-1 ${s.input}`}
             />
             <button type="button" onClick={handleAddManufacturer} className={fap.btnPrimary}>
               Add
@@ -109,8 +111,8 @@ export default function FixedAssetManufacturerPage() {
           </div>
         </div>
 
-        <div className={`${fap.card} p-4`}>
-          <h2 className={`mb-3 text-lg font-semibold ${fap.textPrimary}`}>View / Edit Manufacturers</h2>
+        <div className={`${s.card} p-4`}>
+          <h2 className={s.sectionTitle}>View / Edit Manufacturers</h2>
           {loading ? (
             <p className={`text-sm ${fap.textSecondary}`}>Loading manufacturers...</p>
           ) : manufacturers.length === 0 ? (
@@ -118,7 +120,7 @@ export default function FixedAssetManufacturerPage() {
           ) : (
             <div className="space-y-2">
               {manufacturers.map((manufacturer) => (
-                <div key={manufacturer._id} className={fap.listItem}>
+                <div key={manufacturer._id} className={s.listItem}>
                   {editingManufacturer?._id === manufacturer._id ? (
                     <input
                       type="text"
@@ -129,7 +131,7 @@ export default function FixedAssetManufacturerPage() {
                       className={`mr-3 flex-1 ${fap.input}`}
                     />
                   ) : (
-                    <span className={fap.textPrimary}>{manufacturer.name}</span>
+                    <span className={s.textPrimary}>{manufacturer.name}</span>
                   )}
 
                   <div className="flex gap-2">
@@ -142,7 +144,7 @@ export default function FixedAssetManufacturerPage() {
                         >
                           Save
                         </button>
-                        <button type="button" onClick={() => setEditingManufacturer(null)} className={fap.btnSecondary}>
+                        <button type="button" onClick={() => setEditingManufacturer(null)} className={s.btnSecondary}>
                           Cancel
                         </button>
                       </>
@@ -170,7 +172,6 @@ export default function FixedAssetManufacturerPage() {
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </MasterDataPageShell>
   );
 }

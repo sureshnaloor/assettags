@@ -10,6 +10,7 @@ import FixedAssetSection from '@/app/components/fixedasset/FixedAssetSection';
 import FixedAssetStatusBadge from '@/app/components/fixedasset/FixedAssetStatusBadge';
 import { AssetQRCode } from '@/components/AssetQRCode';
 import CustomDetailsSection from '@/app/components/CustomDetailsSection';
+import FixedAssetDetailShell from '@/app/components/fixedasset/FixedAssetDetailShell';
 import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
 
 type PortableTypeValue = '' | 'pre_engineered' | 'container_20' | 'container_40' | 'prefabricated_sheet';
@@ -253,12 +254,15 @@ export default function PortableAssetDetailPage() {
   const inp = fap.input;
 
   if (!assetnumber) {
-    return <div className={`${fap.page} p-6 text-[#0F172A] dark:text-[#F8F9FA]`}>Invalid asset.</div>;
+    return (
+      <FixedAssetDetailShell>
+        <p className={fap.textPrimary}>Invalid asset.</p>
+      </FixedAssetDetailShell>
+    );
   }
 
   return (
-    <div className={fap.page}>
-      <div className={fap.detailContainer}>
+    <FixedAssetDetailShell>
         <FixedAssetBreadcrumb
           items={[
             { label: 'Fixed Assets', href: '/fixedasset' },
@@ -541,7 +545,6 @@ export default function PortableAssetDetailPage() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </FixedAssetDetailShell>
   );
 }

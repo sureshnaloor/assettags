@@ -7,6 +7,7 @@ import Link from 'next/link';
 import FixedAssetSection from '@/app/components/fixedasset/FixedAssetSection';
 import { AssetQRCode } from '@/components/AssetQRCode';
 import CustomDetailsSection from '@/app/components/CustomDetailsSection';
+import FixedAssetDetailShell from '@/app/components/fixedasset/FixedAssetDetailShell';
 import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
 
 export type LicenseType = 'perpetual' | 'annual' | 'other_periodic' | '';
@@ -199,15 +200,15 @@ export default function SoftwareAssetDetailPage() {
 
   if (!assetnumber) {
     return (
-      <div className={`${fap.page} p-6 ${fap.textPrimary}`}>
-        Invalid asset.
-      </div>
+      <FixedAssetDetailShell>
+        <p className={fap.textPrimary}>Invalid asset.</p>
+      </FixedAssetDetailShell>
     );
   }
 
   return (
-    <div className={fap.page}>
-      <div className={`${fap.detailContainer} flex flex-col gap-4`}>
+    <FixedAssetDetailShell>
+      <div className="flex flex-col gap-4">
         <div className="mb-2 flex flex-wrap items-center gap-3">
           <button
             type="button"
@@ -457,6 +458,6 @@ export default function SoftwareAssetDetailPage() {
           </main>
         )}
       </div>
-    </div>
+    </FixedAssetDetailShell>
   );
 }

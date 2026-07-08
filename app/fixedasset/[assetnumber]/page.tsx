@@ -14,6 +14,7 @@ import FixedAssetStatusBadge from '@/app/components/fixedasset/FixedAssetStatusB
 import { AssetQRCode } from '@/components/AssetQRCode';
 import { AssetData } from '@/types/asset';
 import { Custody } from '@/types/custody';
+import FixedAssetDetailShell from '@/app/components/fixedasset/FixedAssetDetailShell';
 import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
 
 type FixedAssetDetail = AssetData & {
@@ -132,12 +133,15 @@ export default function FixedAssetPage() {
   };
 
   if (!assetnumber) {
-    return <div className={`${fap.page} p-6 text-[#0F172A] dark:text-[#F8F9FA]`}>Invalid asset.</div>;
+    return (
+      <FixedAssetDetailShell>
+        <p className={fap.textPrimary}>Invalid asset.</p>
+      </FixedAssetDetailShell>
+    );
   }
 
   return (
-    <div className={fap.page}>
-      <div className={fap.detailContainer}>
+    <FixedAssetDetailShell>
         <FixedAssetBreadcrumb
           items={[
             { label: 'Fixed Assets', href: '/fixedasset' },
@@ -271,7 +275,6 @@ export default function FixedAssetPage() {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </FixedAssetDetailShell>
   );
 }
