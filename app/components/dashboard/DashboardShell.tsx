@@ -28,8 +28,9 @@ export function DashboardShell({
   return (
     <div className="flex min-h-screen flex-col ds-page-bg">
       <div className="sticky top-0 z-40 flex h-[64px] shrink-0 items-center justify-between border-b border-primary-light bg-primary-navy/95 px-4 backdrop-blur-xl md:px-6">
-        <div>
-          <nav className="mb-0.5 flex items-center gap-1 text-xs text-text-muted">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="min-w-0">
+            <nav className="mb-0.5 flex items-center gap-1 text-xs text-text-muted">
             {breadcrumb.map((crumb, i) => (
               <span key={crumb} className="flex items-center gap-1">
                 {i > 0 && <ChevronRight className="size-3" />}
@@ -38,8 +39,9 @@ export function DashboardShell({
                 </span>
               </span>
             ))}
-          </nav>
-          <h1 className="text-base font-semibold text-text-primary md:text-lg">{title}</h1>
+            </nav>
+            <h1 className="text-base font-semibold text-text-primary md:text-lg">{title}</h1>
+          </div>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
           <SearchInput

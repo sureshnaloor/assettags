@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import SmartTagsLogo from '@/app/components/SmartTagsLogo';
+
 const footerColumns = [
   {
     title: 'Product',
@@ -35,11 +37,8 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="mb-4 flex items-center gap-2 text-xl font-bold text-text-primary">
-              <div className="flex size-8 items-center justify-center rounded-md bg-accent-teal/20">
-                <span className="text-sm font-extrabold text-accent-teal">ST</span>
-              </div>
-              SmartTags
+            <div className="mb-4">
+              <SmartTagsLogo variant="primary" height={40} className="max-w-[200px]" />
             </div>
             <p className="text-body-sm-ds mb-4">
               Asset and Equipment Tagging Solutions

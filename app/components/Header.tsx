@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import ThemeSwitcher from './ThemeSwitcher';
+import SmartTagsLogo from './SmartTagsLogo';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { useNavigation } from '@/app/contexts/NavigationContext';
@@ -180,22 +181,7 @@ export default function Header() {
       <div className="w-full h-[72px] flex items-center justify-between px-4 lg:px-6">
         {/* Logo */}
         <div className="flex items-center">
-          <Link href="/" className="flex items-center group">
-            <div className="relative w-48 h-12 transition-transform duration-300 group-hover:scale-105">
-              <Image
-                src="/images/smarttags.jpg"
-                alt="AssetTags Logo"
-                fill
-                className="object-contain drop-shadow-md filter brightness-110"
-                priority
-              />
-            </div>
-            <div className="ml-2">
-              <h1 className={`text-xl font-semibold ${headerStyles.logoTitle} transition-all duration-300 group-hover:scale-105 whitespace-nowrap`}>
-                Smart Tags
-              </h1>
-            </div>
-          </Link>
+          <SmartTagsLogo variant="primary" height={47} priority className="shrink-0" imageClassName="max-w-[195px] sm:max-w-[221px]" />
         </div>
 
         {/* Desktop Navigation - Centered */}

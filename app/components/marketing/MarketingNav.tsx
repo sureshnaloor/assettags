@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { navLinks } from './marketing-data';
 import ThemeSwitcher from '@/app/components/ThemeSwitcher';
+import SmartTagsLogo from '@/app/components/SmartTagsLogo';
 
 export function MarketingNav() {
   const pathname = usePathname();
@@ -20,15 +21,10 @@ export function MarketingNav() {
       <header
         className="fixed top-0 left-0 right-0 z-50 h-[72px] border-b border-primary-light bg-primary-navy/90 backdrop-blur-xl"
       >
-        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-text-primary">
-            <div className="relative flex size-8 items-center justify-center rounded-md bg-accent-teal/20">
-              <span className="text-sm font-extrabold text-accent-teal">ST</span>
-            </div>
-            SmartTags
-          </Link>
+        <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          <SmartTagsLogo variant="primary" height={47} priority className="shrink-0" imageClassName="max-w-[182px] sm:max-w-[208px]" />
 
-          <nav className="hidden items-center gap-1 lg:flex">
+          <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -83,7 +79,7 @@ export function MarketingNav() {
           />
           <div className="absolute right-0 top-0 flex h-full w-[min(320px,85vw)] flex-col bg-primary-dark p-6 shadow-ds-lg">
             <div className="mb-8 flex items-center justify-between">
-              <span className="text-lg font-bold text-text-primary">SmartTags</span>
+              <SmartTagsLogo variant="primary" height={47} className="max-w-[208px]" />
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}

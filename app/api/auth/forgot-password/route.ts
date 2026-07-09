@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { getAppBaseUrl } from '@/lib/ensureAuthEnv';
 import { randomBytes } from 'crypto';
 import nodemailer from 'nodemailer';
 
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
     });
 
     // Create reset URL
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`;
+    const resetUrl = `${getAppBaseUrl()}/auth/reset-password?token=${resetToken}`;
 
     // Email content
     const mailOptions = {
