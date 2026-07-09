@@ -2,7 +2,9 @@
 
 import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
+import MobileNavDrawer from './navigation/MobileNavDrawer';
 import { isMarketingRoute } from '@/lib/design-tokens';
+import { SIDEBAR_WIDTH } from '@/lib/navigation-config';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -46,27 +48,33 @@ function isFixedAssetAssetDetailPath(pathname: string): boolean {
 
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
-  
-  // Don't show sidebar on landing page, dashboard, and asset detail pages
-  const shouldShowSidebar = pathname && 
-                           !isMarketingRoute(pathname) &&
-                           pathname !== '/dashboard' &&
-                           !pathname.match(/^\/asset\/[^\/]+$/) && 
-                           !isFixedAssetAssetDetailPath(pathname) &&
-                           !pathname.match(/^\/tools\/[^\/]+$/);
+
+  const shouldShowSidebar =
+    pathname &&
+    !isMarketingRoute(pathname) &&
+    pathname !== '/dashboard' &&
+    !pathname.match(/^\/asset\/[^\/]+$/) &&
+    !isFixedAssetAssetDetailPath(pathname) &&
+    !pathname.match(/^\/tools\/[^\/]+$/);
 
   if (!shouldShowSidebar) {
     return <>{children}</>;
   }
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="grid flex-1 md:grid-cols-[280px_1fr] items-stretch">
-        <Sidebar />
-        <main className="flex min-h-0 flex-1 flex-col bg-transparent">
-          {children}
-        </main>
+    <>
+      <MobileNavDrawer />
+      <div className="flex flex-col flex-1">
+        <div
+          className="grid flex-1 items-stretch md:grid-cols-[var(--sidebar-width)_1fr]"
+          style={{ '--sidebar-width': `${SIDEBAR_WIDTH}px` } as React.CSSProperties}
+        >
+          <Sidebar />
+          <main className="flex min-h-0 flex-1 flex-col bg-transparent">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

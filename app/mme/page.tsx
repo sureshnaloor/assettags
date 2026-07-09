@@ -5,7 +5,7 @@ import {
   SortingState,
   ColumnFiltersState
 } from '@tanstack/react-table';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Search } from 'lucide-react';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
 
@@ -640,20 +640,32 @@ export default function MMEPage() {
         {/* Search Section */}
         <div className={`mb-6 p-6 ${backgroundStyles.searchBg} rounded-xl shadow-lg`}>
           <div className="flex flex-wrap gap-4">
-            <input
-              type="text"
-              value={assetNumberSearch}
-              onChange={(e) => setAssetNumberSearch(e.target.value)}
-              placeholder="Search by asset number..."
-              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-            />
-            <input
-              type="text"
-              value={assetNameSearch}
-              onChange={(e) => setAssetNameSearch(e.target.value)}
-              placeholder="Search by asset description..."
-              className={`w-full max-w-sm px-4 py-3 rounded-xl ${backgroundStyles.inputBg} focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-            />
+            <div className={`flex w-full max-w-sm items-center gap-3 rounded-xl px-3 py-2.5 ${backgroundStyles.inputBg} focus-within:ring-2 focus-within:ring-teal-400/50`}>
+              <Search
+                className={`h-4 w-4 shrink-0 ${theme === 'light' ? 'text-gray-400' : 'text-white/60'}`}
+                aria-hidden
+              />
+              <input
+                type="text"
+                value={assetNumberSearch}
+                onChange={(e) => setAssetNumberSearch(e.target.value)}
+                placeholder="Search by asset number..."
+                className={`min-w-0 flex-1 border-0 bg-transparent outline-none ${theme === 'light' ? 'text-gray-900 placeholder:text-gray-500' : 'text-white placeholder:text-white/60'}`}
+              />
+            </div>
+            <div className={`flex w-full max-w-sm items-center gap-3 rounded-xl px-3 py-2.5 ${backgroundStyles.inputBg} focus-within:ring-2 focus-within:ring-teal-400/50`}>
+              <Search
+                className={`h-4 w-4 shrink-0 ${theme === 'light' ? 'text-gray-400' : 'text-white/60'}`}
+                aria-hidden
+              />
+              <input
+                type="text"
+                value={assetNameSearch}
+                onChange={(e) => setAssetNameSearch(e.target.value)}
+                placeholder="Search by asset description..."
+                className={`min-w-0 flex-1 border-0 bg-transparent outline-none ${theme === 'light' ? 'text-gray-900 placeholder:text-gray-500' : 'text-white placeholder:text-white/60'}`}
+              />
+            </div>
             <button
               type="button"
               onClick={() => {

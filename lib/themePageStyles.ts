@@ -21,7 +21,16 @@ export function useThemeSurfaces() {
       : 'w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2.5 text-sm text-white placeholder:text-white/50 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400/30',
     searchInput: isLight
       ? fap.searchInput
-      : 'w-full max-w-sm rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/60 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400/30',
+      : 'w-full max-w-sm rounded-xl border border-white/20 bg-[#1E293B] py-3 pl-11 pr-4 text-white placeholder:text-white/60 [color-scheme:dark] focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400/30',
+    searchField: isLight
+      ? fap.searchField
+      : 'flex w-full max-w-sm items-center gap-3 rounded-xl border border-white/20 bg-[#1E293B] px-3 py-2.5 focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-400/30',
+    searchFieldInput: isLight
+      ? fap.searchFieldInput
+      : 'min-w-0 flex-1 border-0 bg-transparent text-sm text-white placeholder:text-white/60 outline-none',
+    select: isLight
+      ? fap.select
+      : 'w-full rounded-lg border border-white/20 bg-[#1E293B] px-3 py-2.5 text-sm text-white [color-scheme:dark] focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400/30',
     pageTitle: isLight
       ? `text-2xl font-bold ${fap.textPrimary}`
       : 'text-2xl font-bold text-white',

@@ -112,7 +112,7 @@ export default function MMESearchByCategoryPage() {
       subtitle="Search MME equipment by category"
       hint="Select a category to search for equipment."
       searchArea={
-        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className={`max-w-sm ${s.input}`} disabled={loadingCategories}>
+        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className={`max-w-sm ${s.select}`} disabled={loadingCategories}>
           <option value="">Select a category...</option>
           {categories.map((category) => (
             <option key={category._id} value={category.name}>{category.name}</option>

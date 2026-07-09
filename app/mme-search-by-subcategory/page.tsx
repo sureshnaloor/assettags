@@ -110,7 +110,7 @@ export default function MMESearchBySubcategoryPage() {
       subtitle="Search MME equipment by subcategory"
       hint="Select a subcategory to search for equipment."
       searchArea={
-        <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)} className={`max-w-sm ${s.input}`} disabled={loadingSubcategories}>
+        <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)} className={`max-w-sm ${s.select}`} disabled={loadingSubcategories}>
           <option value="">Select a subcategory...</option>
           {subcategories.map((subcategory) => (
             <option key={subcategory._id} value={subcategory.name}>{subcategory.category} - {subcategory.name}</option>

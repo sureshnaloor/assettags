@@ -392,7 +392,7 @@ export default function SoftwareAssetDetailPage() {
                   </label>
                   <label className="block sm:col-span-2">
                     <span className={fap.fieldLabel}>License type</span>
-                    <select className={fap.input}
+                    <select className={fap.select}
                       value={licenseForm.licenseType}
                       onChange={(e) =>
                         setLicenseForm((f) => ({

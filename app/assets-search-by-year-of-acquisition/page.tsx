@@ -103,7 +103,7 @@ export default function AssetsSearchByYearOfAcquisitionPage() {
       subtitle="Search for fixed assets by acquisition year"
       hint="Select a year to search for fixed assets acquired in that year."
       searchArea={
-        <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className={`max-w-sm ${s.input}`}>
+        <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className={`max-w-sm ${s.select}`}>
           <option value="">Select a year...</option>
           <option value="pre-2010">Pre-2010</option>
           {years.map((year) => (

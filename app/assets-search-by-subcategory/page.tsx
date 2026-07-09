@@ -126,7 +126,7 @@ export default function AssetsSearchBySubcategoryPage() {
         <select
           value={selectedSubcategory}
           onChange={(e) => setSelectedSubcategory(e.target.value)}
-          className={`max-w-sm ${s.input}`}
+          className={`max-w-sm ${s.select}`}
           disabled={loadingSubcategories}
         >
           <option value="">Select a subcategory...</option>

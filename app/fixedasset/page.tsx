@@ -6,9 +6,11 @@ import {
   SortingState,
   ColumnFiltersState
 } from '@tanstack/react-table';
-import { ArrowUpDown, Search } from 'lucide-react';
+import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
+
+import { SearchField } from '@/components/ui/search-field';
 
 import { AssetQRCode } from '@/components/AssetQRCode';
 import ResponsiveTanStackTable from '@/components/ui/responsive-tanstack-table';
@@ -485,26 +487,20 @@ export default function FixedAssetPage() {
           <h2 className={fap.sectionTitle}>Search &amp; filter</h2>
           <p className={`${fap.sectionDesc} mb-4`}>Filter by asset number or description (2+ characters).</p>
           <div className="flex flex-wrap items-end gap-4">
-            <div className="relative min-w-[240px] flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
-              <input
-                type="text"
-                value={assetNumberSearch}
-                onChange={(e) => setAssetNumberSearch(e.target.value)}
-                placeholder="Search by asset number…"
-                className={fap.searchInput}
-              />
-            </div>
-            <div className="relative min-w-[240px] flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
-              <input
-                type="text"
-                value={assetNameSearch}
-                onChange={(e) => setAssetNameSearch(e.target.value)}
-                placeholder="Search by asset description…"
-                className={fap.searchInput}
-              />
-            </div>
+            <SearchField
+              containerClassName="min-w-[240px] flex-1"
+              type="text"
+              value={assetNumberSearch}
+              onChange={(e) => setAssetNumberSearch(e.target.value)}
+              placeholder="Search by asset number…"
+            />
+            <SearchField
+              containerClassName="min-w-[240px] flex-1"
+              type="text"
+              value={assetNameSearch}
+              onChange={(e) => setAssetNameSearch(e.target.value)}
+              placeholder="Search by asset description…"
+            />
             <button
               type="button"
               onClick={() => {

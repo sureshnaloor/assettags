@@ -1,112 +1,14 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useNavigation } from '@/app/contexts/NavigationContext';
 import { useEffect, useState } from 'react';
-import {
-  FileText,
-} from 'lucide-react';
-import { useAppTheme } from '@/app/contexts/ThemeContext';
-
-type SidebarSubLink = {
-  name: string;
-  href: string;
-  isGroupLabel?: boolean;
-};
-
-// Map of navigation sections to their sub-links
-const subLinksMap: Record<string, SidebarSubLink[]> = {
-  // dashboard: [
-  //   { name: 'Dashboard-1', href: '#' },
-  //   { name: 'Dashboard-2', href: '#' },
-  //   { name: 'Dashboard-3', href: '#' },
-  //   { name: 'Dashboard-4', href: '#' },
-  // ],
-  reports: [
-    { name: 'Active Calibrations-1', href: '#' },
-    { name: 'Active Calibrations-2', href: '#' },
-    { name: 'Active Calibrations-3', href: '#' },
-    { name: 'Active Calibrations-4', href: '#' },
-  ],
-  mme: [
-    { name: 'MME', href: '#' },
-    { name: 'Unidentified MME & LVA', href: '/mme/unidentified' },
-    { name: 'Without Custodian', href: '/mme/without-custodian' },
-    { name: 'MME Un-calibrated', href: '/mme/uncalibrated' },
-    { name: 'Search by Serial Number', href: '/mme-search-by-serial-number' },
-    { name: 'Search by Manufacturer', href: '/mme-search-by-manufacturer' },
-    { name: 'Search by Model', href: '/mme-search-by-model' },
-    { name: 'Search by Category', href: '/mme-search-by-category' },
-    { name: 'Search by Subcategory', href: '/mme-search-by-subcategory' },
-    { name: 'Search by Year of Acquisition', href: '/mme-search-by-year-of-acquisition' },
-    { name: 'Search by Location', href: 'mme/search-by-location' },
-    { name: 'MME Master Data', href: '#', isGroupLabel: true },
-    { name: 'Category', href: '/mme/category' },
-    { name: 'Subcategory', href: '/mme/subcategory' },
-    { name: 'Manufacturer', href: '/mme/manufacturer' },
-  ],
-  assets: [
-    { name: 'Assets', href: '#' },
-    { name: 'Unidentified Assets', href: '/assets/unidentified' },
-    { name: 'Without Custodian', href: '/fixedasset/without-custodian' },
-    { name: 'Search by manufacturer', href: '/assets-search-by-manufacturer' },
-    { name: 'Search by model', href: '/assets-search-by-model' },
-    { name: 'Search by category', href: '/assets-search-by-category' },
-    { name: 'Search by subcategory', href: '/assets-search-by-subcategory' },
-    { name: 'Search by year of acquisition', href: '/assets-search-by-year-of-acquisition' },
-    { name: 'Search by Location', href: '/fixedasset/search-by-location' },
-    { name: 'Transport Assets', href: '/fixedasset/transport-assets' },
-    { name: 'Facility Assets', href: '/fixedasset/facility-assets' },
-    { name: 'Portable Assets', href: '/fixedasset/portable-assets' },
-    { name: 'Software Assets', href: '/fixedasset/software-assets' },
-    { name: 'Fixed Asset Master Data', href: '#', isGroupLabel: true },
-    { name: 'Category', href: '/fixedasset/category' },
-    { name: 'Subcategory', href: '/fixedasset/subcategory' },
-    { name: 'Manufacturer', href: '/fixedasset/manufacturer' },
-  ],
-  tools: [
-    { name: 'Tools-1', href: '#' },
-    { name: 'Tools-2', href: '#' },
-    { name: 'Tools-3', href: '#' },
-    { name: 'Tools-4', href: '#' },
-  ],
-  materials: [
-    { name: 'List all returned materials', href: '/projectreturn-materials/list-all-returned-materials' },
-    { name: 'Returned materials by project', href: '/projectreturn-materials/by-project' },
-    { name: 'List of projectreturn-materials issued to wbs', href: '/projectreturn-materials/issues-by-wbs' },
-    { name: 'List of all reco for disposal materials', href: '/projectreturn-materials/list-all-reco-for-disposal-materials' },
-    { name: 'Under disposal materials', href: '/projectreturn-materials/under-disposal-materials' },
-    { name: 'Future use', href: '#' },
-  ],
-  search: [
-    { name: 'Search-1', href: '#' },
-    { name: 'Search-2', href: '#' },
-    { name: 'Search-3', href: '#' },
-    { name: 'Search-4', href: '#' },
-  ],
-  employee: [
-    { name: 'Assets in User Custody', href: '#' },
-    { name: 'MME in User Custody', href: '#' },
-    { name: 'Tools in User Custody', href: '#' },
-    { name: 'PPE Issued to User', href: '#' },
-  ],
-  ppe: [
-    { name: 'PPE-1', href: '#' },
-    { name: 'PPE-2', href: '#' },
-    { name: 'PPE-3', href: '#' },
-    { name: 'PPE-4', href: '#' },
-  ],
-  admin: [
-    { name: 'Projects', href: '/admin/projects' },
-    { name: 'Locations', href: '/admin/locations' },
-  ],
-};
+import { SIDEBAR_WIDTH, subLinksMap } from '@/lib/navigation-config';
+import { useSidebarStyles } from '@/app/components/navigation/sidebar-styles';
+import SidebarNavContent from '@/app/components/navigation/SidebarNavContent';
 
 export default function Sidebar() {
-  const { theme } = useAppTheme();
-  const pathname = usePathname();
+  const sidebarStyles = useSidebarStyles();
   const { activeSection } = useNavigation();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [location, setLocation] = useState<{ lat: number | null; lon: number | null }>({
@@ -114,71 +16,13 @@ export default function Sidebar() {
     lon: null,
   });
 
-  // Theme-based styling function
-  const getSidebarStyles = () => {
-    switch (theme) {
-      case 'glassmorphic':
-        return {
-          sidebarBg: 'bg-gradient-to-br from-[#1a2332] via-[#2d3748] to-[#1a2332] backdrop-blur-xl',
-          sidebarBorder: 'border-r border-white/10',
-          sectionTitle: 'text-white border-b border-white/20',
-          linkText: 'text-white/80 hover:text-white',
-          linkHover: 'hover:bg-white/10 hover:backdrop-blur-md hover:shadow-md hover:shadow-black/20 hover:border-white/20',
-          linkActive: 'bg-white/10 backdrop-blur-md text-white shadow-lg shadow-black/30 border-white/20',
-          linkIcon: 'text-teal-400',
-          emptyText: 'text-white/60',
-          footerBg: 'bg-white/5 backdrop-blur-md border-t border-white/10',
-          footerLabel: 'text-white/80',
-          footerValue: 'text-white',
-          footerValueSecondary: 'text-white/60'
-        };
-      case 'light':
-        return {
-          sidebarBg: 'bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100',
-          sidebarBorder: 'border-r-2 border-blue-200',
-          sectionTitle: 'text-gray-900 border-b-2 border-blue-200',
-          linkText: 'text-gray-700 hover:text-gray-900',
-          linkHover: 'hover:bg-blue-50 hover:shadow-md hover:shadow-blue-200/20 hover:border-blue-200',
-          linkActive: 'bg-blue-100 text-gray-900 shadow-lg shadow-blue-200/30 border-2 border-blue-300',
-          linkIcon: 'text-blue-600',
-          emptyText: 'text-gray-500',
-          footerBg: 'bg-blue-50 border-t-2 border-blue-200',
-          footerLabel: 'text-gray-700',
-          footerValue: 'text-gray-900',
-          footerValueSecondary: 'text-gray-600'
-        };
-      default: // dark theme — SmartTags design system
-        return {
-          sidebarBg: 'bg-primary-navy',
-          sidebarBorder: 'border-r border-primary-light',
-          sectionTitle: 'text-text-primary border-b border-primary-light',
-          linkText: 'text-text-secondary hover:text-text-primary',
-          linkHover: 'hover:bg-primary-slate hover:border-primary-light/50',
-          linkActive: 'bg-accent-teal/15 text-accent-teal border-l-[3px] border-l-accent-teal shadow-none',
-          linkIcon: 'text-accent-teal',
-          emptyText: 'text-text-muted',
-          footerBg: 'bg-primary-slate/50 border-t border-primary-light',
-          footerLabel: 'text-text-muted',
-          footerValue: 'text-text-primary',
-          footerValueSecondary: 'text-text-muted'
-        };
-    }
-  };
-
-  const sidebarStyles = getSidebarStyles();
-
-  // Update time every second
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString());
-    };
+    const updateTime = () => setCurrentTime(new Date().toLocaleTimeString());
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Get user location on mount
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -188,86 +32,59 @@ export default function Sidebar() {
             lon: position.coords.longitude,
           });
         },
-        (error) => {
-          console.error('Error getting location:', error);
-          // Set default or show error message
-        }
+        () => {}
       );
     }
   }, []);
 
-  // Get sub-links for the active section
   const subLinks = activeSection ? subLinksMap[activeSection] || [] : [];
 
   return (
-    <div className={`hidden ${sidebarStyles.sidebarBorder} ${sidebarStyles.sidebarBg} shadow-xl md:block md:w-[280px] self-stretch h-full`}>
-      <div className="flex h-full flex-col gap-3">
-        <div className="flex-1 overflow-auto py-6">
+    <aside
+      className={cn(
+        'hidden md:flex md:flex-col self-stretch h-full shrink-0',
+        sidebarStyles.sidebarBorder,
+        sidebarStyles.sidebarBg
+      )}
+      style={{ width: SIDEBAR_WIDTH }}
+    >
+      <div className="flex h-full flex-col">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden py-4">
           {activeSection && subLinks.length > 0 ? (
-            <nav className="grid items-start px-3 text-[10px] font-semibold uppercase tracking-wider space-y-2">
-              <div className="px-3 py-2 mb-4">
-                <h2 className={`text-xs font-bold uppercase tracking-wider ${sidebarStyles.sectionTitle} pb-2`}>
-                  {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}
-                </h2>
-              </div>
-              {subLinks.map((link, idx) => {
-                const isActive = pathname === link.href;
-                if (link.isGroupLabel) {
-                  return (
-                    <div
-                      key={link.name}
-                      className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-teal-400/90"
-                    >
-                      {link.name}
-                    </div>
-                  );
-                }
-                
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-300 border hover:scale-105",
-                      sidebarStyles.linkText,
-                      sidebarStyles.linkHover,
-                      "border-transparent",
-                      isActive && sidebarStyles.linkActive
-                    )}
-                  >
-                    <FileText className={`h-3.5 w-3.5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-6 ${sidebarStyles.linkIcon}`} />
-                    <span className="font-bold tracking-widest">{link.name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+            <SidebarNavContent activeSection={activeSection} styles={sidebarStyles} />
           ) : (
-            <div className={`flex items-center justify-center h-full ${sidebarStyles.emptyText} text-xs px-4`}>
-              <p className="text-center">Select a navigation item to see related links</p>
+            <div
+              className={cn(
+                'flex items-center justify-center h-full text-[10px] px-4 text-center',
+                sidebarStyles.emptyText
+              )}
+            >
+              <p>Select a section from the header to see sub-links</p>
             </div>
           )}
         </div>
 
-        {/* Footer with time and location */}
-        <div className={`${sidebarStyles.footerBg} px-4 py-4 space-y-2`}>
-          <div className={`text-[10px] ${sidebarStyles.footerLabel}`}>
-            <div className="font-semibold uppercase tracking-wider mb-1">Time</div>
-            <div className={`text-xs font-mono ${sidebarStyles.footerValue}`}>{currentTime || 'Loading...'}</div>
+        <div className={cn('px-3 py-3 space-y-2', sidebarStyles.footerBg)}>
+          <div className={cn('text-[9px]', sidebarStyles.footerLabel)}>
+            <div className="font-semibold uppercase tracking-wider mb-0.5">Time</div>
+            <div className={cn('text-[10px] font-mono', sidebarStyles.footerValue)}>
+              {currentTime || '—'}
+            </div>
           </div>
-          <div className={`text-[10px] ${sidebarStyles.footerLabel}`}>
-            <div className="font-semibold uppercase tracking-wider mb-1">Location</div>
+          <div className={cn('text-[9px]', sidebarStyles.footerLabel)}>
+            <div className="font-semibold uppercase tracking-wider mb-0.5">Location</div>
             {location.lat && location.lon ? (
-              <div className={`text-xs font-mono ${sidebarStyles.footerValue}`}>
-                <div>{location.lat.toFixed(6)}, {location.lon.toFixed(6)}</div>
+              <div className={cn('text-[10px] font-mono', sidebarStyles.footerValue)}>
+                {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
               </div>
             ) : (
-              <div className={`text-xs font-mono ${sidebarStyles.footerValueSecondary}`}>
-                Getting location...
+              <div className={cn('text-[10px] font-mono', sidebarStyles.footerValueSecondary)}>
+                —
               </div>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

@@ -20,6 +20,12 @@ export const fap = {
     'w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] transition focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[rgba(8,145,178,0.2)] dark:border-[#2A3B4C] dark:bg-[#1E293B] dark:text-[#F8F9FA] dark:placeholder:text-[#64748B] dark:focus:border-[#00B4D8] dark:focus:ring-[rgba(0,180,216,0.25)]',
   searchInput:
     'w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm text-[#0F172A] placeholder:text-[#94A3B8] transition focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[rgba(8,145,178,0.2)] dark:border-[#2A3B4C] dark:bg-[#1E293B] dark:text-[#F8F9FA] dark:placeholder:text-[#64748B] dark:focus:border-[#00B4D8] dark:focus:ring-[rgba(0,180,216,0.25)]',
+  searchField:
+    'flex w-full items-center gap-3 rounded-lg border border-slate-300 bg-white px-3 py-2.5 transition focus-within:border-[#0891B2] focus-within:ring-2 focus-within:ring-[rgba(8,145,178,0.2)] dark:border-[#2A3B4C] dark:bg-[#1E293B] dark:focus-within:border-[#00B4D8] dark:focus-within:ring-[rgba(0,180,216,0.25)]',
+  searchFieldInput:
+    'min-w-0 flex-1 border-0 bg-transparent text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none ring-0 focus:ring-0 dark:text-[#F8F9FA] dark:placeholder:text-[#64748B]',
+  select:
+    'w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-[#0F172A] transition focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[rgba(8,145,178,0.2)] dark:border-[#2A3B4C] dark:bg-[#1E293B] dark:text-[#F8F9FA] dark:[color-scheme:dark] dark:focus:border-[#00B4D8] dark:focus:ring-[rgba(0,180,216,0.25)]',
   label: 'mb-1 block text-xs font-semibold uppercase tracking-wide text-[#64748B]',
   fieldLabel: 'mb-1 block text-xs text-[#475569] dark:text-[#94A3B8]',
   btnPrimary:

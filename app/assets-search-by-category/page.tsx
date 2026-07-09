@@ -134,7 +134,7 @@ export default function AssetsSearchByCategoryPage() {
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className={`max-w-sm ${s.input}`}
+          className={`max-w-sm ${s.select}`}
           disabled={loadingCategories}
         >
           <option value="">Select a category...</option>

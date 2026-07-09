@@ -295,6 +295,16 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Native select — dark theme dropdown visibility */
+  .dark select {
+    color-scheme: dark;
+  }
+
+  .dark select option {
+    background-color: #1e293b;
+    color: #f8f9fa;
+  }
 }
 
 /* Custom slider styles */
