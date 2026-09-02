@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import type { Calibration } from '@/types/asset';
 
+
+export const dynamic = 'force-dynamic';
+
 function parseOptionalDate(value: unknown): Date | null {
   if (value === null || value === undefined || value === '') return null;
   const d = value instanceof Date ? value : new Date(value as string);

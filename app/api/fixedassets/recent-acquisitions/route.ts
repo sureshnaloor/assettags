@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { attachAssetLocationDepartmentFromCustody } from '@/lib/attachCustodyDisplayFields';
+
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
@@ -48,16 +52,21 @@ export async function GET(request: Request) {
       ])
       .toArray();
 
-    assets.sort((a, b) => {
+    const withCustodyFields = await attachAssetLocationDepartmentFromCustody(
+      db,
+      assets as Array<Record<string, unknown>>
+    );
+
+    withCustodyFields.sort((a, b) => {
       const valueA = typeof a.acquiredvalue === 'number' ? a.acquiredvalue : 0;
       const valueB = typeof b.acquiredvalue === 'number' ? b.acquiredvalue : 0;
       if (valueB !== valueA) return valueB - valueA;
-      const dateA = a.acquireddate ? new Date(a.acquireddate).getTime() : 0;
-      const dateB = b.acquireddate ? new Date(b.acquireddate).getTime() : 0;
+      const dateA = a.acquireddate ? new Date(a.acquireddate as string | Date).getTime() : 0;
+      const dateB = b.acquireddate ? new Date(b.acquireddate as string | Date).getTime() : 0;
       return dateB - dateA;
     });
 
-    return NextResponse.json({ data: assets, total: assets.length });
+    return NextResponse.json({ data: withCustodyFields, total: withCustodyFields.length });
   } catch (error) {
     console.error('Failed to fetch recent fixed asset acquisitions:', error);
     return NextResponse.json(

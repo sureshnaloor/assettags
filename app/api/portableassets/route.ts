@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { PORTABLE_TYPES } from '@/lib/portableAssetTypes';
 
+
+export const dynamic = 'force-dynamic';
+
 const COLLECTION = 'portableasset';
 
 function normalizeText(value: unknown) {

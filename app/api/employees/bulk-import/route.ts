@@ -4,6 +4,9 @@ import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { EmployeeInsert } from '@/types/ppe';
 
+
+export const dynamic = 'force-dynamic';
+
 type BulkEmployeeRow = {
   empno: string;
   empname: string;

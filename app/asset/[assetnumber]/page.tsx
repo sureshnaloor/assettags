@@ -10,6 +10,7 @@ import CustomDetailsSection from '@/app/components/CustomDetailsSection';
 
 import { AssetData, Calibration } from '@/types/asset';
 import { Custody } from '@/types/custody';
+import { splitCustodyRecords } from '@/lib/custodyLocation';
 
 import CollapsibleSection from '@/app/components/CollapsibleSection';
 import type { Theme } from '@/app/components/AssetDetails';
@@ -28,10 +29,11 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
 
   const [asset, setAsset] = useState<AssetData | null>(null);
   const [calibrations, setCalibrations] = useState<Calibration[]>([]);
-  const [custodyRecords, setCustodyRecords] = useState([]);
+  const [custodyRecords, setCustodyRecords] = useState<Custody[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>('default');
+  const { current: currentCustody, history: custodyHistory } = splitCustodyRecords(custodyRecords);
 
   useEffect(() => {
     fetchData();
@@ -337,8 +339,8 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
             sectionId="custody"
           >
             <CustodyDetails 
-              currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}
-              custodyHistory={custodyRecords.length > 1 ? custodyRecords.slice(1) : []}
+              currentCustody={currentCustody}
+              custodyHistory={custodyHistory}
               onUpdate={handleCustodyUpdate}
               assetnumber={params.assetnumber}
               theme={theme}

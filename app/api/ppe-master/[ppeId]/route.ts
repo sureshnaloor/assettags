@@ -5,6 +5,9 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { PPEMaster, PPEApiResponse } from '@/types/ppe';
 import { ObjectId } from 'mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch specific PPE master record
 export async function GET(
   request: NextRequest,

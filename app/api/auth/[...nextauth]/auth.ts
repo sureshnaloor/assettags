@@ -1,11 +1,14 @@
-import '@/lib/ensureAuthEnv';
+import { getAuthSecret } from '@/lib/ensureAuthEnv';
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { connectToDatabase } from "@/lib/mongodb";
 import { compare } from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: getAuthSecret(),
+  session: {
+    strategy: 'jwt',
+  },
   providers: [
     CredentialsProvider({
       name: "Email",

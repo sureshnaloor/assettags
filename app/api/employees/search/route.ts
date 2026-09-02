@@ -4,6 +4,9 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Employee, PPEApiResponse } from '@/types/ppe';
 
+
+export const dynamic = 'force-dynamic';
+
 // GET - Search employees with minimum 3 characters for name search
 export async function GET(request: NextRequest) {
   try {

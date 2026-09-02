@@ -5,6 +5,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { ensureLocationCitySeeds } from '@/lib/locationCitySeeds';
 
+
+export const dynamic = 'force-dynamic';
+
 function normalizeName(value: unknown) {
   return String(value ?? '').trim();
 }

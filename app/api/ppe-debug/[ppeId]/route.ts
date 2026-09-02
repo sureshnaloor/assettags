@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 // GET - Debug endpoint to check transaction data for a specific PPE
 export async function GET(
   request: NextRequest,

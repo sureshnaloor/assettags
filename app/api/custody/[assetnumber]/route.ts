@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { attachRelatedDepartments } from '@/lib/attachCustodyDisplayFields';
+
+
+export const dynamic = 'force-dynamic';
 
 // GET custody records for specific asset
 export async function GET(
@@ -24,7 +28,18 @@ export async function GET(
     }
 
     console.log('Found custody records:', custodyRecords.length);
-    return NextResponse.json(custodyRecords);
+
+    let payload: unknown = custodyRecords;
+    try {
+      payload = await attachRelatedDepartments(
+        db,
+        custodyRecords as Array<Record<string, unknown>>
+      );
+    } catch (enrichError) {
+      console.error('Failed to attach related departments to custody records:', enrichError);
+    }
+
+    return NextResponse.json(payload);
   } catch (error) {
     console.error('Failed to fetch custody records:', error);
     return NextResponse.json(

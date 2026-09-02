@@ -4,6 +4,9 @@ import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { PPEApiResponse } from '@/types/ppe';
 
+
+export const dynamic = 'force-dynamic';
+
 // GET - Get current stock for a specific PPE item
 export async function GET(
   request: NextRequest,

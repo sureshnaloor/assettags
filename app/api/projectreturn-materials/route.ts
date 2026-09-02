@@ -4,6 +4,9 @@ import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 function generateMaterialId(objectId: string): string {
   // Use a combination of timestamp and random parts for better uniqueness
   const hexString = objectId.replace(/^[0-9a-f]{8}/, '');

@@ -4,6 +4,9 @@ import { getAppBaseUrl } from '@/lib/ensureAuthEnv';
 import { randomBytes } from 'crypto';
 import nodemailer from 'nodemailer';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();

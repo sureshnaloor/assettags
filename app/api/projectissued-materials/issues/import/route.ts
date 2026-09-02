@@ -5,6 +5,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../auth/[...nextauth]/auth';
 import * as XLSX from 'xlsx';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     // Check authentication

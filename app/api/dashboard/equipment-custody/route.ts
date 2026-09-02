@@ -4,6 +4,9 @@ import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import type { DashboardCollectionMetaResponse } from '@/types/dashboard';
 
+
+export const dynamic = 'force-dynamic';
+
 /**
  * Summarises `equipmentcustody` for dashboards and schema discovery.
  */

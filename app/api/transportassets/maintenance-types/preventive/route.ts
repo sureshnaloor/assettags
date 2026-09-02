@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { ObjectId, type Db } from 'mongodb';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 const COLLECTION = 'transport_maint_master_preventive';
 
 const DEFAULT_NAMES = [

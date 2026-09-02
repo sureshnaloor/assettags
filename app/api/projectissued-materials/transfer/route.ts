@@ -4,6 +4,9 @@ import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 // Function to generate material ID for return materials
 function generateReturnMaterialId(objectId: string): string {
   const allDigits = objectId.replace(/[^0-9]/g, '');

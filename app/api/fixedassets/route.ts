@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { attachAssetLocationDepartmentFromCustody } from '@/lib/attachCustodyDisplayFields';
+
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
@@ -28,7 +32,12 @@ export async function GET(request: Request) {
       .find(query)
       .toArray();
 
-    return NextResponse.json(fixedAssets);
+    const withCustodyFields = await attachAssetLocationDepartmentFromCustody(
+      db,
+      fixedAssets as Array<Record<string, unknown>>
+    );
+
+    return NextResponse.json(withCustodyFields);
   } catch (error) {
     console.error('Failed to fetch fixed assets:', error);
     return NextResponse.json(

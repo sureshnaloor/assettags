@@ -16,6 +16,7 @@ import { AssetData } from '@/types/asset';
 import { Custody } from '@/types/custody';
 import FixedAssetDetailShell from '@/app/components/fixedasset/FixedAssetDetailShell';
 import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
+import { displayAssetDepartment, displayAssetLocation, splitCustodyRecords } from '@/lib/custodyLocation';
 
 type FixedAssetDetail = AssetData & {
   location?: string;
@@ -51,9 +52,14 @@ export default function FixedAssetPage() {
         setAsset(assetData);
 
         const custodyResponse = await fetch(`/api/custody/${params?.assetnumber}`);
-        if (!custodyResponse.ok) throw new Error('Failed to fetch custody records');
-        const custodyData = await custodyResponse.json();
-        setCustodyRecords(custodyData);
+        if (custodyResponse.ok) {
+          const custodyData = await custodyResponse.json();
+          setCustodyRecords(Array.isArray(custodyData) ? custodyData : []);
+        } else if (custodyResponse.status === 404) {
+          setCustodyRecords([]);
+        } else {
+          throw new Error('Failed to fetch custody records');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch data');
       } finally {
@@ -65,6 +71,41 @@ export default function FixedAssetPage() {
       fetchAssetData();
     }
   }, [params?.assetnumber]);
+
+  useEffect(() => {
+    const { current } = splitCustodyRecords(custodyRecords);
+    const empno = String(current?.employeenumber ?? '').trim();
+    if (!empno) return;
+    if (String(asset?.department ?? '').trim()) return;
+    if (
+      String(current?.department ?? '').trim() ||
+      String(current?.employeeDepartment ?? '').trim() ||
+      String(current?.projectDepartment ?? '').trim()
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    fetch(`/api/employees/${encodeURIComponent(empno)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        const dept = String(data?.data?.department ?? '').trim();
+        if (!dept) return;
+        setCustodyRecords((prev) =>
+          prev.map((record) =>
+            String(record.employeenumber) === empno && !record.employeeDepartment
+              ? { ...record, employeeDepartment: dept }
+              : record
+          )
+        );
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [asset?.department, custodyRecords]);
 
   useEffect(() => {
     if (loading) return;
@@ -132,6 +173,9 @@ export default function FixedAssetPage() {
     router.push(`/loglocation?asset=${assetnumber}&source=fixedasset`);
   };
 
+  const { current: currentCustody, history: custodyHistory } = splitCustodyRecords(custodyRecords);
+  const headerCustody = currentCustody ?? custodyRecords[0] ?? null;
+
   if (!assetnumber) {
     return (
       <FixedAssetDetailShell>
@@ -188,12 +232,16 @@ export default function FixedAssetPage() {
                       <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Location</p>
-                        <p className="text-[#0F172A] dark:text-[#F8F9FA]">{asset.location || '—'}</p>
+                        <p className="text-[#0F172A] dark:text-[#F8F9FA]">
+                          {displayAssetLocation(asset.location, headerCustody)}
+                        </p>
                       </div>
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Department</p>
-                      <p className="text-[#0F172A] dark:text-[#F8F9FA]">{asset.department || '—'}</p>
+                      <p className="text-[#0F172A] dark:text-[#F8F9FA]">
+                        {displayAssetDepartment(asset.department, headerCustody)}
+                      </p>
                     </div>
                     <div className="flex items-start gap-2 text-[#475569] dark:text-[#94A3B8]">
                       <Calendar className="mt-0.5 h-4 w-4 shrink-0" />
@@ -215,11 +263,23 @@ export default function FixedAssetPage() {
 
                 <FixedAssetSection title="Custody Details" sectionId="custody" defaultExpanded>
                   <CustodyDetails
-                    currentCustody={custodyRecords.length > 0 ? custodyRecords[0] : null}
-                    custodyHistory={custodyRecords.length > 1 ? custodyRecords.slice(1) : []}
+                    currentCustody={currentCustody}
+                    custodyHistory={custodyHistory}
                     onUpdate={(updatedCustody) => {
                       if (updatedCustody) {
-                        setCustodyRecords((prev) => [updatedCustody, ...prev.slice(1)]);
+                        setCustodyRecords((prev) => {
+                          const previous =
+                            prev.find((record) => record._id === updatedCustody._id) ?? prev[0];
+                          const merged = {
+                            ...updatedCustody,
+                            employeeDepartment:
+                              updatedCustody.employeeDepartment || previous?.employeeDepartment,
+                            projectDepartment:
+                              updatedCustody.projectDepartment || previous?.projectDepartment,
+                          };
+                          const rest = prev.filter((record) => record._id !== merged._id);
+                          return [merged, ...rest];
+                        });
                       }
                     }}
                     assetnumber={assetnumber}

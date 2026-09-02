@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const { assetNumber, latitude, longitude, landmark, timestamp } = await request.json();

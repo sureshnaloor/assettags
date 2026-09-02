@@ -4,6 +4,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/auth';
 import { ObjectId } from 'mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch single unidentified Asset by ID
 export async function GET(
   request: Request,

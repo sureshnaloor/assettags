@@ -5,6 +5,9 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { PPEIssueRecord, PPEStockBalanceInsert, PPETransactionInsert, Employee, PPEMaster } from '@/types/ppe';
 
+
+export const dynamic = 'force-dynamic';
+
 // PUT - Update an existing PPE issue record (adjust stock by delta via new transaction)
 export async function PUT(
   request: NextRequest,

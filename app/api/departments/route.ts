@@ -4,6 +4,9 @@ import { ObjectId } from 'mongodb';
 import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 function normalizeName(value: unknown) {
   return String(value ?? '').trim();
 }

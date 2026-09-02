@@ -199,6 +199,7 @@ export const subLinksMap: Record<NavigationSection, SidebarSubLink[]> = {
   admin: withIconPalette([
     { name: 'Projects', href: '/admin/projects', icon: CubeIcon },
     { name: 'Locations', href: '/admin/locations', icon: BuildingOfficeIcon },
+    { name: 'Calibration Companies', href: '/admin/calibration-companies', icon: BeakerIcon },
   ]),
 };
 

@@ -4,6 +4,9 @@ import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { PPEReceipt, PPEReceiptInsert, PPEMaster, Employee, PPETransactionInsert, PPEStockBalanceInsert } from '@/types/ppe';
 
+
+export const dynamic = 'force-dynamic';
+
 interface PPEApiResponse<T> {
   success: boolean;
   data?: T;

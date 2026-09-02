@@ -3,6 +3,9 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch all unidentified Assets
 export async function GET(request: Request) {
   try {

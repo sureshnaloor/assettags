@@ -5,6 +5,9 @@ import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 const COLLECTION = 'locationcities';
 
 type CityKind = 'warehouse' | 'department';

@@ -4,6 +4,9 @@ import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Employee, PPEApiResponse } from '@/types/ppe';
 
+
+export const dynamic = 'force-dynamic';
+
 async function validateDepartmentAndDesignation(
   department: unknown,
   designation: unknown

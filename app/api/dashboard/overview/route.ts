@@ -4,6 +4,9 @@ import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import type { DashboardOverviewResponse } from '@/types/dashboard';
 
+
+export const dynamic = 'force-dynamic';
+
 function startOfMonth(d = new Date()) {
   return new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0);
 }

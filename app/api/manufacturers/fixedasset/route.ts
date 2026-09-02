@@ -3,6 +3,9 @@ import { ObjectId } from 'mongodb';
 
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 const COLLECTION = 'FIXED_ASSET_MANUFACTURERS';
 
 export async function GET() {

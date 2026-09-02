@@ -403,6 +403,9 @@ export default function FixedAssetPage() {
     {
       accessorKey: 'department',
       header: () => <span className={th}>Department</span>,
+      cell: ({ row }) => (
+        <span className="text-sm text-[#475569] dark:text-[#94A3B8]">{row.original.department || '—'}</span>
+      ),
     },
     {
       accessorKey: 'acquiredvalue',

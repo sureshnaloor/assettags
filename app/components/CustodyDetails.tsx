@@ -9,7 +9,13 @@ import Link from 'next/link';
 import type { Theme } from '@/app/components/AssetDetails';
 import CustodyLocationFields from '@/app/components/CustodyLocationFields';
 import type { CustodyLocationType } from '@/lib/custodyLocation';
-import { displayCustodyLocationType, normalizeCustodyLocationType } from '@/lib/custodyLocation';
+import {
+  custodyPremisesLabel,
+  displayCustodyLocationType,
+  isOpenCustody,
+  normalizeCustodyLocationType,
+  splitCustodyRecords,
+} from '@/lib/custodyLocation';
 
 interface CustodyDetailsProps {
   currentCustody: Custody | null;
@@ -32,10 +38,7 @@ function custodyCityDisplay(c: Custody): string {
 }
 
 function premisesDisplay(c: Custody): string {
-  if (c.premisesLabel?.trim()) return c.premisesLabel.trim();
-  if (c.location?.trim()) return c.location.trim();
-  if (c.locationType === 'warehouse' && c.warehouseLocation?.trim()) return c.warehouseLocation.trim();
-  return '—';
+  return custodyPremisesLabel(c) || '—';
 }
 
 function floorRoomDisplay(c: Custody): string {
@@ -64,13 +67,18 @@ function parseLegacyProjectField(project?: string): { wbs: string; name: string 
 }
 
 export default function CustodyDetails({
-  currentCustody,
-  custodyHistory,
+  currentCustody: currentCustodyProp,
+  custodyHistory: custodyHistoryProp,
   onUpdate,
   assetnumber,
   theme = 'default',
   custodyNewHref,
 }: CustodyDetailsProps) {
+  const combinedRecords = [
+    ...(currentCustodyProp ? [currentCustodyProp] : []),
+    ...(custodyHistoryProp ?? []).filter((record) => record._id !== currentCustodyProp?._id),
+  ];
+  const { current: currentCustody, history: custodyHistory } = splitCustodyRecords(combinedRecords);
   const newCustodyLink = custodyNewHref ?? `/fixedasset/${assetnumber}/custody/new`;
   const [showEditModal, setShowEditModal] = useState(false);
   const [showErrorCorrectionModal, setShowErrorCorrectionModal] = useState(false);
@@ -557,8 +565,8 @@ export default function CustodyDetails({
     );
   };
 
-  // Check if new custody can be created
-  const canCreateNewCustody = !currentCustody || currentCustody.custodyto !== null;
+  // New custody only when there is no open (To date empty) current record
+  const canCreateNewCustody = !currentCustody;
 
   return (
     <div className={`${getContainerStyles()} p-3 w-full max-w-4xl relative`}>
@@ -574,7 +582,7 @@ export default function CustodyDetails({
               <PlusIcon className="h-5 w-5" />
             </Link>
           )}
-          {currentCustody && !currentCustody.custodyto && (
+          {currentCustody && isOpenCustody(currentCustody) && (
             <>
               <button
                 onClick={() => setShowErrorCorrectionModal(true)}
@@ -594,6 +602,10 @@ export default function CustodyDetails({
           )}
         </div>
       </div>
+
+      {!currentCustody && (
+        <p className={`text-sm ${fieldStyles.label}`}>No current custody.</p>
+      )}
 
       {/* Display Current Custody */}
       {currentCustody && (

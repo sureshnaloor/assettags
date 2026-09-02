@@ -4,6 +4,9 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { compare, hash } from 'bcrypt';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     // Check authentication

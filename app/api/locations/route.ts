@@ -6,6 +6,9 @@ import {
   type PremisesKind,
 } from '@/lib/premisesTownCity';
 
+
+export const dynamic = 'force-dynamic';
+
 function trimStr(value: unknown) {
   return String(value ?? '').trim();
 }

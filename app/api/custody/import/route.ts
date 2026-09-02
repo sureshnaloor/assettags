@@ -5,6 +5,9 @@ import { ObjectId } from 'mongodb';
 import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 const ALLOWED_LOCATION_TYPES = new Set(['warehouse', 'camp/office', 'project_site', 'department']);
 
 type HeaderMap = Record<string, string>;

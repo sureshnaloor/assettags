@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { resolvePremisesTownCity, parsePremisesKindInput, type PremisesKind } from '@/lib/premisesTownCity';
 
+
+export const dynamic = 'force-dynamic';
+
 type BulkLocationRow = {
   locationName: string;
   townCity: string;

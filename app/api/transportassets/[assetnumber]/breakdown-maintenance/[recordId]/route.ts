@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 const RECORDS = 'transport_maint_record_breakdown';
 const MASTER = 'transport_maint_master_breakdown';
 

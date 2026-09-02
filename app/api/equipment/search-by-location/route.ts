@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 /**
  * Build a MongoDB regex pattern string from user search text.
  * - * is wildcard (any characters). E.g. *camp* -> match any string containing "camp".

@@ -4,6 +4,9 @@ import { authOptions } from '../../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import type { DashboardCollectionMetaResponse } from '@/types/dashboard';
 
+
+export const dynamic = 'force-dynamic';
+
 /**
  * Summarises `equipmentcalibcertificates` for dashboards and schema discovery.
  * Returns a small sample (redacted to common fields) plus inferred field keys from one document.

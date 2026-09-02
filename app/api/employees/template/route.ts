@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import * as XLSX from 'xlsx';
 import { authOptions } from '../../auth/[...nextauth]/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 const FIXED_ASSET_MANUFACTURERS = 'FIXED_ASSET_MANUFACTURERS';
 
 export async function GET(

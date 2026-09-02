@@ -5,6 +5,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/auth';
 import * as XLSX from 'xlsx';
 
+
+export const dynamic = 'force-dynamic';
+
 // Function to generate 10-digit material ID from ObjectId
 function generateMaterialId(objectId: string): string {
   // Use a combination of timestamp and random parts for better uniqueness

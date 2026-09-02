@@ -5,6 +5,9 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { ensureLocationCitySeeds } from '@/lib/locationCitySeeds';
 import type { Db } from 'mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 type BulkProjectRow = {
   wbs: string;
   projectname: string;

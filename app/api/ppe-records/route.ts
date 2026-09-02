@@ -4,6 +4,9 @@ import { authOptions } from '../auth/[...nextauth]/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { PPEIssueRecord, PPEIssueRecordInsert, PPEMaster, Employee, PPETransactionInsert, PPEStockBalanceInsert, PPEApiResponse } from '@/types/ppe';
 
+
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch PPE issue records
 export async function GET(request: NextRequest) {
   try {

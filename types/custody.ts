@@ -32,6 +32,12 @@ export interface Custody {
   campOfficeLocation?: string;
   project?: string;
   projectname?: string;
+  /** Legacy department name stored on some older custody documents */
+  department?: string;
+  /** Resolved from the custodian employee master (not persisted) */
+  employeeDepartment?: string;
+  /** Resolved from the linked project master (not persisted) */
+  projectDepartment?: string;
   documentnumber?: string;
   createdat: Date;
   createdby: string;

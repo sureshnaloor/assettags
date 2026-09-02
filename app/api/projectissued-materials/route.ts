@@ -4,6 +4,9 @@ import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 // Function to generate 10-digit material ID from ObjectId
 function generateMaterialId(objectId: string): string {
   // Remove the ObjectId prefix and take first 10 digits

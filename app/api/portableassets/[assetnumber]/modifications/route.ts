@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 const RECORDS = 'portable_modification';
 
 const KINDS = new Set(['material', 'service']);

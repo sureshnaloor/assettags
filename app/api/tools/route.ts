@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 // Function to generate 10-digit asset number from ObjectId
 function generateAssetNumber(objectId: string): string {
   // Remove the ObjectId prefix and take first 10 digits

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import type { Custody } from '@/types/custody';
 
+
+export const dynamic = 'force-dynamic';
+
 // GET all custody records
 export async function GET() {
   try {

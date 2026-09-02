@@ -522,7 +522,7 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
       const response = await fetch('/api/calibration-companies');
       if (!response.ok) throw new Error('Failed to fetch companies');
       const companies = await response.json();
-      setCalibrationCompanies(companies);
+      setCalibrationCompanies(Array.isArray(companies) ? companies : []);
     } catch (error) {
       console.error('Error fetching calibration companies:', error);
       setError('Failed to load calibration companies');
@@ -953,6 +953,12 @@ export default function CalibrationDetails({ currentCalibration, calibrationHist
                       {company.name}
                     </option>
                   ))}
+                  {editedCalibration.calibratedby &&
+                    !calibrationCompanies.some((company) => company.name === editedCalibration.calibratedby) && (
+                      <option value={editedCalibration.calibratedby} className={theme === 'glassmorphic' ? 'bg-[#1a2332]' : ''}>
+                        {editedCalibration.calibratedby}
+                      </option>
+                    )}
                 </select>
               ) : (
                 <div className={`text-sm ${fieldStyles.text}`}>
@@ -1409,7 +1415,7 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
       const response = await fetch('/api/calibration-companies');
       if (!response.ok) throw new Error('Failed to fetch companies');
       const companies = await response.json();
-      setCalibrationCompanies(companies);
+      setCalibrationCompanies(Array.isArray(companies) ? companies : []);
     } catch (error) {
       console.error('Error fetching calibration companies:', error);
       setError('Failed to load calibration companies');
@@ -1565,6 +1571,10 @@ function NewCalibrationFormModal({ isOpen, onClose, onSave, assetnumber }: NewCa
                       {company.name}
                     </option>
                   ))}
+                  {newCalibration.calibratedby &&
+                    !calibrationCompanies.some((company) => company.name === newCalibration.calibratedby) && (
+                      <option value={newCalibration.calibratedby}>{newCalibration.calibratedby}</option>
+                    )}
                 </select>
               </div>
 

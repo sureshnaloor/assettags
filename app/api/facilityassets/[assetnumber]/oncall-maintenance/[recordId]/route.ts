@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/mongodb';
 
+
+export const dynamic = 'force-dynamic';
+
 const RECORDS = 'facility_oncall_maintenance';
 const KINDS = new Set(['service', 'repair']);
 

@@ -3,6 +3,9 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../auth/[...nextauth]/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 // Function to calculate unit rate at time of issue based on age
 function calculateUnitRateAtIssue(
   sourceUnitRate: number,
