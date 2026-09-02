@@ -1,27 +1,16 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Sidebar from './Sidebar';
 import MobileNavDrawer from './navigation/MobileNavDrawer';
 import { isMarketingRoute } from '@/lib/design-tokens';
+import { FIXED_ASSET_APP_SEGMENTS } from '@/lib/public-routes';
 import { SIDEBAR_WIDTH } from '@/lib/navigation-config';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
 }
-
-/** Single-segment routes under /fixedasset that are app pages (not asset detail) — keep main sidebar visible. */
-const FIXED_ASSET_LIST_ROUTES = new Set([
-  'category',
-  'subcategory',
-  'manufacturer',
-  'without-custodian',
-  'search-by-location',
-  'transport-assets',
-  'facility-assets',
-  'portable-assets',
-  'software-assets',
-]);
 
 function isFixedAssetAssetDetailPath(pathname: string): boolean {
   // Software asset detail: full-width page like /fixedasset/[id]
@@ -43,13 +32,15 @@ function isFixedAssetAssetDetailPath(pathname: string): boolean {
   }
   const m = pathname.match(/^\/fixedasset\/([^/]+)$/);
   if (!m) return false;
-  return !FIXED_ASSET_LIST_ROUTES.has(m[1]);
+  return !FIXED_ASSET_APP_SEGMENTS.has(m[1]);
 }
 
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const shouldShowSidebar =
+    !!session &&
     pathname &&
     !isMarketingRoute(pathname) &&
     pathname !== '/dashboard' &&

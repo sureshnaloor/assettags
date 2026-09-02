@@ -146,9 +146,14 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
         fetch(`/api/custody/${params.assetnumber}`).then(res => res.json())
       ]);
 
-      setAsset(assetData);
-      setCalibrations(calibrationData);
-      setCustodyRecords(custodyData);
+      if (!assetData || assetData.error || !assetData.assetnumber) {
+        setError(typeof assetData?.error === 'string' ? assetData.error : 'Asset not found');
+        setAsset(null);
+      } else {
+        setAsset(assetData);
+      }
+      setCalibrations(Array.isArray(calibrationData) ? calibrationData : []);
+      setCustodyRecords(Array.isArray(custodyData) ? custodyData : []);
 
         // for testing only, will be removed later in production
       console.log('Calibrations:', calibrations);

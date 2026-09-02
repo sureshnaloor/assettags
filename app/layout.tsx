@@ -6,6 +6,7 @@ import { Providers } from './providers';
 import { Inter } from 'next/font/google';
 import LayoutWrapper from './components/LayoutWrapper';
 import ConditionalLayout from './components/ConditionalLayout';
+import AuthGate from './components/AuthGate';
 import AuthProvider from './providers/AuthProvider';
 
 const geistSans = localFont({
@@ -39,9 +40,11 @@ export default function RootLayout({
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
               <ConditionalLayout>
-                <LayoutWrapper>
-                  {children}
-                </LayoutWrapper>
+                <AuthGate>
+                  <LayoutWrapper>
+                    {children}
+                  </LayoutWrapper>
+                </AuthGate>
               </ConditionalLayout>
             </div>
           </AuthProvider>

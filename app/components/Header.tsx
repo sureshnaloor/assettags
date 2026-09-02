@@ -4,8 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ThemeSwitcher from './ThemeSwitcher';
 import SmartTagsLogo from './SmartTagsLogo';
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useNavigation, useHasMobileSublinks } from '@/app/contexts/NavigationContext';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
 import { mainNavItems } from '@/lib/navigation-config';
@@ -21,11 +22,13 @@ import {
 
 export default function Header() {
   const { theme } = useAppTheme();
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const { activeSection, setActiveSection, setMobileDrawerOpen } = useNavigation();
   const hasMobileSublinks = useHasMobileSublinks();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const signInHref = `/auth/signin?from=${encodeURIComponent(pathname || '/')}`;
 
   const getHeaderStyles = () => {
     switch (theme) {
@@ -88,9 +91,7 @@ export default function Header() {
 
   const headerStyles = getHeaderStyles();
 
-  const visibleNavItems = mainNavItems.filter(
-    (item) => !item.requiresAuth || session
-  );
+  const visibleNavItems = session ? mainNavItems : [];
 
   const renderNavLink = (item: (typeof mainNavItems)[number], isMobile = false) => {
     const isActive = activeSection === item.section;
@@ -149,16 +150,16 @@ export default function Header() {
               <div className={cn('h-8 w-8 rounded-full', headerStyles.loadingBg)} />
             </div>
           ) : !session ? (
-            <button
-              onClick={() => signIn()}
+            <Link
+              href={signInHref}
               className={cn(
-                'hidden sm:flex items-center gap-2 ml-2 px-4 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 shadow-sm hover:shadow-md',
+                'flex items-center gap-2 ml-2 px-4 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 shadow-sm hover:shadow-md',
                 headerStyles.signInButton
               )}
             >
               <UserIcon className="h-4 w-4" />
               <span>Sign In</span>
-            </button>
+            </Link>
           ) : (
             <div className="relative ml-2">
               <button
@@ -235,22 +236,24 @@ export default function Header() {
             </div>
           )}
 
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={cn(
-              'lg:hidden p-2 ml-2 rounded-lg transition-colors duration-200',
-              headerStyles.mobileButton
-            )}
-            aria-label="Open main menu"
-          >
-            {isMobileMenuOpen ? (
-              <XMarkIcon className="h-5 w-5" />
-            ) : (
-              <Bars3Icon className="h-5 w-5" />
-            )}
-          </button>
+          {visibleNavItems.length > 0 && (
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={cn(
+                'lg:hidden p-2 ml-2 rounded-lg transition-colors duration-200',
+                headerStyles.mobileButton
+              )}
+              aria-label="Open main menu"
+            >
+              {isMobileMenuOpen ? (
+                <XMarkIcon className="h-5 w-5" />
+              ) : (
+                <Bars3Icon className="h-5 w-5" />
+              )}
+            </button>
+          )}
 
-          {hasMobileSublinks && (
+          {session && hasMobileSublinks && (
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
@@ -266,38 +269,11 @@ export default function Header() {
         </div>
       </div>
 
-      {isMobileMenuOpen && (
+      {isMobileMenuOpen && visibleNavItems.length > 0 && (
         <div className={cn('lg:hidden border-t shadow-lg', headerStyles.mobileMenuBg)}>
           <div className="px-4 py-4 grid grid-cols-2 gap-1.5">
             {visibleNavItems.map((item) => renderNavLink(item, true))}
           </div>
-
-          {!session && (
-            <div
-              className={cn(
-                'px-4 pb-4 border-t pt-3',
-                theme === 'light'
-                  ? 'border-blue-200'
-                  : theme === 'glassmorphic'
-                    ? 'border-white/10'
-                    : 'border-primary-light/30'
-              )}
-            >
-              <button
-                onClick={() => {
-                  signIn();
-                  setIsMobileMenuOpen(false);
-                }}
-                className={cn(
-                  'flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200',
-                  headerStyles.signInButton
-                )}
-              >
-                <UserIcon className="h-4 w-4" />
-                <span>Sign In</span>
-              </button>
-            </div>
-          )}
         </div>
       )}
     </header>

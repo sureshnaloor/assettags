@@ -126,15 +126,16 @@ export function isOpenCustody(record?: { custodyto?: unknown } | null): boolean 
 }
 
 export function splitCustodyRecords<T extends { _id?: string; custodyto?: unknown }>(
-  records: T[]
+  records: T[] | null | undefined
 ): { current: T | null; history: T[] } {
-  const currentIndex = records.findIndex((record) => isOpenCustody(record));
+  const list = Array.isArray(records) ? records : [];
+  const currentIndex = list.findIndex((record) => isOpenCustody(record));
   if (currentIndex < 0) {
-    return { current: null, history: records };
+    return { current: null, history: list };
   }
   return {
-    current: records[currentIndex],
-    history: records.filter((_, index) => index !== currentIndex),
+    current: list[currentIndex],
+    history: list.filter((_, index) => index !== currentIndex),
   };
 }
 

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { safeInternalPath } from '@/lib/public-routes';
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = 'force-dynamic';
@@ -25,7 +26,8 @@ export default function SignInPage() {
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push('/'); // or wherever you want to redirect after successful login
+        const params = new URLSearchParams(window.location.search);
+        router.push(safeInternalPath(params.get('from') || params.get('callbackUrl')));
       }
     } catch (error) {
       setError('An error occurred during sign in');
