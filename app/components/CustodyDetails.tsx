@@ -80,10 +80,6 @@ export default function CustodyDetails({
   ];
   const { current: currentCustody, history: custodyHistory } = splitCustodyRecords(combinedRecords);
   const newCustodyLink = custodyNewHref ?? `/fixedasset/${assetnumber}/custody/new`;
-  const { current: currentCustody, history: custodyHistory } = splitCustodyRecords([
-    ...(currentCustodyProp ? [currentCustodyProp] : []),
-    ...(Array.isArray(custodyHistoryProp) ? custodyHistoryProp : []),
-  ]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showErrorCorrectionModal, setShowErrorCorrectionModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);

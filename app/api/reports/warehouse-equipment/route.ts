@@ -4,10 +4,6 @@ import { assetHeaderLookupStages } from '@/lib/assetHeaderLookup';
 import { openWarehouseMatch } from '@/lib/openCustodyMatch';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-
-export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
