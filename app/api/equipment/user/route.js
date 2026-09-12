@@ -1,5 +1,6 @@
 import { connectToDatabase } from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
+import { assetHeaderLookupStages } from '@/lib/assetHeaderLookup';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,53 +18,14 @@ export async function POST(request) {
         {
           $match: {
             employeenumber: employeeNumber,
-            custodyto: null
-          }
-        },
-        {
-          // Lookup from equipmentandtools collection
-          $lookup: {
-            from: 'equipmentandtools',
-            let: { asset: '$assetnumber' },
-            pipeline: [
-              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
+            $or: [
+              { custodyto: null },
+              { custodyto: { $exists: false } },
+              { custodyto: '' },
             ],
-            as: 'equipmentDetails'
           }
         },
-        {
-          // Lookup from fixedassets collection
-          $lookup: {
-            from: 'fixedassets',
-            let: { asset: '$assetnumber' },
-            pipeline: [
-              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
-            ],
-            as: 'fixedAssetDetails'
-          }
-        },
-        {
-          // Determine which collection to use based on first digit
-          $addFields: {
-            firstDigit: { $substr: [{ $toString: '$assetnumber' }, 0, 1] }
-          }
-        },
-        {
-          $addFields: {
-            assetDetails: {
-              $cond: {
-                if: {
-                  $or: [
-                    { $eq: ['$firstDigit', '5'] },
-                    { $eq: ['$firstDigit', '9'] }
-                  ]
-                },
-                then: { $arrayElemAt: ['$equipmentDetails', 0] },
-                else: { $arrayElemAt: ['$fixedAssetDetails', 0] }
-              }
-            }
-          }
-        },
+        ...assetHeaderLookupStages(),
         {
           // Project final fields including asset description
           $project: {

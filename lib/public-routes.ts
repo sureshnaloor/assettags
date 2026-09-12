@@ -6,6 +6,7 @@ export const FIXED_ASSET_APP_SEGMENTS = new Set([
   'subcategory',
   'manufacturer',
   'without-custodian',
+  'incomplete-headers',
   'search-by-location',
   'transport-assets',
   'facility-assets',

@@ -5,6 +5,8 @@ import ResponsiveTable from '@/components/ui/responsive-table';
 import Link from 'next/link';
 import { Download } from 'lucide-react';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
+import { assetPublicHref } from '@/lib/assetHeaderLookup';
+import { WAREHOUSE_REPORT_CITIES, type WarehouseReportCity } from '@/lib/openCustodyMatch';
 
 interface WarehouseEquipment {
     assetnumber: string;
@@ -19,6 +21,29 @@ interface WarehouseEquipment {
 type SortField = 'assetnumber' | 'assetdescription' | 'assetstatus' | 'warehouseCity';
 type SortOrder = 'asc' | 'desc';
 
+function csvCell(value: unknown): string {
+    const text = value == null ? '' : String(value);
+    if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+    return text;
+}
+
+function downloadCsv(filename: string, rows: unknown[][]) {
+    const csv = '\uFEFF' + rows.map((row) => row.map(csvCell).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function matchesWarehouseCity(value: string | undefined, city: WarehouseReportCity) {
+    return String(value || '').trim().toLowerCase() === city.toLowerCase();
+}
+
 export default function WarehouseEquipmentReport() {
     const { theme } = useAppTheme();
     const [equipment, setEquipment] = useState<WarehouseEquipment[]>([]);
@@ -26,6 +51,7 @@ export default function WarehouseEquipmentReport() {
     const [error, setError] = useState<string | null>(null);
     const [sortField, setSortField] = useState<SortField>('assetnumber');
     const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+    const [busyAction, setBusyAction] = useState<string | null>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const particlesRef = useRef<Array<{
         x: number;
@@ -38,7 +64,7 @@ export default function WarehouseEquipmentReport() {
 
     const fetchWarehouseEquipment = async () => {
         try {
-            const response = await fetch(`/api/reports/warehouse-equipment?sortField=${sortField}&sortOrder=${sortOrder}`);
+            const response = await fetch(`/api/reports/warehouse-equipment?sortField=${sortField}&sortOrder=${sortOrder}`, { cache: 'no-store' });
             if (!response.ok) throw new Error('Failed to fetch data');
             
             const result = await response.json();
@@ -178,7 +204,9 @@ export default function WarehouseEquipmentReport() {
                     linkColor: 'text-teal-400 hover:text-teal-300',
                     errorBg: 'bg-red-500/20 backdrop-blur-lg border border-red-400/30',
                     errorText: 'text-red-300',
-                    actionButton: 'text-teal-400 hover:text-teal-300 hover:bg-white/10'
+                    actionButton: 'text-teal-400 hover:text-teal-300 hover:bg-white/10',
+                    buttonUndertaking: 'bg-green-500/20 backdrop-blur-md border border-green-400/30 text-green-300 hover:bg-green-500/30 hover:border-green-400/50',
+                    buttonExport: 'bg-teal-500/20 backdrop-blur-md border border-teal-400/30 text-teal-300 hover:bg-teal-500/30 hover:border-teal-400/50',
                 };
             case 'light':
                 return {
@@ -197,7 +225,9 @@ export default function WarehouseEquipmentReport() {
                     linkColor: 'text-blue-600 hover:text-blue-700',
                     errorBg: 'bg-red-100 border-2 border-red-300 shadow-md',
                     errorText: 'text-red-700',
-                    actionButton: 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                    actionButton: 'text-blue-600 hover:text-blue-700 hover:bg-blue-50',
+                    buttonUndertaking: 'bg-green-100 border-2 border-green-300 text-green-700 hover:bg-green-200 hover:border-green-400',
+                    buttonExport: 'bg-blue-100 border-2 border-blue-300 text-blue-700 hover:bg-blue-200 hover:border-blue-400',
                 };
             default: // dark theme
                 return {
@@ -216,7 +246,9 @@ export default function WarehouseEquipmentReport() {
                     linkColor: 'text-teal-400 hover:text-teal-300',
                     errorBg: 'bg-red-900/30 border border-red-700/50 shadow-lg',
                     errorText: 'text-red-300',
-                    actionButton: 'text-teal-400 hover:text-teal-300 hover:bg-slate-700/50'
+                    actionButton: 'text-teal-400 hover:text-teal-300 hover:bg-slate-700/50',
+                    buttonUndertaking: 'bg-green-900/40 border border-green-700/50 text-green-300 hover:bg-green-900/60 hover:border-green-600',
+                    buttonExport: 'bg-teal-900/40 border border-teal-700/50 text-teal-300 hover:bg-teal-900/60 hover:border-teal-600',
                 };
         }
     };
@@ -242,6 +274,60 @@ export default function WarehouseEquipmentReport() {
         } catch (error) {
             console.error('Error downloading undertaking letter:', error);
             alert('Failed to download undertaking letter. Please try again.');
+        }
+    };
+
+    const equipmentForCity = (city: WarehouseReportCity) =>
+        equipment.filter((item) => matchesWarehouseCity(item.warehouseCity, city));
+
+    const handleExportCity = (city: WarehouseReportCity) => {
+        const rows = equipmentForCity(city);
+        if (!rows.length) {
+            alert(`No equipment found for ${city} warehouse.`);
+            return;
+        }
+        downloadCsv(`warehouse_equipment_${city}.csv`, [
+            ['Asset Number', 'Description', 'Status', 'Model', 'Manufacturer', 'Serial Number', 'Warehouse'],
+            ...rows.map((item) => [
+                item.assetnumber,
+                item.assetdescription || '',
+                item.assetstatus || '',
+                item.assetmodel || '',
+                item.assetmanufacturer || '',
+                item.assetserialnumber || '',
+                item.warehouseCity || city,
+            ]),
+        ]);
+    };
+
+    const handleDownloadCityUndertaking = async (city: WarehouseReportCity) => {
+        if (!equipmentForCity(city).length) {
+            alert(`No equipment found for ${city} warehouse.`);
+            return;
+        }
+        const action = `pdf-${city}`;
+        setBusyAction(action);
+        try {
+            const response = await fetch(`/api/undertaking-letter-warehouse?city=${encodeURIComponent(city)}`, {
+                cache: 'no-store',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to generate warehouse undertaking letter');
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Consolidated_Warehouse_Undertaking_Letter_${city}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading warehouse undertaking letter:', error);
+            alert(`Failed to download ${city} warehouse undertaking letter. Please try again.`);
+        } finally {
+            setBusyAction(null);
         }
     };
 
@@ -332,7 +418,7 @@ export default function WarehouseEquipmentReport() {
         ...item,
         assetnumber: (
             <Link 
-                href={`/asset/${item.assetnumber}`}
+                href={assetPublicHref(item.assetnumber)}
                 className={`${backgroundStyles.linkColor} font-medium transition-colors`}
             >
                 {item.assetnumber}
@@ -387,6 +473,45 @@ export default function WarehouseEquipmentReport() {
                                 <div className={`text-2xl font-bold ${backgroundStyles.statValue}`}>{equipment.length}</div>
                                 <div className={`${backgroundStyles.statLabel} text-sm uppercase tracking-wider`}>Warehouse Items</div>
                             </div>
+                            {WAREHOUSE_REPORT_CITIES.map((city) => (
+                                <div key={city} className={`${backgroundStyles.statBg} rounded-xl px-6 py-3`}>
+                                    <div className={`text-2xl font-bold ${backgroundStyles.statValue}`}>
+                                        {equipmentForCity(city).length}
+                                    </div>
+                                    <div className={`${backgroundStyles.statLabel} text-sm uppercase tracking-wider`}>{city}</div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-6 grid gap-4 md:grid-cols-2">
+                            {WAREHOUSE_REPORT_CITIES.map((city) => {
+                                const count = equipmentForCity(city).length;
+                                const disabled = count === 0 || busyAction !== null;
+                                return (
+                                    <div key={city} className={`${backgroundStyles.statBg} rounded-xl p-4`}>
+                                        <div className={`mb-3 font-semibold ${backgroundStyles.textColor}`}>
+                                            {city} warehouse
+                                        </div>
+                                        <div className="flex flex-wrap gap-3">
+                                            <button
+                                                type="button"
+                                                disabled={disabled}
+                                                onClick={() => handleDownloadCityUndertaking(city)}
+                                                className={`px-4 py-2 ${backgroundStyles.buttonUndertaking} rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                            >
+                                                {busyAction === `pdf-${city}` ? 'Preparing…' : 'Download Undertaking'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={disabled}
+                                                onClick={() => handleExportCity(city)}
+                                                className={`px-4 py-2 ${backgroundStyles.buttonExport} rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                            >
+                                                Export to Excel
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

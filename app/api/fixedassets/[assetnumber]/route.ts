@@ -17,6 +17,20 @@ export async function GET(
       .findOne({ assetnumber: params.assetnumber });
 
     if (!asset) {
+      const [custodyCount, calibrationCount] = await Promise.all([
+        db.collection('equipmentcustody').countDocuments({ assetnumber: params.assetnumber }),
+        db.collection('equipmentcalibcertificates').countDocuments({ assetnumber: params.assetnumber }),
+      ]);
+
+      if (custodyCount > 0 || calibrationCount > 0) {
+        return NextResponse.json({
+          assetnumber: params.assetnumber,
+          assetdescription: '',
+          acquireddate: null,
+          acquiredvalue: null,
+        });
+      }
+
       return NextResponse.json(
         { error: 'Fixed asset not found' },
         { status: 404 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jsPDF } from 'jspdf';
 import { connectToDatabase } from '@/lib/mongodb';
+import { assetHeaderLookupStages } from '@/lib/assetHeaderLookup';
 
 
 export const dynamic = 'force-dynamic';
@@ -34,52 +35,14 @@ export async function GET(request: NextRequest) {
         {
           $match: {
             employeenumber: employeeNumber,
-            custodyto: null
-          }
-        },
-        {
-          // Lookup from both collections in parallel
-          $lookup: {
-            from: 'equipmentandtools',
-            let: { asset: '$assetnumber' },
-            pipeline: [
-              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
+            $or: [
+              { custodyto: null },
+              { custodyto: { $exists: false } },
+              { custodyto: '' },
             ],
-            as: 'equipmentDetails'
           }
         },
-        {
-          $lookup: {
-            from: 'fixedassets',
-            let: { asset: '$assetnumber' },
-            pipeline: [
-              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
-            ],
-            as: 'fixedAssetDetails'
-          }
-        },
-        {
-          // Determine which collection to use based on first digit and pick the correct details
-          $addFields: {
-            firstDigit: { $substr: [{ $toString: '$assetnumber' }, 0, 1] }
-          }
-        },
-        {
-          $addFields: {
-            assetDetails: {
-              $cond: {
-                if: {
-                  $or: [
-                    { $eq: ['$firstDigit', '5'] },
-                    { $eq: ['$firstDigit', '9'] }
-                  ]
-                },
-                then: { $arrayElemAt: ['$equipmentDetails', 0] },
-                else: { $arrayElemAt: ['$fixedAssetDetails', 0] }
-              }
-            }
-          }
-        },
+        ...assetHeaderLookupStages(),
         {
           $project: {
             assetnumber: { $ifNull: ['$assetDetails.assetnumber', '$assetnumber'] },

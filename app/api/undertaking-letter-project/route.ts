@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jsPDF } from 'jspdf';
 import { connectToDatabase } from '@/lib/mongodb';
+import { assetHeaderLookupStages } from '@/lib/assetHeaderLookup';
+import { openProjectCustodyMatch } from '@/lib/openCustodyMatch';
 
 
 export const dynamic = 'force-dynamic';
@@ -68,30 +70,17 @@ export async function GET(request: NextRequest) {
     const equipmentData = await db.collection('equipmentcustody')
       .aggregate([
         {
-          $match: {
-            project: projectIdentifier,
-            custodyto: null
-          }
+          $match: openProjectCustodyMatch(projectIdentifier),
         },
-        {
-          $lookup: {
-            from: 'equipmentandtools',
-            localField: 'assetnumber',
-            foreignField: 'assetnumber',
-            as: 'equipmentDetails'
-          }
-        },
-        {
-          $unwind: '$equipmentDetails'
-        },
+        ...assetHeaderLookupStages(),
         {
           $project: {
-            assetnumber: '$equipmentDetails.assetnumber',
-            assetdescription: '$equipmentDetails.assetdescription',
-            assetstatus: '$equipmentDetails.assetstatus',
-            assetmodel: '$equipmentDetails.assetmodel',
-            assetmanufacturer: '$equipmentDetails.assetmanufacturer',
-            assetserialnumber: '$equipmentDetails.assetserialnumber',
+            assetnumber: 1,
+            assetdescription: '$assetDetails.assetdescription',
+            assetstatus: '$assetDetails.assetstatus',
+            assetmodel: '$assetDetails.assetmodel',
+            assetmanufacturer: '$assetDetails.assetmanufacturer',
+            assetserialnumber: '$assetDetails.assetserialnumber',
             custodyfrom: 1,
             project: 1
           }

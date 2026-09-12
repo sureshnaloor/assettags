@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Download } from 'lucide-react';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
+import { assetPublicHref } from '@/lib/assetHeaderLookup';
 
 const UserEquipmentList = () => {
   const { theme } = useAppTheme();
@@ -116,10 +117,10 @@ const UserEquipmentList = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users');
+        const response = await fetch('/api/users', { cache: 'no-store' });
         const users = await response.json();
         console.log('Fetched users:', users);
-        setUsers(users);
+        setUsers(Array.isArray(users) ? users : []);
       } catch (error) {
         console.error('Error fetching users:', error);
       }
@@ -187,7 +188,7 @@ const UserEquipmentList = () => {
   };
 
   // Filter users based on search query
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = (Array.isArray(users) ? users : []).filter(user => {
     const searchText = searchQuery.toLowerCase();
     const userText = `${user.employeenumber} - ${user.employeename}`.toLowerCase();
     return userText.includes(searchText);
@@ -266,22 +267,7 @@ const UserEquipmentList = () => {
     }
   };
 
-  // Helper function to determine asset route based on first digit
-  const getAssetRoute = (assetnumber) => {
-    if (!assetnumber) return '/asset/';
-    
-    const assetStr = String(assetnumber);
-    const firstDigit = assetStr.charAt(0);
-    
-    // Determine collection based on first digit
-    // First digit 5 or 9: equipmentandtools -> /asset/
-    // First digit 6, 7, or any other number: fixedassets -> /fixedasset/
-    if (firstDigit === '5' || firstDigit === '9') {
-      return `/asset/${assetnumber}`;
-    } else {
-      return `/fixedasset/${assetnumber}`;
-    }
-  };
+  const getAssetRoute = (assetnumber) => assetPublicHref(assetnumber);
 
   // Theme-based styling function
   const getBackgroundStyles = () => {

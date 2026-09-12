@@ -1,5 +1,7 @@
 import { connectToDatabase } from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
+import { assetHeaderLookupStages } from '@/lib/assetHeaderLookup';
+import { openProjectCustodyMatch } from '@/lib/openCustodyMatch';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,61 +11,18 @@ export async function POST(request) {
     console.log('Request body:', body);
     
     const { projectId } = body;
+    if (!projectId) {
+      return NextResponse.json({ equipment: [] });
+    }
     const { db } = await connectToDatabase();
 
     // Use aggregation pipeline to lookup asset details from both collections
     const equipment = await db.collection('equipmentcustody')
       .aggregate([
         {
-          $match: {
-            project: projectId,  // This will now match "WBS - PROJECTNAME" format
-            custodyto: null
-          }
+          $match: openProjectCustodyMatch(projectId),
         },
-        {
-          // Lookup from equipmentandtools collection
-          $lookup: {
-            from: 'equipmentandtools',
-            let: { asset: '$assetnumber' },
-            pipeline: [
-              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
-            ],
-            as: 'equipmentDetails'
-          }
-        },
-        {
-          // Lookup from fixedassets collection
-          $lookup: {
-            from: 'fixedassets',
-            let: { asset: '$assetnumber' },
-            pipeline: [
-              { $match: { $expr: { $eq: ['$assetnumber', '$$asset'] } } }
-            ],
-            as: 'fixedAssetDetails'
-          }
-        },
-        {
-          // Determine which collection to use based on first digit
-          $addFields: {
-            firstDigit: { $substr: [{ $toString: '$assetnumber' }, 0, 1] }
-          }
-        },
-        {
-          $addFields: {
-            assetDetails: {
-              $cond: {
-                if: {
-                  $or: [
-                    { $eq: ['$firstDigit', '5'] },
-                    { $eq: ['$firstDigit', '9'] }
-                  ]
-                },
-                then: { $arrayElemAt: ['$equipmentDetails', 0] },
-                else: { $arrayElemAt: ['$fixedAssetDetails', 0] }
-              }
-            }
-          }
-        },
+        ...assetHeaderLookupStages(),
         {
           // Project final fields including asset description
           $project: {

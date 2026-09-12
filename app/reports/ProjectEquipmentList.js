@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
+import { assetPublicHref } from '@/lib/assetHeaderLookup';
 
 const ProjectEquipmentList = () => {
   const { theme } = useAppTheme();
@@ -337,22 +338,7 @@ const ProjectEquipmentList = () => {
     }
   };
 
-  // Helper function to determine asset route based on first digit
-  const getAssetRoute = (assetnumber) => {
-    if (!assetnumber) return '/asset/';
-    
-    const assetStr = String(assetnumber);
-    const firstDigit = assetStr.charAt(0);
-    
-    // Determine collection based on first digit
-    // First digit 5 or 9: equipmentandtools -> /asset/
-    // First digit 6, 7, or any other number: fixedassets -> /fixedasset/
-    if (firstDigit === '5' || firstDigit === '9') {
-      return `/asset/${assetnumber}`;
-    } else {
-      return `/fixedasset/${assetnumber}`;
-    }
-  };
+  const getAssetRoute = (assetnumber) => assetPublicHref(assetnumber);
 
   return (
     <div className={backgroundStyles.container}>

@@ -31,6 +31,7 @@ import {
   TrashIcon,
   ArrowPathIcon,
   ListBulletIcon,
+  PencilSquareIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -128,6 +129,7 @@ export const subLinksMap: Record<NavigationSection, SidebarSubLink[]> = {
     { name: 'MME Overview', href: '/mme', icon: BeakerIcon },
     { name: 'Unidentified MME & LVA', href: '/mme/unidentified', icon: QrCodeIcon },
     { name: 'Without Custodian', href: '/mme/without-custodian', icon: UserIcon },
+    { name: 'Incomplete Headers', href: '/mme/incomplete-headers', icon: PencilSquareIcon },
     { name: 'MME Un-calibrated', href: '/mme/uncalibrated', icon: ExclamationTriangleIcon },
     { name: 'Search by Serial Number', href: '/mme-search-by-serial-number', icon: MagnifyingGlassCircleIcon },
     { name: 'Search by Manufacturer', href: '/mme-search-by-manufacturer', icon: BuildingOfficeIcon },
@@ -145,6 +147,7 @@ export const subLinksMap: Record<NavigationSection, SidebarSubLink[]> = {
     { name: 'Assets Overview', href: '/fixedasset', icon: BuildingOfficeIcon },
     { name: 'Unidentified Assets', href: '/assets/unidentified', icon: QrCodeIcon },
     { name: 'Without Custodian', href: '/fixedasset/without-custodian', icon: UserIcon },
+    { name: 'Incomplete Headers', href: '/fixedasset/incomplete-headers', icon: PencilSquareIcon },
     { name: 'Search by Manufacturer', href: '/assets-search-by-manufacturer', icon: BuildingOfficeIcon },
     { name: 'Search by Model', href: '/assets-search-by-model', icon: TagIcon },
     { name: 'Search by Category', href: '/assets-search-by-category', icon: FunnelIcon },

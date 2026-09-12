@@ -12,7 +12,11 @@ export async function GET() {
       .aggregate([
         { 
           $match: { 
-            custodyto: null 
+            $or: [
+              { custodyto: null },
+              { custodyto: { $exists: false } },
+              { custodyto: '' },
+            ],
           } 
         },
         {
@@ -28,7 +32,9 @@ export async function GET() {
       ])
       .toArray();
 
-    return NextResponse.json(users);
+    return NextResponse.json(users, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    });
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
