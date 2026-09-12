@@ -15,6 +15,21 @@ export async function GET(
       .findOne({ assetnumber: params.assetnumber });
 
     if (!asset) {
+      // Incomplete-header cases: custody/calibration exist but no MME header row yet
+      const [custodyCount, calibrationCount] = await Promise.all([
+        db.collection('equipmentcustody').countDocuments({ assetnumber: params.assetnumber }),
+        db.collection('equipmentcalibcertificates').countDocuments({ assetnumber: params.assetnumber }),
+      ]);
+
+      if (custodyCount > 0 || calibrationCount > 0) {
+        return NextResponse.json({
+          assetnumber: params.assetnumber,
+          assetdescription: '',
+          acquireddate: null,
+          acquiredvalue: null,
+        });
+      }
+
       return NextResponse.json(
         { error: 'Asset not found' },
         { status: 404 }

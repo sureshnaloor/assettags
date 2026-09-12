@@ -139,27 +139,35 @@ export default function AssetPage({ params }: { params: { assetnumber: string } 
     try {
       setLoading(true);
       setError(null);
+      const encoded = encodeURIComponent(params.assetnumber);
 
-      const [assetData, calibrationData, custodyData] = await Promise.all([
-        fetch(`/api/assets/${params.assetnumber}`).then(res => res.json()),
-        fetch(`/api/calibrations/${params.assetnumber}`).then(res => res.json()),
-        fetch(`/api/custody/${params.assetnumber}`).then(res => res.json())
+      const [assetResponse, calibrationResponse, custodyResponse] = await Promise.all([
+        fetch(`/api/assets/${encoded}`),
+        fetch(`/api/calibrations/${encoded}`),
+        fetch(`/api/custody/${encoded}`),
       ]);
 
-      if (!assetData || assetData.error || !assetData.assetnumber) {
-        setError(typeof assetData?.error === 'string' ? assetData.error : 'Asset not found');
+      const [assetData, calibrationData, custodyData] = await Promise.all([
+        assetResponse.json().catch(() => null),
+        calibrationResponse.json().catch(() => []),
+        custodyResponse.json().catch(() => []),
+      ]);
+
+      // Match fixed-asset incomplete-header behavior: show editable shell even when
+      // the MME header row is missing but related custody/calibration records exist.
+      if (assetResponse.ok && assetData?.assetnumber) {
+        setAsset(assetData);
+      } else if (assetResponse.status === 404) {
+        setAsset({ assetnumber: params.assetnumber });
+      } else if (assetData?.error) {
+        setError(typeof assetData.error === 'string' ? assetData.error : 'Asset not found');
         setAsset(null);
       } else {
-        setAsset(assetData);
+        setAsset({ assetnumber: params.assetnumber });
       }
+
       setCalibrations(Array.isArray(calibrationData) ? calibrationData : []);
       setCustodyRecords(Array.isArray(custodyData) ? custodyData : []);
-
-        // for testing only, will be removed later in production
-      console.log('Calibrations:', calibrations);
-      console.log('Custody Records:', custodyRecords);
-      console.log('Asset:', asset);
-
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Failed to load asset data');
