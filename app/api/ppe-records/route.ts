@@ -115,8 +115,12 @@ export async function POST(request: NextRequest) {
       remarks,
       reservationNumber,
       fileReferenceNumber,
-      size
+      size,
+      skipStockCheck,
+      isHistorical,
     } = body;
+
+    const bypassStockCheck = Boolean(skipStockCheck || isHistorical);
 
     // Validate required fields
     if (!userEmpNumber || !userEmpName || !dateOfIssue || !ppeId || !quantityIssued) {
@@ -204,7 +208,7 @@ export async function POST(request: NextRequest) {
         
         const currentStock = currentStockBalance?.balQty || 0;
         
-        if (currentStock < quantityIssued) {
+        if (!bypassStockCheck && currentStock < quantityIssued) {
           throw new Error(`Insufficient stock. Available: ${currentStock}, Requested: ${quantityIssued}`);
         }
         
@@ -213,7 +217,7 @@ export async function POST(request: NextRequest) {
         const result = await collection.insertOne(newIssueRecord, { session: dbSession });
         
         // Create stock transaction record
-        const newStockAfterIssue = currentStock - quantityIssued;
+        const newStockAfterIssue = bypassStockCheck ? Math.max(0, currentStock - quantityIssued) : currentStock - quantityIssued;
         const transactionsCollection = db.collection('ppe-transactions');
         const stockTransaction: PPETransactionInsert = {
           ppeId,
@@ -223,14 +227,16 @@ export async function POST(request: NextRequest) {
           qtyIssued: -quantityIssued, // Negative for issues
           qtyAfterIssue: newStockAfterIssue,
           transactionType: 'issue',
-          remarks: `Issued to ${userEmpName} (${userEmpNumber})`,
+          remarks: bypassStockCheck
+            ? `[Historical Entry] Issued to ${userEmpName} (${userEmpNumber})`
+            : `Issued to ${userEmpName} (${userEmpNumber})`,
           createdBy: session.user!.email!,
           createdAt: new Date()
         };
         
         const transactionResult = await transactionsCollection.insertOne(stockTransaction, { session: dbSession });
         
-        // Update stock balance record
+        // Update stock balance record if present or create one
         const newStockBalance: PPEStockBalanceInsert = {
           ppeId,
           balQty: newStockAfterIssue,

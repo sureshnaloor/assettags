@@ -277,6 +277,18 @@ export default function PPEDashboardPage() {
       description: 'View PPE due for reissue',
       href: '/ppe-due-for-reissue',
       color: 'bg-red-500'
+    },
+    {
+      title: 'Previous Year Issues',
+      description: "Enter historical data (Apr 2025 - Jun 2026)",
+      href: '/ppe-previous-year-issues',
+      color: 'bg-amber-500'
+    },
+    {
+      title: 'Reports & Export',
+      description: 'Filter and download Excel / PDF reports',
+      href: '/ppe-reports',
+      color: 'bg-emerald-500'
     }
   ];
 

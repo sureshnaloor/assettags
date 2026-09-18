@@ -32,6 +32,7 @@ import {
   ArrowPathIcon,
   ListBulletIcon,
   PencilSquareIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -119,6 +120,7 @@ export const mainNavItems: MainNavItem[] = [
 export const subLinksMap: Record<NavigationSection, SidebarSubLink[]> = {
   dashboard: [],
   reports: withIconPalette([
+    { name: 'Comprehensive Asset & MME', href: '/reports/asset-mme-export', icon: ArrowDownTrayIcon },
     { name: 'Active Calibrations', href: '/reports/active-calibrations', icon: ChartBarIcon },
     { name: 'Expired Calibrations', href: '/reports/expired-calibrations', icon: ExclamationTriangleIcon },
     { name: 'Project Equipment', href: '/reports/project-equipment', icon: BuildingLibraryIcon },
@@ -127,6 +129,7 @@ export const subLinksMap: Record<NavigationSection, SidebarSubLink[]> = {
   ]),
   mme: withIconPalette([
     { name: 'MME Overview', href: '/mme', icon: BeakerIcon },
+    { name: 'MME & Asset Export', href: '/reports/asset-mme-export?scope=mme', icon: ArrowDownTrayIcon },
     { name: 'Unidentified MME & LVA', href: '/mme/unidentified', icon: QrCodeIcon },
     { name: 'Without Custodian', href: '/mme/without-custodian', icon: UserIcon },
     { name: 'Incomplete Headers', href: '/mme/incomplete-headers', icon: PencilSquareIcon },
@@ -145,6 +148,7 @@ export const subLinksMap: Record<NavigationSection, SidebarSubLink[]> = {
   ]),
   assets: withIconPalette([
     { name: 'Assets Overview', href: '/fixedasset', icon: BuildingOfficeIcon },
+    { name: 'Asset & MME Export', href: '/reports/asset-mme-export?scope=fixedasset', icon: ArrowDownTrayIcon },
     { name: 'Unidentified Assets', href: '/assets/unidentified', icon: QrCodeIcon },
     { name: 'Without Custodian', href: '/fixedasset/without-custodian', icon: UserIcon },
     { name: 'Incomplete Headers', href: '/fixedasset/incomplete-headers', icon: PencilSquareIcon },
@@ -192,6 +196,8 @@ export const subLinksMap: Record<NavigationSection, SidebarSubLink[]> = {
     { name: 'PPE Dashboard', href: '/ppe-dashboard', icon: ShieldCheckIcon },
     { name: 'PPE Master', href: '/ppe-master', icon: ClipboardDocumentListIcon },
     { name: 'Issue Records', href: '/ppe-issue-records', icon: ClipboardDocumentCheckIcon },
+    { name: 'Previous Year Issues', href: '/ppe-previous-year-issues', icon: CalendarIcon },
+    { name: 'Reports & Export', href: '/ppe-reports', icon: ArrowDownTrayIcon },
     { name: 'Bulk Issues', href: '/ppe-bulk-issues', icon: DocChartIcon },
     { name: 'Receipts', href: '/ppe-receipts', icon: TruckIcon },
     { name: 'Stock Management', href: '/ppe-stock', icon: ArchiveBoxIcon },
