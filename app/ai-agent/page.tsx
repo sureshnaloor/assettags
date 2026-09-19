@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import {
@@ -46,6 +47,10 @@ import {
   XCircleIcon,
   PrinterIcon,
   TrashIcon,
+  CpuChipIcon,
+  AcademicCapIcon,
+  PlusIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/outline';
 
 const CHART_COLORS = [
@@ -125,7 +130,17 @@ interface QueryResult {
   rawResults: any[];
 }
 
+export interface MemoryRuleItem {
+  _id: string;
+  topic: string;
+  rule: string;
+  promptContext?: string;
+  createdAt: string;
+  createdBy?: string;
+}
+
 export default function AIAgentPage() {
+  const { data: session } = useSession();
   const { theme } = useAppTheme();
   const { show } = useToast();
 
@@ -140,9 +155,151 @@ export default function AIAgentPage() {
   const [tablePage, setTablePage] = useState(1);
   const tablePageSize = 15;
 
+  // Agent Memory & Feedback States (restricted to AI Admins)
+  const [isAiAdmin, setIsAiAdmin] = useState(false);
+  const [memoryModalOpen, setMemoryModalOpen] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [memoryRules, setMemoryRules] = useState<MemoryRuleItem[]>([]);
+  const [loadingMemory, setLoadingMemory] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [savingFeedback, setSavingFeedback] = useState(false);
+  const [newTopic, setNewTopic] = useState('');
+  const [newRule, setNewRule] = useState('');
+  const [savingRule, setSavingRule] = useState(false);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Array<{ x: number; y: number; vx: number; vy: number; radius: number }>>([]);
   const animationFrameRef = useRef<number>();
+
+  // Fetch memory rules and admin status
+  const fetchMemoryRules = async () => {
+    try {
+      setLoadingMemory(true);
+      const res = await fetch('/api/ai-agent/memory');
+      const json = await res.json();
+      if (json.success && json.data) {
+        if (json.data.rules) setMemoryRules(json.data.rules);
+        setIsAiAdmin(Boolean(json.data.isAiAdmin));
+      }
+    } catch (err: any) {
+      console.warn('Failed to load memory rules:', err);
+    } finally {
+      setLoadingMemory(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMemoryRules();
+  }, [session?.user?.email]);
+
+  // Submit User Correction / Feedback on Active Query
+  const handleSaveFeedback = async () => {
+    if (!feedbackText.trim() || !queryResult) return;
+
+    try {
+      setSavingFeedback(true);
+      const res = await fetch('/api/ai-agent/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'learn_feedback',
+          userPrompt: queryResult.prompt,
+          userCorrection: feedbackText.trim(),
+          queryPlan: queryResult.step1.plan,
+        }),
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.error || 'Failed to save feedback');
+      }
+
+      show({
+        title: 'Correction Learned!',
+        description: `Agent saved rule: [${json.data.topic}] "${json.data.rule}"`,
+        variant: 'success',
+      });
+
+      setFeedbackText('');
+      setFeedbackModalOpen(false);
+      fetchMemoryRules();
+    } catch (err: any) {
+      show({
+        title: 'Failed to Save Correction',
+        description: err.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingFeedback(false);
+    }
+  };
+
+  // Add Manual Memory Rule
+  const handleAddManualRule = async () => {
+    if (!newRule.trim()) return;
+
+    try {
+      setSavingRule(true);
+      const res = await fetch('/api/ai-agent/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: newTopic.trim() || 'Custom Rule',
+          rule: newRule.trim(),
+        }),
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.error || 'Failed to add rule');
+      }
+
+      show({
+        title: 'Memory Rule Added',
+        description: 'New knowledge rule saved to database',
+        variant: 'success',
+      });
+
+      setNewTopic('');
+      setNewRule('');
+      fetchMemoryRules();
+    } catch (err: any) {
+      show({
+        title: 'Failed to Add Rule',
+        description: err.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingRule(false);
+    }
+  };
+
+  // Delete Memory Rule
+  const handleDeleteRule = async (id: string) => {
+    try {
+      const res = await fetch(`/api/ai-agent/memory?id=${id}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.error || 'Failed to delete rule');
+      }
+
+      show({
+        title: 'Rule Deleted',
+        description: 'Memory rule removed from agent knowledge',
+        variant: 'success',
+      });
+
+      setMemoryRules((prev) => prev.filter((r) => r._id !== id));
+    } catch (err: any) {
+      show({
+        title: 'Failed to Delete Rule',
+        description: err.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleClearQuery = () => {
     setQueryResult(null);
@@ -175,7 +332,34 @@ export default function AIAgentPage() {
       });
 
       clearTimeout(stepTimer);
-      const json = await res.json();
+
+      if (!res.ok) {
+        const rawText = await res.text();
+        if (
+          res.status === 504 ||
+          rawText.includes('FUNCTION_INVOCATION_TIMEOUT') ||
+          rawText.includes('504 Gateway Time-out') ||
+          rawText.includes('timeout')
+        ) {
+          throw new Error('Query timed out on the server (Vercel timeout). Please try a more specific question or retry.');
+        }
+        try {
+          const errJson = JSON.parse(rawText);
+          throw new Error(errJson.error || `Server error (${res.status})`);
+        } catch (e: any) {
+          if (e.message && !e.message.startsWith('Unexpected') && !e.message.startsWith('JSON') && !e.message.includes('pattern')) {
+            throw e;
+          }
+          throw new Error(`Server returned an error (${res.status}). Please retry.`);
+        }
+      }
+
+      let json: any;
+      try {
+        json = await res.json();
+      } catch (jsonErr) {
+        throw new Error('Could not parse response from server. Please retry.');
+      }
 
       if (!json.success || !json.data) {
         throw new Error(json.error || 'Failed to process AI query');
@@ -554,9 +738,17 @@ export default function AIAgentPage() {
           tableRow: 'border-b border-white/5 hover:bg-white/10 text-white/90',
           badgeSuccess: 'bg-teal-500/20 text-teal-300 border border-teal-400/30',
           badgeWarning: 'bg-amber-500/20 text-amber-300 border border-amber-400/30',
+          badgeMuted: 'bg-white/10 text-white/80 border border-white/20',
           buttonPrimary: 'bg-teal-500/30 hover:bg-teal-500/40 text-teal-200 border border-teal-400/40',
           buttonSecondary: 'bg-white/10 hover:bg-white/20 text-white border border-white/20',
+          tabActive: 'bg-teal-500 text-white shadow-md',
+          tabInactive: 'text-white/70 hover:text-white hover:bg-white/10',
+          textHeading: 'text-white',
+          textBody: 'text-slate-200',
           subtext: 'text-white/70',
+          prose: 'prose prose-invert max-w-none text-sm leading-relaxed text-slate-200 whitespace-pre-wrap font-sans',
+          auditorBox: 'bg-white/5 border border-white/10 text-slate-300',
+          auditorLabel: 'text-teal-300',
         };
       case 'light':
         return {
@@ -568,11 +760,19 @@ export default function AIAgentPage() {
           input: 'bg-white border-2 border-blue-200 text-gray-900 placeholder-gray-400 focus:ring-blue-500',
           tableHeader: 'bg-blue-50 text-blue-900 border-b border-blue-200 text-xs font-semibold uppercase',
           tableRow: 'border-b border-gray-200 hover:bg-blue-50/50 text-gray-800',
-          badgeSuccess: 'bg-emerald-100 text-emerald-900 border border-emerald-300',
-          badgeWarning: 'bg-amber-100 text-amber-900 border border-amber-300',
+          badgeSuccess: 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-semibold',
+          badgeWarning: 'bg-amber-100 text-amber-900 border border-amber-300 font-semibold',
+          badgeMuted: 'bg-slate-100 text-slate-800 border border-slate-300 font-medium',
           buttonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-700 shadow-sm',
           buttonSecondary: 'bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300',
+          tabActive: 'bg-blue-600 text-white shadow-md font-semibold',
+          tabInactive: 'text-slate-600 hover:text-slate-900 hover:bg-blue-50 font-medium',
+          textHeading: 'text-slate-900',
+          textBody: 'text-slate-800',
           subtext: 'text-gray-600',
+          prose: 'prose max-w-none text-sm leading-relaxed text-slate-800 whitespace-pre-wrap font-sans font-normal',
+          auditorBox: 'bg-blue-50/80 border border-blue-200 text-slate-800 shadow-sm',
+          auditorLabel: 'text-blue-700 font-semibold',
         };
       default: // dark theme
         return {
@@ -586,9 +786,17 @@ export default function AIAgentPage() {
           tableRow: 'border-b border-slate-800 hover:bg-slate-700/40 text-slate-200',
           badgeSuccess: 'bg-teal-900/40 text-teal-300 border border-teal-500/40',
           badgeWarning: 'bg-amber-900/40 text-amber-300 border border-amber-500/40',
+          badgeMuted: 'bg-slate-700/60 text-slate-200 border border-slate-600',
           buttonPrimary: 'bg-teal-600 hover:bg-teal-500 text-white border border-teal-500 shadow-md',
           buttonSecondary: 'bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600',
+          tabActive: 'bg-teal-500 text-white shadow-md',
+          tabInactive: 'text-slate-400 hover:text-slate-100 hover:bg-slate-700/50',
+          textHeading: 'text-white',
+          textBody: 'text-slate-200',
           subtext: 'text-slate-400',
+          prose: 'prose prose-invert max-w-none text-sm leading-relaxed text-slate-200 whitespace-pre-wrap font-sans',
+          auditorBox: 'bg-slate-900/60 border border-slate-700 text-slate-300',
+          auditorLabel: 'text-teal-300',
         };
     }
   };
@@ -621,6 +829,21 @@ export default function AIAgentPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              {isAiAdmin && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    fetchMemoryRules();
+                    setMemoryModalOpen(true);
+                  }}
+                  className={`h-8 px-3 text-xs flex items-center gap-1.5 rounded-xl ${styles.buttonSecondary}`}
+                  title="View and manage learned memory rules (AI Admin only)"
+                >
+                  <CpuChipIcon className="w-4 h-4 text-teal-400" />
+                  <span>Agent Memory ({memoryRules.length})</span>
+                </Button>
+              )}
               <Badge variant="default" className={styles.badgeSuccess}>
                 <ShieldCheckIcon className="w-3.5 h-3.5 mr-1" />
                 Read-Only 2-Step Verified
@@ -778,18 +1001,30 @@ export default function AIAgentPage() {
                     <span className={`text-xs uppercase tracking-wider font-semibold ${styles.subtext}`}>
                       User Request ({queryResult.timestamp})
                     </span>
-                    <h2 className="text-lg font-bold text-white mt-0.5">"{queryResult.prompt}"</h2>
+                    <h2 className={`text-lg font-bold mt-0.5 ${styles.textHeading}`}>"{queryResult.prompt}"</h2>
                   </div>
 
-                  {/* 2-Step Validation Badges and Reset Action */}
+                  {/* 2-Step Validation Badges and Actions */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="default" className={styles.badgeSuccess}>
                       <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />
                       Confidence: {queryResult.step2.validationReview.confidence}
                     </Badge>
-                    <Badge variant="default" className="bg-slate-700/60 text-slate-200 border border-slate-600">
+                    <Badge variant="default" className={styles.badgeMuted}>
                       {queryResult.step1.recordsCount} Records Retrieved
                     </Badge>
+                    {isAiAdmin && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setFeedbackModalOpen(true)}
+                        className="h-7 px-2.5 text-xs flex items-center gap-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 rounded-lg"
+                        title="Teach the AI agent or provide corrections on this query (AI Admin only)"
+                      >
+                        <AcademicCapIcon className="w-3.5 h-3.5" />
+                        Teach / Correct
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       size="sm"
@@ -806,10 +1041,10 @@ export default function AIAgentPage() {
 
                 {/* Validation Note */}
                 {queryResult.step2.validationReview.notes && (
-                  <div className="mt-3 p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs flex items-start gap-2 text-slate-300">
-                    <CheckCircleIcon className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                  <div className={`mt-3 p-2.5 rounded-xl text-xs flex items-start gap-2 ${styles.auditorBox}`}>
+                    <CheckCircleIcon className={`w-4 h-4 shrink-0 mt-0.5 ${theme === 'light' ? 'text-blue-600' : 'text-teal-400'}`} />
                     <span>
-                      <strong className="text-teal-300">Auditor Note:</strong>{' '}
+                      <strong className={styles.auditorLabel}>Auditor Note:</strong>{' '}
                       {queryResult.step2.validationReview.notes}
                     </span>
                   </div>
@@ -821,14 +1056,12 @@ export default function AIAgentPage() {
             <Card className={styles.card}>
               <CardHeader className={`pb-3 ${styles.cardHeader}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => setActiveTab('summary')}
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                        activeTab === 'summary'
-                          ? 'bg-teal-500 text-white shadow-md'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5'
+                        activeTab === 'summary' ? styles.tabActive : styles.tabInactive
                       }`}
                     >
                       <DocumentTextIcon className="w-4 h-4" />
@@ -840,9 +1073,7 @@ export default function AIAgentPage() {
                         type="button"
                         onClick={() => setActiveTab('chart')}
                         className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                          activeTab === 'chart'
-                            ? 'bg-teal-500 text-white shadow-md'
-                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          activeTab === 'chart' ? styles.tabActive : styles.tabInactive
                         }`}
                       >
                         <ChartBarIcon className="w-4 h-4" />
@@ -855,9 +1086,7 @@ export default function AIAgentPage() {
                         type="button"
                         onClick={() => setActiveTab('table')}
                         className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                          activeTab === 'table'
-                            ? 'bg-teal-500 text-white shadow-md'
-                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          activeTab === 'table' ? styles.tabActive : styles.tabInactive
                         }`}
                       >
                         <TableCellsIcon className="w-4 h-4" />
@@ -865,18 +1094,18 @@ export default function AIAgentPage() {
                       </button>
                     )}
 
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('audit')}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                        activeTab === 'audit'
-                          ? 'bg-teal-500 text-white shadow-md'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <CommandLineIcon className="w-4 h-4" />
-                      Query Audit Trail
-                    </button>
+                    {isAiAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('audit')}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                          activeTab === 'audit' ? styles.tabActive : styles.tabInactive
+                        }`}
+                      >
+                        <CommandLineIcon className="w-4 h-4" />
+                        Query Audit Trail
+                      </button>
+                    )}
                   </div>
 
                   {/* Export Action Buttons (PDF + Excel) */}
@@ -912,7 +1141,7 @@ export default function AIAgentPage() {
                 {/* TAB 1: Summary Insights */}
                 {activeTab === 'summary' && (
                   <div className="space-y-4">
-                    <div className="prose prose-invert max-w-none text-sm leading-relaxed text-slate-200 whitespace-pre-wrap font-sans">
+                    <div className={styles.prose}>
                       {queryResult.step2.summaryMarkdown}
                     </div>
 
@@ -951,7 +1180,7 @@ export default function AIAgentPage() {
                 {activeTab === 'chart' && queryResult.step2.chart && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-base font-bold text-white flex items-center gap-2">
+                      <h3 className={`text-base font-bold flex items-center gap-2 ${styles.textHeading}`}>
                         <ChartBarIcon className="w-5 h-5 text-teal-400" />
                         {queryResult.step2.chart.title || 'Data Visualization'}
                       </h3>
@@ -1152,8 +1381,8 @@ export default function AIAgentPage() {
                   </div>
                 )}
 
-                {/* TAB 4: Query Audit Trail */}
-                {activeTab === 'audit' && (
+                {/* TAB 4: Query Audit Trail (AI Admin Only) */}
+                {activeTab === 'audit' && isAiAdmin && (
                   <div className="space-y-4 text-xs font-mono">
                     <div>
                       <h4 className="font-semibold text-teal-300 mb-1 font-sans">Step 1: Generated Query Plan</h4>
@@ -1179,7 +1408,7 @@ export default function AIAgentPage() {
         {/* History of Past Queries in this Session */}
         {history.length > 1 && (
           <div className="mt-8">
-            <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+            <h3 className={`text-sm font-semibold mb-3 flex items-center gap-2 ${styles.textHeading}`}>
               <ClockIcon className="w-4 h-4 text-teal-400" />
               Recent Queries in this Session ({history.length})
             </h3>
@@ -1202,9 +1431,216 @@ export default function AIAgentPage() {
                       {item.step1.recordsCount} records
                     </Badge>
                   </div>
-                  <p className="text-xs font-semibold text-white line-clamp-2">"{item.prompt}"</p>
+                  <p className={`text-xs font-semibold line-clamp-2 ${styles.textHeading}`}>"{item.prompt}"</p>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+        {/* Feedback / Teach Agent Modal */}
+        {feedbackModalOpen && queryResult && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className={`w-full max-w-lg rounded-2xl p-6 shadow-2xl ${styles.card}`}>
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+                <div className="flex items-center gap-2 text-amber-500 dark:text-amber-300">
+                  <AcademicCapIcon className="w-5 h-5" />
+                  <h3 className={`font-bold text-base ${styles.textHeading}`}>Teach Agent / Correct Query</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-200 p-1 rounded-lg"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                <div className={`p-3 rounded-xl ${styles.auditorBox}`}>
+                  <span className={`${styles.subtext} font-medium block mb-1`}>Original Query:</span>
+                  <p className={`font-semibold ${styles.textHeading}`}>"{queryResult.prompt}"</p>
+                  <span className={`${styles.subtext} font-medium block mt-2 mb-0.5`}>Executed Collection:</span>
+                  <span className={`${theme === 'light' ? 'text-blue-700' : 'text-teal-300'} font-mono`}>{queryResult.step1.plan.collection}</span>
+                </div>
+
+                <div>
+                  <label className={`block font-semibold mb-1.5 ${styles.textHeading}`}>
+                    What was incorrect or how should the query behave?
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    placeholder="e.g. 'For FRC coveralls, search for Fire Retardant in ppeName instead of ppeId', or 'When checking active custody, filter by custodyto is null'..."
+                    disabled={savingFeedback}
+                    className={`w-full p-3 rounded-xl text-xs ${styles.input} focus:outline-none focus:ring-2 focus:ring-teal-400`}
+                  />
+                  <p className={`text-[11px] ${styles.subtext} mt-1`}>
+                    The agent will distill this into a concise rule and remember it for all future sessions.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setFeedbackModalOpen(false)}
+                    disabled={savingFeedback}
+                    className={`h-8 px-3 text-xs ${styles.buttonSecondary}`}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSaveFeedback}
+                    disabled={savingFeedback || !feedbackText.trim()}
+                    className={`h-8 px-4 text-xs bg-amber-600 hover:bg-amber-500 text-white rounded-xl shadow-md`}
+                  >
+                    {savingFeedback ? (
+                      <span className="flex items-center gap-1.5">
+                        <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                        Learning...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5">
+                        <BookmarkIcon className="w-3.5 h-3.5" />
+                        Save Correction & Learn
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Agent Memory & Knowledge Base Modal */}
+        {memoryModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className={`w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden ${styles.card}`}>
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-5 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className={`p-2 rounded-xl ${theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-teal-500/20 text-teal-300'}`}>
+                    <CpuChipIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className={`font-bold text-base ${styles.textHeading}`}>Agent Memory & Learned Rules</h3>
+                    <p className={`text-xs ${styles.subtext}`}>
+                      Persistent knowledge injected into every query session for high precision
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMemoryModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-200 p-1 rounded-lg"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-5 overflow-y-auto space-y-5 flex-1 text-xs">
+                {/* Add Manual Rule Form */}
+                <div className={`p-4 rounded-xl space-y-3 ${styles.auditorBox}`}>
+                  <h4 className={`font-semibold flex items-center gap-1.5 ${theme === 'light' ? 'text-blue-800' : 'text-teal-300'}`}>
+                    <PlusIcon className="w-4 h-4" />
+                    Add Manual Knowledge Rule
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Topic (e.g. PPE Sizing)"
+                      value={newTopic}
+                      onChange={(e) => setNewTopic(e.target.value)}
+                      disabled={savingRule}
+                      className={`text-xs py-1.5 ${styles.input}`}
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Rule instruction for MongoDB queries..."
+                      value={newRule}
+                      onChange={(e) => setNewRule(e.target.value)}
+                      disabled={savingRule}
+                      className={`sm:col-span-2 text-xs py-1.5 ${styles.input}`}
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAddManualRule}
+                      disabled={savingRule || !newRule.trim()}
+                      className={`h-7 px-3 text-xs ${styles.buttonPrimary}`}
+                    >
+                      {savingRule ? 'Saving...' : 'Add Rule'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Rules List */}
+                <div>
+                  <h4 className={`font-semibold mb-2.5 flex items-center justify-between ${styles.textHeading}`}>
+                    <span>Active Learned Rules ({memoryRules.length})</span>
+                    {loadingMemory && <ArrowPathIcon className="w-3.5 h-3.5 animate-spin text-teal-400" />}
+                  </h4>
+
+                  {memoryRules.length === 0 ? (
+                    <p className="text-slate-500 py-6 text-center italic">No memory rules saved yet.</p>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {memoryRules.map((r) => (
+                        <div
+                          key={r._id}
+                          className={`p-3.5 rounded-xl border flex items-start justify-between gap-3 transition-all ${
+                            theme === 'light'
+                              ? 'bg-white border-blue-200 hover:border-blue-300 shadow-sm'
+                              : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="default" className={styles.badgeSuccess}>
+                                {r.topic}
+                              </Badge>
+                              <span className={`text-[10px] ${styles.subtext}`}>
+                                {new Date(r.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className={`leading-relaxed font-sans ${styles.textBody}`}>{r.rule}</p>
+                            {r.promptContext && (
+                              <p className={`text-[10px] italic ${styles.subtext}`}>
+                                Learned from query: "{r.promptContext}"
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRule(r._id)}
+                            className="text-slate-400 hover:text-red-500 p-1 rounded-lg transition-colors shrink-0"
+                            title="Delete this rule"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 border-t border-white/10 flex justify-end">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setMemoryModalOpen(false)}
+                  className={`h-8 px-4 text-xs ${styles.buttonSecondary}`}
+                >
+                  Close
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -1212,3 +1648,4 @@ export default function AIAgentPage() {
     </div>
   );
 }
+

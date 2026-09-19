@@ -120,6 +120,8 @@ Here is the database schema, collections, and field definitions:
     - kind (string: 'warehouse' | 'department')
 `;
 
+import { ObjectId } from 'mongodb';
+
 export interface SafeQueryPlan {
   collection: string;
   operation: 'aggregate' | 'find' | 'countDocuments' | 'distinct';
@@ -157,6 +159,7 @@ const ALLOWED_COLLECTIONS = new Set([
   'subcategories',
   'departments',
   'locations',
+  'ai-agent-knowledge',
 ]);
 
 export function validateQuerySafety(plan: SafeQueryPlan): void {
@@ -184,6 +187,55 @@ export function validateQuerySafety(plan: SafeQueryPlan): void {
   }
 }
 
+/**
+ * Recursively converts ISO date strings (and $date / $oid objects) to proper BSON Date / ObjectId instances.
+ * This ensures MongoDB date queries match ISODate stored values.
+ */
+export function deserializeBsonTypes(val: any): any {
+  if (val === null || val === undefined) return val;
+
+  // Handle ISO date strings (e.g. "2026-01-01T00:00:00.000Z" or "2026-01-01")
+  if (typeof val === 'string') {
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z?)?$/;
+    if (isoDateRegex.test(val)) {
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) {
+        return d;
+      }
+    }
+    return val;
+  }
+
+  if (Array.isArray(val)) {
+    return val.map(deserializeBsonTypes);
+  }
+
+  if (typeof val === 'object') {
+    // Handle explicit MongoDB extended JSON syntax
+    if (val.$date) {
+      const d = new Date(
+        typeof val.$date === 'string'
+          ? val.$date
+          : val.$date.$numberLong
+          ? Number(val.$date.$numberLong)
+          : val.$date
+      );
+      if (!isNaN(d.getTime())) return d;
+    }
+    if (val.$oid && typeof val.$oid === 'string' && ObjectId.isValid(val.$oid)) {
+      return new ObjectId(val.$oid);
+    }
+
+    const res: Record<string, any> = {};
+    for (const key of Object.keys(val)) {
+      res[key] = deserializeBsonTypes(val[key]);
+    }
+    return res;
+  }
+
+  return val;
+}
+
 export async function executeSafeMongoQuery(plan: SafeQueryPlan): Promise<any> {
   validateQuerySafety(plan);
 
@@ -193,9 +245,11 @@ export async function executeSafeMongoQuery(plan: SafeQueryPlan): Promise<any> {
   const maxLimit = plan.limit ? Math.min(plan.limit, 1000) : 500;
 
   if (plan.operation === 'aggregate') {
-    const pipeline = [...(plan.pipeline || [])];
+    const rawPipeline = Array.isArray(plan.pipeline) ? plan.pipeline : [];
+    const pipeline = deserializeBsonTypes(rawPipeline);
+
     // Ensure pipeline ends with a limit if not group-aggregating to single number
-    const hasLimit = pipeline.some((s) => typeof s === 'object' && s !== null && '$limit' in s);
+    const hasLimit = pipeline.some((s: any) => typeof s === 'object' && s !== null && '$limit' in s);
     if (!hasLimit) {
       pipeline.push({ $limit: maxLimit });
     }
@@ -203,7 +257,8 @@ export async function executeSafeMongoQuery(plan: SafeQueryPlan): Promise<any> {
   }
 
   if (plan.operation === 'find') {
-    let cursor = collection.find(plan.filter || {});
+    const filter = deserializeBsonTypes(plan.filter || {});
+    let cursor = collection.find(filter);
     if (plan.projection) {
       cursor = cursor.project(plan.projection);
     }
@@ -214,11 +269,13 @@ export async function executeSafeMongoQuery(plan: SafeQueryPlan): Promise<any> {
   }
 
   if (plan.operation === 'countDocuments') {
-    return await collection.countDocuments(plan.filter || {});
+    const filter = deserializeBsonTypes(plan.filter || {});
+    return await collection.countDocuments(filter);
   }
 
   if (plan.operation === 'distinct' && plan.distinctField) {
-    return await collection.distinct(plan.distinctField, plan.filter || {});
+    const filter = deserializeBsonTypes(plan.filter || {});
+    return await collection.distinct(plan.distinctField, filter);
   }
 
   throw new Error(`Unsupported operation: ${plan.operation}`);

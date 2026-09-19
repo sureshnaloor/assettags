@@ -7,8 +7,10 @@ import {
   SafeQueryPlan,
   executeSafeMongoQuery,
 } from '@/lib/ai/mongo-query-executor';
+import { getAgentMemoryContext } from '@/lib/ai/agent-memory';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /**
  * Robust JSON extractor that handles markdown blocks, trailing commas,
@@ -145,11 +147,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Please provide a query prompt.' }, { status: 400 });
     }
 
+    // Fetch learned query memory & past corrections from MongoDB
+    const memoryContext = await getAgentMemoryContext();
+
     // =========================================================================
     // STEP 1: Translate Natural Language into MongoDB Safe Query Plan & Execute
     // =========================================================================
     const step1SystemPrompt = `
 ${DATABASE_SCHEMA_PROMPT}
+
+${memoryContext}
 
 You are an expert MongoDB Query Specialist for the SmartTags Enterprise System.
 Your task is to analyze the user's plain-English question and generate a SAFE, OPTIMIZED, READ-ONLY MongoDB query.
@@ -157,8 +164,10 @@ Your task is to analyze the user's plain-English question and generate a SAFE, O
 RULES:
 1. ONLY generate read operations: "aggregate", "find", "countDocuments", or "distinct".
 2. Target the correct collection(s). Use '$lookup' in aggregation pipelines if joining across collections (e.g. equipmentandtools with equipmentcustody or equipmentcalibcertificates).
-3. Ensure date filters use standard ISO date comparisons or MongoDB date operators.
-4. Output MUST be valid JSON conforming to the following structure:
+3. For date filters (e.g. year 2026), use standard ISO date strings like "2026-01-01T00:00:00.000Z" (they are automatically converted to BSON Dates at runtime).
+4. When the user asks to "display all", "list", or "show items/records", prefer "find" or a listing pipeline. When they ask for counts, summaries, or charts, use "$group" aggregation.
+5. Pay close attention to any LEARNED QUERY MEMORY above.
+6. Output MUST be valid JSON conforming to the following structure:
 
 {
   "explanation": "Brief explanation of query design",
@@ -181,7 +190,7 @@ RULES:
       ],
       {
         temperature: 0.1,
-        max_tokens: 3000,
+        max_tokens: 1500,
         response_format: { type: 'json_object' },
       }
     );
@@ -223,9 +232,9 @@ YOUR TASKS:
    - Verify whether the retrieved data directly and accurately answers the user's question.
    - Note caveats (e.g., zero results found, date boundaries, sample limits, missing fields).
 2. SYNTHESIZE NATURAL LANGUAGE INSIGHTS:
-   - Provide a clear, executive Markdown summary with bold highlights, metrics, key totals, and bullet points.
+   - Provide a concise executive Markdown summary with bold highlights, metrics, key totals, and bullet points.
 3. TABLE COLUMNS:
-   - Define clean column headers ({ key, label }) for displaying the data. Do NOT repeat all row objects if there are many records; the server populates rows automatically from raw database results.
+   - Define clean column headers ({ key, label }) for displaying the data.
 4. CHART STRUCTURING:
    - If the user explicitly requested a chart/graph, OR if the data represents aggregates/distributions suitable for visual charting, construct a chart specification.
    - Supported chart types: "bar", "pie", "line", "area".
@@ -240,7 +249,7 @@ RESPONSE FORMAT (JSON ONLY):
     "confidence": "High" | "Medium" | "Low",
     "notes": "Review comments on data integrity and query match"
   },
-  "summaryMarkdown": "Comprehensive Markdown response with bold highlights, bullets, and totals",
+  "summaryMarkdown": "Concise Markdown response with bold highlights, bullets, and totals",
   "table": {
     "columns": [
       { "key": "fieldName", "label": "Column Header" }
@@ -263,8 +272,8 @@ RESPONSE FORMAT (JSON ONLY):
 }
 `;
 
-    // Limit rawData sample sent to LLM to prevent token explosion
-    const sampleRawData = Array.isArray(rawData) ? rawData.slice(0, 40) : rawData;
+    // Limit rawData sample sent to LLM to prevent latency & token explosion
+    const sampleRawData = Array.isArray(rawData) ? rawData.slice(0, 20) : rawData;
 
     const step2UserContent = `
 USER REQUEST: "${prompt}"
@@ -273,7 +282,7 @@ QUERY EXPLANATION: "${parsedStep1.explanation}"
 QUERY PLAN EXECUTED: ${JSON.stringify(parsedStep1.plan, null, 2)}
 
 TOTAL RECORDS FOUND: ${recordsCount}
-RAW MONGODB RESULTS SAMPLE (Showing up to 40 of ${recordsCount} records):
+RAW MONGODB RESULTS SAMPLE (Showing up to 20 of ${recordsCount} records):
 ${JSON.stringify(sampleRawData, null, 2)}
 `;
 
@@ -287,7 +296,7 @@ ${JSON.stringify(sampleRawData, null, 2)}
         ],
         {
           temperature: 0.2,
-          max_tokens: 8192,
+          max_tokens: 2500,
           response_format: { type: 'json_object' },
         }
       );
