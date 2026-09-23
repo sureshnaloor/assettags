@@ -19,6 +19,16 @@ const HEADER_MAPPING: HeaderMap = {
   'employee number': 'employeenumber',
   employeename: 'employeename',
   'employee name': 'employeename',
+  actualusertype: 'actualUserType',
+  'actual user type': 'actualUserType',
+  actualuserno: 'actualUserNo',
+  'actual user no': 'actualUserNo',
+  'actual user number': 'actualUserNo',
+  actualusername: 'actualUserName',
+  'actual user name': 'actualUserName',
+  actualuseridnumber: 'actualUserIdNumber',
+  'actual user id number': 'actualUserIdNumber',
+  'actual user passport': 'actualUserIdNumber',
   locationtype: 'locationType',
   'location type': 'locationType',
   custodycity: 'custodyCity',
@@ -61,6 +71,10 @@ const HEADER_MAPPING: HeaderMap = {
 };
 
 const OPTIONAL_STRING_FIELDS = [
+  'actualUserType',
+  'actualUserNo',
+  'actualUserName',
+  'actualUserIdNumber',
   'custodyCity',
   'premisesId',
   'premisesLabel',

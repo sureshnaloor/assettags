@@ -6,6 +6,7 @@ import AsyncSelect from 'react-select/async';
 import DatePicker from 'react-datepicker';
 import { Employee, Project, Custody } from '@/types/custody';
 import CustodyLocationFields from '@/app/components/CustodyLocationFields';
+import SearchableActualUserSelect from '@/components/SearchableActualUserSelect';
 import type { CustodyLocationType } from '@/lib/custodyLocation';
 import { useAppTheme } from '@/app/contexts/ThemeContext';
 import ThemedPageShell from '@/app/components/ThemedPageShell';
@@ -46,6 +47,10 @@ export default function NewCustodyPage() {
     assetnumber: params.assetnumber,
     custodyfrom: new Date(),
     custodyto: null,
+    actualUserType: null,
+    actualUserNo: '',
+    actualUserName: '',
+    actualUserIdNumber: '',
   });
 
   const onPremisesChange = useCallback((id: string, label: string) => {
@@ -222,6 +227,10 @@ export default function NewCustodyPage() {
           assetnumber: params.assetnumber,
           employeenumber: formData.employeenumber,
           employeename: formData.employeename,
+          actualUserType: formData.actualUserType || null,
+          actualUserNo: formData.actualUserNo || null,
+          actualUserName: formData.actualUserName || null,
+          actualUserIdNumber: formData.actualUserIdNumber || null,
           locationType,
           custodyCity: custodyCity.trim() || null,
           premisesId: locationType === 'project_site' ? null : premisesId || null,
@@ -358,7 +367,9 @@ export default function NewCustodyPage() {
 
             <div className="space-y-6">
               <div>
-                <label className={`mb-1 block text-sm font-medium ${fap.textPrimary}`}>Employee Number</label>
+                <label className={`mb-1 block text-sm font-medium ${fap.textPrimary}`}>
+                  Custodian (Supervisor) <span className="text-red-500">*</span>
+                </label>
                 <AsyncSelect
                   loadOptions={loadEmployeeOptions}
                   defaultOptions={false}
@@ -374,8 +385,28 @@ export default function NewCustodyPage() {
                   }}
                   styles={asyncSelectStyles}
                   className="text-sm"
-                  placeholder="Search by employee number or name..."
+                  placeholder="Search custodian by employee number or name..."
                   isClearable
+                />
+              </div>
+
+              <div>
+                <label className={`mb-1 block text-sm font-medium ${fap.textPrimary}`}>
+                  Actual User (Employee / Rental / Visitor)
+                </label>
+                <SearchableActualUserSelect
+                  value={formData.actualUserNo || ''}
+                  initialName={formData.actualUserName || ''}
+                  initialType={formData.actualUserType}
+                  onChange={(type, no, name, idNumber) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      actualUserType: type,
+                      actualUserNo: no,
+                      actualUserName: name,
+                      actualUserIdNumber: idNumber,
+                    }));
+                  }}
                 />
               </div>
 

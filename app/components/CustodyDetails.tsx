@@ -8,6 +8,7 @@ import Link from 'next/link';
 
 import type { Theme } from '@/app/components/AssetDetails';
 import CustodyLocationFields from '@/app/components/CustodyLocationFields';
+import SearchableActualUserSelect from '@/components/SearchableActualUserSelect';
 import type { CustodyLocationType } from '@/lib/custodyLocation';
 import {
   custodyPremisesLabel,
@@ -301,6 +302,10 @@ export default function CustodyDetails({
     const [containerNumberRack, setContainerNumberRack] = useState('');
     const [projectWbs, setProjectWbs] = useState('');
     const [projectName, setProjectName] = useState('');
+    const [actualUserType, setActualUserType] = useState<'employee' | 'non_employee' | null>(null);
+    const [actualUserNo, setActualUserNo] = useState('');
+    const [actualUserName, setActualUserName] = useState('');
+    const [actualUserIdNumber, setActualUserIdNumber] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [err, setErr] = useState<string | null>(null);
@@ -332,6 +337,10 @@ export default function CustodyDetails({
       const parsed = parseLegacyProjectField(currentCustody.project);
       setProjectWbs(parsed.wbs);
       setProjectName(currentCustody.projectname ?? parsed.name);
+      setActualUserType(currentCustody.actualUserType ?? null);
+      setActualUserNo(currentCustody.actualUserNo ?? '');
+      setActualUserName(currentCustody.actualUserName ?? '');
+      setActualUserIdNumber(currentCustody.actualUserIdNumber ?? '');
       setErr(null);
     }, [isOpen, currentCustody]);
 
@@ -465,6 +474,10 @@ export default function CustodyDetails({
               ? [projectWbs, projectName].filter(Boolean).join(' - ') || null
               : null,
           projectname: locationType === 'project_site' ? projectName.trim() || null : null,
+          actualUserType: actualUserType || null,
+          actualUserNo: actualUserNo || null,
+          actualUserName: actualUserName || null,
+          actualUserIdNumber: actualUserIdNumber || null,
         };
 
         const response = await fetch(`/api/custody/${assetnumber}/${currentCustody._id}`, {
@@ -506,6 +519,23 @@ export default function CustodyDetails({
               {err}
             </div>
           )}
+
+          <div className="mb-4">
+            <label className={`block text-sm font-medium ${modalStyles.textSecondary} mb-1`}>
+              Actual User (Employee / Rental / Visitor)
+            </label>
+            <SearchableActualUserSelect
+              value={actualUserNo}
+              initialName={actualUserName}
+              initialType={actualUserType}
+              onChange={(type, no, name, idNumber) => {
+                setActualUserType(type);
+                setActualUserNo(no);
+                setActualUserName(name);
+                setActualUserIdNumber(idNumber);
+              }}
+            />
+          </div>
 
           <CustodyLocationFields
             variant={theme === 'glassmorphic' ? 'page' : 'modal'}
@@ -613,11 +643,21 @@ export default function CustodyDetails({
       )}
       {currentCustody && (
         <div className="grid grid-cols-2 gap-4 mt-2">
-          {/* Employee */}
+          {/* Custodian (Supervisor) */}
           <div className={`${fieldStyles.container} p-2`}>
-            <label className={`block text-xs font-medium ${fieldStyles.label}`}>Employee</label>
+            <label className={`block text-xs font-medium ${fieldStyles.label}`}>Custodian (Supervisor)</label>
             <div className={`text-sm ${fieldStyles.text}`}>
               {currentCustody.employeename} ({currentCustody.employeenumber})
+            </div>
+          </div>
+
+          {/* Actual User */}
+          <div className={`${fieldStyles.container} p-2`}>
+            <label className={`block text-xs font-medium ${fieldStyles.label}`}>Actual User</label>
+            <div className={`text-sm ${fieldStyles.text}`}>
+              {currentCustody.actualUserName
+                ? `${currentCustody.actualUserName}${currentCustody.actualUserNo ? ` (${currentCustody.actualUserNo})` : ''} ${currentCustody.actualUserType ? `[${currentCustody.actualUserType === 'employee' ? 'Employee' : 'Non-Employee'}]` : ''}`
+                : '—'}
             </div>
           </div>
 
@@ -765,11 +805,21 @@ export default function CustodyDetails({
                 className={`${fieldStyles.container} p-3`}
               >
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Employee */}
+                  {/* Custodian (Supervisor) */}
                   <div>
-                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Employee</label>
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Custodian (Supervisor)</label>
                     <div className={`text-sm ${fieldStyles.text}`}>
                       {record.employeename} ({record.employeenumber})
+                    </div>
+                  </div>
+
+                  {/* Actual User */}
+                  <div>
+                    <label className={`block text-xs font-medium ${fieldStyles.label}`}>Actual User</label>
+                    <div className={`text-sm ${fieldStyles.text}`}>
+                      {record.actualUserName
+                        ? `${record.actualUserName}${record.actualUserNo ? ` (${record.actualUserNo})` : ''} ${record.actualUserType ? `[${record.actualUserType === 'employee' ? 'Employee' : 'Non-Employee'}]` : ''}`
+                        : '—'}
                     </div>
                   </div>
 

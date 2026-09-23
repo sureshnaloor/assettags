@@ -38,6 +38,11 @@ export interface Custody {
   employeeDepartment?: string;
   /** Resolved from the linked project master (not persisted) */
   projectDepartment?: string;
+  /** Actual User Details */
+  actualUserType?: 'employee' | 'non_employee' | null;
+  actualUserNo?: string | null;
+  actualUserName?: string | null;
+  actualUserIdNumber?: string | null;
   documentnumber?: string;
   createdat: Date;
   createdby: string;
@@ -60,6 +65,19 @@ export interface Employee {
   empname: string;
 }
 
+export interface NonEmployeeUser {
+  _id?: string;
+  visitorNumber: string;
+  name: string;
+  userType?: string; // 'rental' | 'visitor' | 'contractor' | 'other'
+  nationalId?: string;
+  passportNumber?: string;
+  companySerialNumber?: string;
+  active?: boolean | string;
+  createdat?: Date;
+  updatedat?: Date;
+}
+
 export interface Project {
   _id: string;
   wbs: string;
@@ -71,3 +89,4 @@ export interface Project {
   startDate?: string | Date;
   endDate?: string | Date;
 }
+
