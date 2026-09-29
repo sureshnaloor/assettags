@@ -7,13 +7,12 @@ import { Package, Tag, MapPin, Calendar } from 'lucide-react';
 
 import AssetDetails from '../../components/AssetDetails';
 import CustodyDetails from '../../components/CustodyDetails';
-import CalibrationDetails from '@/app/components/CalibrationDetails';
 import CustomDetailsSection from '@/app/components/CustomDetailsSection';
 import FixedAssetBreadcrumb from '@/app/components/fixedasset/FixedAssetBreadcrumb';
 import FixedAssetSection from '@/app/components/fixedasset/FixedAssetSection';
 import FixedAssetStatusBadge from '@/app/components/fixedasset/FixedAssetStatusBadge';
 import { AssetQRCode } from '@/components/AssetQRCode';
-import { AssetData, Calibration } from '@/types/asset';
+import { AssetData } from '@/types/asset';
 import { Custody } from '@/types/custody';
 import FixedAssetDetailShell from '@/app/components/fixedasset/FixedAssetDetailShell';
 import { fap, formatCurrency } from '@/lib/fixedAssetPageDesign';
@@ -39,7 +38,6 @@ export default function FixedAssetPage() {
   const assetnumber = typeof params?.assetnumber === 'string' ? params.assetnumber : '';
   const [asset, setAsset] = useState<FixedAssetDetail | null>(null);
   const [custodyRecords, setCustodyRecords] = useState<Custody[]>([]);
-  const [calibrations, setCalibrations] = useState<Calibration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,10 +47,9 @@ export default function FixedAssetPage() {
         setLoading(true);
         setError(null);
         const encoded = encodeURIComponent(assetnumber);
-        const [assetResponse, custodyResponse, calibrationResponse] = await Promise.all([
+        const [assetResponse, custodyResponse] = await Promise.all([
           fetch(`/api/fixedassets/${encoded}`),
           fetch(`/api/custody/${encoded}`),
-          fetch(`/api/calibrations/${encoded}`),
         ]);
 
         if (assetResponse.ok) {
@@ -69,13 +66,6 @@ export default function FixedAssetPage() {
           setCustodyRecords(Array.isArray(custodyData) ? custodyData : []);
         } else {
           setCustodyRecords([]);
-        }
-
-        if (calibrationResponse.ok) {
-          const calibrationData = await calibrationResponse.json();
-          setCalibrations(Array.isArray(calibrationData) ? calibrationData : []);
-        } else {
-          setCalibrations([]);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -127,7 +117,7 @@ export default function FixedAssetPage() {
   useEffect(() => {
     if (loading) return;
     const hash = window.location.hash.replace('#', '');
-    if (hash === 'custody' || hash === 'calibration') {
+    if (hash === 'custody') {
       const el = document.getElementById(hash);
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -183,18 +173,6 @@ export default function FixedAssetPage() {
     } catch (err) {
       console.error('Error updating fixed asset:', err);
       throw err;
-    }
-  };
-
-  const handleCalibrationUpdate = async (calibration: Calibration | null) => {
-    try {
-      if (!calibration) return;
-      const response = await fetch(`/api/calibrations/${encodeURIComponent(assetnumber)}`);
-      if (!response.ok) throw new Error('Failed to fetch updated calibrations');
-      const newCalibrationData = await response.json();
-      setCalibrations(Array.isArray(newCalibrationData) ? newCalibrationData : []);
-    } catch (err) {
-      console.error('Error updating calibrations:', err);
     }
   };
 
@@ -288,15 +266,6 @@ export default function FixedAssetPage() {
               <div className="space-y-6">
                 <FixedAssetSection title="Asset Details" defaultExpanded>
                   <AssetDetails asset={asset} onUpdate={handleAssetUpdate} />
-                </FixedAssetSection>
-
-                <FixedAssetSection title="Calibration Details" sectionId="calibration" defaultExpanded>
-                  <CalibrationDetails
-                    currentCalibration={Array.isArray(calibrations) && calibrations.length > 0 ? calibrations[0] : null}
-                    calibrationHistory={Array.isArray(calibrations) && calibrations.length > 1 ? calibrations.slice(1) : []}
-                    onUpdate={handleCalibrationUpdate}
-                    assetnumber={assetnumber}
-                  />
                 </FixedAssetSection>
 
                 <FixedAssetSection title="Custody Details" sectionId="custody" defaultExpanded>
