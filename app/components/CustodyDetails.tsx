@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { PencilIcon, PlusIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 import { Custody, Employee, Project } from '@/types/custody';
 import DatePicker from 'react-datepicker';
@@ -498,11 +499,12 @@ export default function CustodyDetails({
       }
     };
 
-    return (
+    const modal = (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
         <div
-          className={`${modalStyles.container} rounded-lg shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto`}
+          className={`${modalStyles.container} rounded-lg shadow-xl max-w-2xl w-full h-[min(860px,92vh)] max-h-[92vh] flex flex-col overflow-hidden`}
         >
+          <div className="min-h-0 flex-1 overflow-y-auto p-6">
           <h3 className={`text-lg font-semibold ${modalStyles.text} mb-4`}>
             Correct location (error correction)
           </h3>
@@ -571,8 +573,13 @@ export default function CustodyDetails({
               setProjectName(pname);
             }}
           />
+          </div>
 
-          <div className="flex gap-3 mt-6">
+          <div
+            className={`flex shrink-0 gap-3 border-t bg-inherit px-6 py-4 ${
+              theme === 'light' ? 'border-blue-200' : 'border-white/15'
+            }`}
+          >
             <button
               onClick={handleSave}
               disabled={isSaving}
@@ -593,6 +600,9 @@ export default function CustodyDetails({
         </div>
       </div>
     );
+
+    if (typeof document === 'undefined') return modal;
+    return createPortal(modal, document.body);
   };
 
   // New custody only when there is no open (To date empty) current record
